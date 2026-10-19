@@ -2,19 +2,41 @@ import { FREE_MODELS_CONFIG, broadcastToAllFreeAIs } from './freeAiMesh.js';
 import { generateLandingPageCode } from './templates.js';
 import { lookupKnowledge } from './knowledgeBase.js';
 import { shouldGodfySearch, performLiveWebSearch } from './webSearch.js';
+import { getStoredMemories, extractAndSaveMemories, buildMemoryContextString } from './brainMemory.js';
 
 /**
  * Godfy AI Engine v1
  * Brain Architecture:
+ * -1. Working & Long-Term Memory: Recalls user context, facts, and conversation history
  * 0. Autonomous Decision: Decides when live web search is needed
  * 1. Calls his friends (Free AIs) for ideas
  * 2. Thinks about what it is going to do (<think>)
- * 3. Makes the best answer combining his friends' responses and live web findings
+ * 3. Makes the best answer combining his friends' responses, memories, and live web findings
  * Concise, punchy, direct. Zero bloated walls of text. Fully functional.
  */
 
 export async function processChatWithGodfy({ prompt, history = [], mindPreset = 'balanced', forceSearch = false, onStreamStep }) {
   const query = (prompt || '').trim();
+
+  // Brain step -1: Memory analysis & multi-turn history extraction
+  const newlyLearned = extractAndSaveMemories(query);
+  const memories = getStoredMemories();
+  const memoryContext = buildMemoryContextString();
+
+  const chatHistory = (history || [])
+    .filter(m => m.text || m.masterText)
+    .map(m => ({
+      role: m.sender === 'user' ? 'user' : 'assistant',
+      content: m.sender === 'user' ? (m.text || '') : (m.masterText || m.text || '')
+    }))
+    .slice(-10);
+
+  if (onStreamStep && memories.length > 0) {
+    onStreamStep({ 
+      step: 'memory', 
+      message: `Godfy Brain: Recalled ${memories.length} active memories from long-term storage...` 
+    });
+  }
 
   // Brain step 0: Autonomous decision - Does this require live web search?
   const needsSearch = shouldGodfySearch(query, forceSearch);
@@ -40,13 +62,23 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     }
   }
 
-  // Augment query for the 5 friends if web search found live facts
+  // Augment query for the 5 friends if web search found live facts or if long-term memory exists
   let queryForFriends = query;
+  const contextParts = [];
+
+  if (memoryContext) {
+    contextParts.push(memoryContext);
+  }
+
   if (searchData && searchData.results && searchData.results.length > 0) {
     const contextLines = searchData.results
       .map(r => `• [${r.source}] ${r.title}: ${r.snippet}`)
       .join('\n');
-    queryForFriends = `${query}\n\n[Live Web Search Findings]:\n${contextLines}\n\nNote: Use the verified live findings above to answer accurately with current facts.`;
+    contextParts.push(`[Live Web Search Findings]:\n${contextLines}`);
+  }
+
+  if (contextParts.length > 0) {
+    queryForFriends = `${query}\n\n${contextParts.join('\n\n')}\n\nNote: Use the verified context above to formulate your response.`;
   }
 
   // Brain step 1: Thinking and calling his 5 friends
@@ -58,7 +90,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   }
 
   let completedCount = 0;
-  const modelProposals = await broadcastToAllFreeAIs(queryForFriends, (completedModel) => {
+  const modelProposals = await broadcastToAllFreeAIs(queryForFriends, chatHistory, memories, (completedModel) => {
     completedCount++;
     if (onStreamStep) {
       onStreamStep({ 
@@ -72,7 +104,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   if (onStreamStep) {
     onStreamStep({ 
       step: 'synthesize', 
-      message: 'Godfy Brain: Thinking and making the best answer from their responses and live web data...' 
+      message: 'Godfy Brain: Thinking and making the best answer from their responses, memories, and live web data...' 
     });
   }
 
@@ -89,7 +121,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     keyExtracted: extractionsMap[m.modelId] || 'Friend idea'
   }));
 
-  const synthesis = synthesizeBrainResponse(query, enrichedProposals, mindPreset, searchData);
+  const synthesis = synthesizeBrainResponse(query, enrichedProposals, mindPreset, searchData, chatHistory, memories);
 
   return {
     id: `msg-${Date.now()}`,
@@ -104,6 +136,8 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     modelProposals: enrichedProposals,
     webSources: searchData && searchData.results && searchData.results.length > 0 ? searchData.results : null,
     searchedWeb: searchData && searchData.count > 0,
+    hasMemory: memories.length > 0,
+    newlyLearned,
     extractions: synthesis.extractions,
     suggestedFollowUps: synthesis.suggestedFollowUps,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -139,15 +173,175 @@ function stripAiBoilerplate(text) {
 
 /**
  * Main Godfy Brain Synthesis:
- * Combines 5 friends' inputs and live web search findings into one concise, punchy, and direct answer.
+ * Combines 5 friends' inputs, memory context, and live web search findings into one concise, punchy, and direct answer.
  */
-function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData = null) {
+function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData = null, chatHistory = [], memories = []) {
   const q = (query || '').trim();
   const lower = q.toLowerCase();
 
+  const isAskingName = /\b(what is my name|who am i|do you know my name|what's my name|my name\?)\b/i.test(lower);
+  const isAskingMemories = /\b(what do you remember|what are my memories|what do you know about me|my preferences|what is my project)\b/i.test(lower);
+  const isAskingPrevious = /\b(what was my last question|what did i ask earlier|summarize our conversation|what did i say before|my previous question)\b/i.test(lower);
+
+  const userNameMemory = memories.find(m => m.key.toLowerCase().includes('name'));
+
+  const memoryNote = memories.length > 0 
+    ? `\n- Brain Memory: Recalled ${memories.length} active memories (${memories.map(m => m.key).slice(0, 3).join(', ')}).`
+    : '';
+
+  // DIRECT MEMORY RECALL: USER NAME
+  if (isAskingName) {
+    if (userNameMemory) {
+      const think = `Godfy Brain:${memoryNote}
+- User asked to recall their name.
+- Retrieved from long-term memory: ${userNameMemory.value}.
+- What I'm going to do: Confirm user identity immediately with high confidence.`;
+
+      return {
+        consensusScore: '100%',
+        thinkTrace: think,
+        masterText: `Your name is **${userNameMemory.value}**! I have it stored in my persistent brain memory.`,
+        codeArtifact: null,
+        codeLanguage: null,
+        extractions: ['Brain Memory: User Name recalled'],
+        suggestedFollowUps: [
+          'What else do you remember about me?',
+          'What is my current project?',
+          'Clear my memory'
+        ]
+      };
+    } else {
+      const think = `Godfy Brain:${memoryNote}
+- User asked about their name, but no name has been stored in memory yet.
+- What I'm going to do: Politely inform the user and invite them to share their name.`;
+
+      return {
+        consensusScore: '99.0%',
+        thinkTrace: think,
+        masterText: `I don't have your name in my brain memory yet! 
+
+Tell me *"My name is..."* and I'll remember it across our chats and sessions.`,
+        codeArtifact: null,
+        codeLanguage: null,
+        extractions: ['Brain Memory: Awaiting user name'],
+        suggestedFollowUps: [
+          'My name is Alex',
+          'What do you know about me?',
+          'Make a landing page'
+        ]
+      };
+    }
+  }
+
+  // DIRECT MEMORY RECALL: ALL STORED MEMORIES
+  if (isAskingMemories) {
+    if (memories.length > 0) {
+      const think = `Godfy Brain:${memoryNote}
+- User asked to inspect long-term memories.
+- Formulating memory recap for ${memories.length} items.`;
+
+      const memoryList = memories.map(m => `• **${m.key}:** ${m.value}`).join('\n');
+      return {
+        consensusScore: '100%',
+        thinkTrace: think,
+        masterText: `Here is what my brain currently remembers about you:\n\n${memoryList}\n\n*I automatically remember your identity, preferences, and active projects as we chat.*`,
+        codeArtifact: null,
+        codeLanguage: null,
+        extractions: [`Brain Memory: ${memories.length} items retrieved`],
+        suggestedFollowUps: [
+          'What is my name?',
+          'Forget my memories',
+          'Make a landing page for my project'
+        ]
+      };
+    } else {
+      return {
+        consensusScore: '98.5%',
+        thinkTrace: `Godfy Brain:\n- Checked long-term storage: Memory is currently blank.\n- What I'm going to do: Explain how brain memory works.`,
+        masterText: `My long-term memory is currently blank. 
+
+As we talk, I will automatically remember:
+- **Your name & identity** (e.g. *"My name is..."*)
+- **Your tech preferences** (e.g. *"I prefer Python and Tailwind"*)
+- **Your active projects** (e.g. *"I am building a SaaS app"*)`,
+        codeArtifact: null,
+        codeLanguage: null,
+        extractions: ['Brain Memory: Initialized'],
+        suggestedFollowUps: [
+          'My name is Carlos',
+          'I am building an AI tool',
+          'I prefer TypeScript'
+        ]
+      };
+    }
+  }
+
+  // DIRECT HISTORY RECALL: PREVIOUS QUESTION / CONTEXT
+  if (isAskingPrevious && chatHistory.length > 0) {
+    const lastUser = [...chatHistory].reverse().find(h => h.role === 'user');
+    if (lastUser) {
+      const think = `Godfy Brain:${memoryNote}
+- User asked about previous conversation context.
+- Retrieved previous turn from working memory: "${lastUser.content}".`;
+
+      return {
+        consensusScore: '100%',
+        thinkTrace: think,
+        masterText: `Your previous question was: 
+
+> *"${lastUser.content}"*
+
+Would you like me to expand on that or build something related?`,
+        codeArtifact: null,
+        codeLanguage: null,
+        extractions: ['Working Memory: Previous turn retrieved'],
+        suggestedFollowUps: [
+          'Expand on that',
+          'Write code for that',
+          'New question'
+        ]
+      };
+    }
+  }
+
+  // DIRECT MEMORY INTRODUCTION (e.g. "My name is Carlos...")
+  const isIntroduction = /(?:my name is|call me)\s+([A-Za-z0-9_-]+)/i.test(q);
+  if (isIntroduction) {
+    const name = userNameMemory ? userNameMemory.value : 'friend';
+    const proj = memories.find(m => m.key === 'Current Project')?.value;
+
+    const think = `Godfy Brain:${memoryNote}
+- User introduced themselves.
+- Extracted and stored name (${name}) and project context in brain memory.
+- What I'm going to do: Greet warmly by name, confirm memory retention, and ask how to assist.`;
+
+    const masterText = `Nice to meet you, **${name}**! 🧠
+
+I've stored your identity in my persistent brain memory${proj ? ` and noted that you're building **${proj}**` : ''}.
+
+What should we work on today?
+- **Build a landing page** in signature Cream & Cyan Light
+- **Architect backend & API pipelines**
+- **Write code or algorithms**`;
+
+    return {
+      consensusScore: '100%',
+      thinkTrace: think,
+      masterText,
+      codeArtifact: null,
+      codeLanguage: null,
+      extractions: [`Brain Memory: User identity (${name}) retained`],
+      suggestedFollowUps: [
+        proj ? `Build a landing page for ${proj}` : 'Make a landing page',
+        'Write an API in Python',
+        'What do you remember about me?'
+      ]
+    };
+  }
+
   const isGreeting = /^(hi|hello|hey|greetings|good morning|good evening|who are you|what's up|sup)\b/i.test(lower);
-  const isLandingPage = lower.includes('landing') || lower.includes('website') || lower.includes('portfolio') || lower.includes('page') || lower.includes('ui');
-  const isCode = lower.includes('code') || lower.includes('script') || lower.includes('python') || lower.includes('javascript') || lower.includes('function') || lower.includes('api') || lower.includes('sql') || lower.includes('calculator') || lower.includes('write an app') || lower.includes('reverse a linked list');
+  const isLandingPage = /\b(landing page|landingpage|portfolio site|website|make a page|build a page|create a page)\b/i.test(lower) || /\bui design\b/i.test(lower);
+  const isCode = /\b(code|script|python|javascript|typescript|function|api|sql|calculator|write an app|linked list|algorithm)\b/i.test(lower);
 
   const consensusPercentage = (97.0 + Math.random() * 2.5).toFixed(1);
 

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Plus, MessageSquare, Trash2, Sliders, ExternalLink, 
-  Sparkles, CheckCircle2, ChevronRight, Zap
+  Sparkles, CheckCircle2, ChevronRight, Zap, Brain, RotateCcw
 } from 'lucide-react';
 import { FREE_AI_MODELS } from '../engine/models.js';
+import { getStoredMemories, clearAllMemories } from '../engine/brainMemory.js';
 
 export default function Sidebar({
   isOpen,
@@ -15,6 +16,21 @@ export default function Sidebar({
   onDeleteSession,
   onOpenSettings
 }) {
+  const [memories, setMemories] = useState([]);
+
+  useEffect(() => {
+    setMemories(getStoredMemories());
+    const interval = setInterval(() => {
+      setMemories(getStoredMemories());
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  const handleClearMemory = () => {
+    clearAllMemories();
+    setMemories([]);
+  };
+
   return (
     <>
       {/* Mobile Drawer Backdrop */}
@@ -118,6 +134,45 @@ export default function Sidebar({
                 );
               })}
             </div>
+          </div>
+
+          {/* Godfy Brain Long-Term Memory */}
+          <div className="p-3.5 rounded-2xl bg-cream-50/80 border border-cream-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-1.5">
+                <Brain className="w-3.5 h-3.5 text-cyan-600" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                  Brain Memory
+                </span>
+              </div>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyanlight-100 text-cyan-900 font-bold border border-cyanlight-200">
+                {memories.length} facts
+              </span>
+            </div>
+
+            {memories.length > 0 ? (
+              <div className="space-y-1">
+                <div className="max-h-24 overflow-y-auto space-y-1 pr-1">
+                  {memories.map((m) => (
+                    <div key={m.id} className="text-[10px] bg-white p-1.5 rounded-lg border border-cream-200 flex justify-between items-center">
+                      <span className="font-semibold text-slate-800 truncate max-w-[55%]">{m.key}</span>
+                      <span className="text-cyan-800 font-mono truncate max-w-[42%] text-right">{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handleClearMemory}
+                  className="w-full mt-1.5 text-[10px] text-slate-400 hover:text-red-500 font-mono flex items-center justify-center space-x-1 py-1 transition"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Clear Brain Memory</span>
+                </button>
+              </div>
+            ) : (
+              <div className="text-[10px] text-slate-500 italic py-1">
+                No memories yet. Tell Godfy your name or preferences!
+              </div>
+            )}
           </div>
 
           {/* 5 Free AIs Telemetry */}

@@ -213,6 +213,20 @@ export default function ChatEngineView({
                           <span>Live Web Search</span>
                         </div>
                       )}
+
+                      {msg.newlyLearned && msg.newlyLearned.length > 0 && (
+                        <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-50 text-purple-800 text-[10px] font-mono font-bold border border-purple-200">
+                          <Brain className="w-2.5 h-2.5 text-purple-600" />
+                          <span>Memory Saved: {msg.newlyLearned[0]}</span>
+                        </div>
+                      )}
+
+                      {!msg.newlyLearned && msg.hasMemory && (
+                        <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyanlight-50 text-cyan-900 text-[10px] font-mono border border-cyanlight-200">
+                          <Brain className="w-2.5 h-2.5 text-cyan-600" />
+                          <span>Memory Active</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-[10px] font-mono text-slate-400">

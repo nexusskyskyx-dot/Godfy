@@ -91,12 +91,18 @@ export function cleanResponseText(raw) {
 /**
  * Provider 1: Pollinations.AI GET (Fastest, zero CORS issues in browser)
  */
-async function callPollinationsGET(model, prompt, systemRole, timeoutMs = 4000) {
+async function callPollinationsGET(model, prompt, systemRole, history = [], timeoutMs = 4000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=${encodeURIComponent(model)}&system=${encodeURIComponent(systemRole)}`;
+    let finalPrompt = prompt;
+    if (history && history.length > 0) {
+      const recent = history.slice(-4).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content.slice(0, 120)}`).join('\n');
+      finalPrompt = `[Conversation History]:\n${recent}\n\n[Current Prompt]: ${prompt}`;
+    }
+
+    const url = `https://text.pollinations.ai/${encodeURIComponent(finalPrompt)}?model=${encodeURIComponent(model)}&system=${encodeURIComponent(systemRole)}`;
     const res = await fetch(url, {
       method: 'GET',
       signal: controller.signal
@@ -118,17 +124,23 @@ async function callPollinationsGET(model, prompt, systemRole, timeoutMs = 4000) 
 /**
  * Provider 2: Pollinations.AI POST
  */
-async function callPollinationsPOST(model, prompt, systemRole, timeoutMs = 4000) {
+async function callPollinationsPOST(model, prompt, systemRole, history = [], timeoutMs = 4000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const formattedHistory = (history || []).slice(-6).map(h => ({
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: String(h.content || '')
+    }));
+
     const res = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [
           { role: 'system', content: systemRole },
+          ...formattedHistory,
           { role: 'user', content: prompt }
         ],
         model: model,
@@ -153,13 +165,18 @@ async function callPollinationsPOST(model, prompt, systemRole, timeoutMs = 4000)
 /**
  * Provider 3: UncloseAI (Unturf Hermes / Qwen - Keyless, CORS *)
  */
-async function callUncloseAI(endpoint, model, prompt, systemRole, timeoutMs = 4500) {
+async function callUncloseAI(endpoint, model, prompt, systemRole, history = [], timeoutMs = 4500) {
   if (!endpoint) throw new Error('No unclose endpoint');
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const formattedHistory = (history || []).slice(-6).map(h => ({
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: String(h.content || '')
+    }));
+
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -167,6 +184,7 @@ async function callUncloseAI(endpoint, model, prompt, systemRole, timeoutMs = 45
         model: model || 'default',
         messages: [
           { role: 'system', content: systemRole },
+          ...formattedHistory,
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
@@ -192,11 +210,16 @@ async function callUncloseAI(endpoint, model, prompt, systemRole, timeoutMs = 45
 /**
  * Provider 4: LLM7.io Gateway (Free anonymous tier, Bearer unused)
  */
-async function callLLM7(prompt, systemRole, timeoutMs = 4000) {
+async function callLLM7(prompt, systemRole, history = [], timeoutMs = 4000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const formattedHistory = (history || []).slice(-6).map(h => ({
+      role: h.role === 'user' ? 'user' : 'assistant',
+      content: String(h.content || '')
+    }));
+
     const res = await fetch('https://api.llm7.io/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -207,6 +230,7 @@ async function callLLM7(prompt, systemRole, timeoutMs = 4000) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
           { role: 'system', content: systemRole },
+          ...formattedHistory,
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
@@ -232,7 +256,7 @@ async function callLLM7(prompt, systemRole, timeoutMs = 4000) {
 /**
  * Provider 5: Puter.js in-browser SDK
  */
-async function callPuterAI(modelName, prompt, timeoutMs = 3500) {
+async function callPuterAI(modelName, prompt, history = [], timeoutMs = 3500) {
   if (typeof window === 'undefined' || !window.puter?.ai?.chat) {
     throw new Error('Puter AI not ready');
   }
@@ -241,7 +265,13 @@ async function callPuterAI(modelName, prompt, timeoutMs = 3500) {
     setTimeout(() => reject(new Error('Puter timeout')), timeoutMs)
   );
 
-  const chatPromise = window.puter.ai.chat(prompt, { model: modelName || 'gpt-4o-mini' });
+  let finalPrompt = prompt;
+  if (history && history.length > 0) {
+    const recent = history.slice(-4).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content.slice(0, 120)}`).join('\n');
+    finalPrompt = `[Context]:\n${recent}\n\n[User]: ${prompt}`;
+  }
+
+  const chatPromise = window.puter.ai.chat(finalPrompt, { model: modelName || 'gpt-4o-mini' });
   const response = await Promise.race([chatPromise, timeoutPromise]);
 
   if (typeof response === 'string') return cleanResponseText(response);
@@ -251,9 +281,9 @@ async function callPuterAI(modelName, prompt, timeoutMs = 3500) {
 }
 
 /**
- * Query a single Free AI model using multi-provider live cascade
+ * Query a single Free AI model using multi-provider live cascade with conversational memory
  */
-export async function queryFreeAIModel(modelConfig, userPrompt) {
+export async function queryFreeAIModel(modelConfig, userPrompt, history = [], memories = []) {
   const startTime = Date.now();
   const p = userPrompt.trim();
 
@@ -264,7 +294,8 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
         modelConfig.uncloseEndpoint,
         modelConfig.uncloseModel,
         p,
-        modelConfig.systemRole
+        modelConfig.systemRole,
+        history
       );
       return {
         modelId: modelConfig.id,
@@ -286,7 +317,8 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
     const answer = await callPollinationsGET(
       modelConfig.pollinationsModel || modelConfig.remoteModel || 'openai-fast',
       p,
-      modelConfig.systemRole
+      modelConfig.systemRole,
+      history
     );
     return {
       modelId: modelConfig.id,
@@ -307,7 +339,8 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
     const answer = await callPollinationsPOST(
       modelConfig.pollinationsModel || 'openai-fast',
       p,
-      modelConfig.systemRole
+      modelConfig.systemRole,
+      history
     );
     return {
       modelId: modelConfig.id,
@@ -325,7 +358,7 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
 
   // 4. Try LLM7 Gateway
   try {
-    const answer = await callLLM7(p, modelConfig.systemRole);
+    const answer = await callLLM7(p, modelConfig.systemRole, history);
     return {
       modelId: modelConfig.id,
       modelName: modelConfig.name,
@@ -342,7 +375,7 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
 
   // 5. Try Puter.js SDK
   try {
-    const answer = await callPuterAI(modelConfig.puterModel, p);
+    const answer = await callPuterAI(modelConfig.puterModel, p, history);
     if (answer && answer.length > 15) {
       return {
         modelId: modelConfig.id,
@@ -360,7 +393,7 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
   }
 
   // 6. Intelligent Contextual Dynamic Mesh (Subject-Specific, Non-Robotic)
-  const dynamicAnswer = generateSmartModelResponse(modelConfig.id, p);
+  const dynamicAnswer = generateSmartModelResponse(modelConfig.id, p, history, memories);
   return {
     modelId: modelConfig.id,
     modelName: modelConfig.name,
@@ -376,13 +409,40 @@ export async function queryFreeAIModel(modelConfig, userPrompt) {
 import { lookupKnowledge } from './knowledgeBase.js';
 
 /**
- * Subject-Aware Dynamic Intelligence Generator for Resilient Failover
- * Fully dynamic: Inspects user prompt semantics, questions, code requests, and math.
+ * Subject-Aware Dynamic Intelligence Generator for Resilient Failover with Working Memory
+ * Fully dynamic: Inspects user prompt semantics, questions, code requests, and memories.
  * NEVER returns canned generic "Core Concept / Key Logic" templates!
  */
-export function generateSmartModelResponse(modelId, query) {
+export function generateSmartModelResponse(modelId, query, history = [], memories = []) {
   const q = (query || '').trim();
   const lower = q.toLowerCase();
+
+  // 1. MEMORY INQUIRIES (e.g., "what is my name", "who am i", "what do you remember about me")
+  const isAskingName = /\b(what is my name|who am i|do you know my name|what's my name)\b/i.test(lower);
+  const isAskingMemories = /\b(what do you remember|what are my memories|what do you know about me|my preferences|what is my project)\b/i.test(lower);
+  const isAskingPrevious = /\b(what was my last question|what did i ask earlier|summarize our conversation|what did i say before)\b/i.test(lower);
+
+  const userNameMemory = memories.find(m => m.key.toLowerCase().includes('name'));
+
+  if (isAskingName && userNameMemory) {
+    if (modelId === 'llama-3.3') return `From our persistent system memory: Your name is **${userNameMemory.value}**.`;
+    if (modelId === 'deepseek-r1') return `<think>Retrieved identity token from brain memory store: ${userNameMemory.value}</think>You are **${userNameMemory.value}**.`;
+    if (modelId === 'mistral-large') return `Your name is **${userNameMemory.value}**.`;
+    if (modelId === 'qwen-2.5') return `I remember you! Your name is **${userNameMemory.value}**.`;
+    return `Verified user identity: **${userNameMemory.value}**.`;
+  }
+
+  if (isAskingMemories && memories.length > 0) {
+    const memorySummary = memories.map(m => `• **${m.key}:** ${m.value}`).join('\n');
+    return `Here is what Godfy's brain has stored in memory:\n\n${memorySummary}`;
+  }
+
+  if (isAskingPrevious && history.length > 0) {
+    const lastUser = [...history].reverse().find(h => h.role === 'user');
+    if (lastUser) {
+      return `Your previous question was: *"${lastUser.content}"*.`;
+    }
+  }
 
   // Check encyclopedic knowledge first
   const known = lookupKnowledge(q);
@@ -625,13 +685,27 @@ Think of **${topic}** like an engine: every part has a dedicated function. When 
 }
 
 /**
- * Broadcast prompt simultaneously to ALL 5 Free AI Models in parallel
+ * Broadcast prompt simultaneously to ALL 5 Free AI Models in parallel with Working Memory
  */
-export async function broadcastToAllFreeAIs(userPrompt, onModelCompleted) {
+export async function broadcastToAllFreeAIs(userPrompt, history = [], memories = [], onModelCompleted) {
+  // Support both (userPrompt, onModelCompleted) and (userPrompt, history, memories, onModelCompleted)
+  let actualHistory = Array.isArray(history) ? history : [];
+  let actualMemories = Array.isArray(memories) ? memories : [];
+  let callback = onModelCompleted;
+
+  if (typeof history === 'function') {
+    callback = history;
+    actualHistory = [];
+    actualMemories = [];
+  } else if (typeof memories === 'function') {
+    callback = memories;
+    actualMemories = [];
+  }
+
   const promises = FREE_MODELS_CONFIG.map(async (cfg) => {
-    const result = await queryFreeAIModel(cfg, userPrompt);
-    if (onModelCompleted) {
-      onModelCompleted(result);
+    const result = await queryFreeAIModel(cfg, userPrompt, actualHistory, actualMemories);
+    if (callback) {
+      callback(result);
     }
     return result;
   });
