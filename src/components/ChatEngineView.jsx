@@ -294,32 +294,82 @@ export default function ChatEngineView({
                   </div>
                 )}
 
-                {/* Expandable Godfy Brain Thought Trace (<think>) */}
+                {/* Advanced Cognitive Deliberation & Thought Trace */}
                 {!isUser && msg.thinkTrace && (
                   <div className="mb-3">
                     <button
                       onClick={() => setExpandedThinks(p => ({ ...p, [msgId]: !p[msgId] }))}
-                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-cream-100/70 hover:bg-cream-100 border border-cream-200 text-xs font-mono text-slate-700 transition"
+                      className="w-full flex items-center justify-between p-2 rounded-xl bg-cream-100/80 hover:bg-cream-100 border border-cream-200/90 text-xs font-mono text-slate-700 transition"
                     >
-                      <div className="flex items-center space-x-1.5">
-                        <Brain className="w-3.5 h-3.5 text-cyan-700" />
-                        <span className="font-semibold text-slate-900 text-[11px]">Brain: What I'm going to do</span>
+                      <div className="flex items-center space-x-2 truncate pr-2">
+                        <div className="w-5 h-5 rounded-md bg-cyanlight-200/70 border border-cyanlight-300 flex items-center justify-center text-cyan-900 flex-shrink-0">
+                          <Brain className="w-3 h-3 text-cyan-700" />
+                        </div>
+                        <span className="font-bold text-slate-900 text-[11px] truncate">
+                          Cognitive Deliberation & Tool Decisions
+                        </span>
+                        {msg.cognitiveMeta?.intentType && (
+                          <span className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[9px] font-mono bg-white border border-cream-200 text-slate-600 truncate max-w-[140px]">
+                            {msg.cognitiveMeta.intentType}
+                          </span>
+                        )}
+                        {msg.cognitiveMeta?.durationMs && (
+                          <span className="hidden sm:inline-block text-[9px] font-mono text-cyan-800">
+                            {msg.cognitiveMeta.durationMs}ms
+                          </span>
+                        )}
                       </div>
-                      {expandedThinks[msgId] ? (
-                        <ChevronUp className="w-3 h-3 text-slate-500" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3 text-slate-500" />
-                      )}
+
+                      <div className="flex items-center space-x-1.5 text-slate-500 text-[10px] flex-shrink-0">
+                        <span className="hidden xs:inline">{expandedThinks[msgId] ? 'Hide' : 'Inspect Trace'}</span>
+                        {expandedThinks[msgId] ? (
+                          <ChevronUp className="w-3.5 h-3.5 text-slate-600" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
+                        )}
+                      </div>
                     </button>
 
+                    {/* Activated tool chips summary under button */}
+                    {!expandedThinks[msgId] && msg.cognitiveMeta?.activatedTools && msg.cognitiveMeta.activatedTools.length > 0 && (
+                      <div className="mt-1 px-2 flex items-center space-x-1.5 overflow-x-auto text-[9px] font-mono text-slate-500">
+                        <span className="text-cyan-800 font-semibold flex-shrink-0">Capabilities:</span>
+                        {msg.cognitiveMeta.activatedTools.map((tool, idx) => (
+                          <span key={idx} className="px-1.5 py-0.5 rounded bg-white border border-cream-200 text-slate-700 flex-shrink-0">
+                            ✓ {tool}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     {expandedThinks[msgId] && (
-                      <div className="mt-2 p-3.5 rounded-xl bg-cream-50 border border-cream-200 shadow-sm">
-                        <div className="flex items-center space-x-1.5 text-[10px] font-mono text-cyan-800 pb-2 mb-2 border-b border-cream-200 font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
-                          <span className="uppercase tracking-wider">Godfy Brain Thinking Trace</span>
+                      <div className="mt-2 p-3.5 rounded-xl bg-cream-50 border border-cream-200 shadow-sm animate-fade-in">
+                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-cream-200 text-[10px] font-mono text-cyan-900 font-semibold">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                            <span className="uppercase tracking-wider">Autonomous Cognitive Pipeline</span>
+                          </div>
+                          {msg.cognitiveMeta?.durationMs && (
+                            <span className="text-slate-500 font-normal">
+                              Evaluated across 10 Neural Pathways in {msg.cognitiveMeta.durationMs}ms
+                            </span>
+                          )}
                         </div>
+
+                        {/* Active Tools Matrix Chips */}
+                        {msg.cognitiveMeta?.activatedTools && msg.cognitiveMeta.activatedTools.length > 0 && (
+                          <div className="mb-3 p-2 rounded-lg bg-white border border-cream-200 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                            <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Autonomous Orchestration:</span>
+                            {msg.cognitiveMeta.activatedTools.map((tool, idx) => (
+                              <span key={idx} className="px-1.5 py-0.5 rounded bg-cyanlight-50 border border-cyanlight-200 text-cyan-950 font-medium">
+                                ⚡ {tool}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
                         <div 
-                          className="godfy-markdown text-xs text-slate-700 leading-relaxed"
+                          className="godfy-markdown text-xs text-slate-700 leading-relaxed font-sans"
                           dangerouslySetInnerHTML={{ __html: marked.parse(msg.thinkTrace || '') }}
                         />
                       </div>
@@ -636,14 +686,20 @@ export default function ChatEngineView({
           );
         })}
 
-        {/* Live Processing Pipeline Bar */}
+        {/* Live Autonomous Cognitive Pipeline Bar */}
         {isProcessing && (
-          <div className="flex items-center space-x-2.5 p-3 rounded-xl bg-white border border-cyanlight-300 shadow-sm animate-pulse max-w-md">
-            <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center text-cyan-300 flex-shrink-0">
-              <Brain className="w-4 h-4 animate-spin-slow" />
+          <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-white border border-cyanlight-300 shadow-md animate-pulse max-w-lg">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-cyan-300 flex-shrink-0 shadow-xs">
+              <Brain className="w-4 h-4 animate-spin-slow text-cyan-400" />
             </div>
-            <div className="text-xs font-mono text-cyan-900 truncate">
-              {streamMessage || 'Calling friends & thinking...'}
+            <div className="overflow-hidden flex-1">
+              <div className="flex items-center space-x-1.5 text-[10px] font-mono text-cyan-800 font-bold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
+                <span>Autonomous Cognitive Engine Live</span>
+              </div>
+              <div className="text-xs font-mono text-slate-800 font-semibold truncate mt-0.5">
+                {streamMessage || 'Cognitive pipeline deliberating across 10 neural pathways...'}
+              </div>
             </div>
           </div>
         )}

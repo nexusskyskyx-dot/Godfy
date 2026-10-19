@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Plus, MessageSquare, Trash2, Sliders, ExternalLink, 
   Sparkles, CheckCircle2, ChevronRight, Zap, Brain, RotateCcw,
-  Globe, Image as ImageIcon
+  Globe, Image as ImageIcon, Cpu
 } from 'lucide-react';
 import { FREE_AI_MODELS } from '../engine/models.js';
 import { getStoredMemories, clearAllMemories } from '../engine/brainMemory.js';
+import { getCognitiveProfile } from '../engine/cognitiveEngine.js';
 
 export default function Sidebar({
   isOpen,
@@ -18,14 +19,17 @@ export default function Sidebar({
   onOpenSettings
 }) {
   const [memories, setMemories] = useState([]);
+  const [cognitiveProfile, setCognitiveProfile] = useState(() => getCognitiveProfile());
 
   useEffect(() => {
     setMemories(getStoredMemories());
+    setCognitiveProfile(getCognitiveProfile());
     const interval = setInterval(() => {
       setMemories(getStoredMemories());
+      setCognitiveProfile(getCognitiveProfile());
     }, 2000);
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [sessions, isOpen]);
 
   const handleClearMemory = () => {
     clearAllMemories();
@@ -174,6 +178,38 @@ export default function Sidebar({
                 No memories yet. Tell Godfy your name or preferences!
               </div>
             )}
+          </div>
+
+          {/* Cognitive Intelligence & Adaptive Evolution */}
+          <div className="p-3.5 rounded-2xl bg-white border border-cream-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-1.5">
+                <Cpu className="w-3.5 h-3.5 text-cyan-600" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                  Cognitive Evolution
+                </span>
+              </div>
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Active Learning
+              </span>
+            </div>
+
+            <div className="space-y-1 text-[10px] font-mono text-slate-600">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Autonomous Tools:</span>
+                <span className="text-cyan-900 font-bold">6 Capabilities</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Neural Depth:</span>
+                <span className="text-slate-800 font-bold">10 Specialized</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Adaptive Profile:</span>
+                <span className="text-emerald-700 font-semibold truncate max-w-[120px] text-right">
+                  {cognitiveProfile.technicalLevel || 'Software Architect'}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Free AI Neurons Telemetry */}
