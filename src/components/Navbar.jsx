@@ -11,7 +11,7 @@ export default function Navbar({
   hasProject = false
 }) {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#16161e]/90 border-b border-[#292e42] select-none">
+    <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#16161e]/90 border-b border-[#292e42] select-none flex-shrink-0">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 h-14 sm:h-15 flex items-center justify-between gap-2">
         {/* Left: Brand & Hamburger */}
         <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">

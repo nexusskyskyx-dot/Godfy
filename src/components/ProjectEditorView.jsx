@@ -370,7 +370,7 @@ export default function ProjectEditorView({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-3.75rem)] bg-[#1a1b26] overflow-hidden w-full">
+    <div className="flex-1 min-h-0 flex flex-col bg-[#1a1b26] overflow-hidden w-full">
       {/* Top Studio Bar */}
       <header className="border-b border-[#292e42] bg-[#16161e] flex-shrink-0">
         <div className="px-3 sm:px-4 py-2 flex items-center justify-between gap-2">

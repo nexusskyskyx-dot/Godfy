@@ -221,7 +221,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1b26] text-[#c0caf5] antialiased selection:bg-[#7aa2f7]/30 selection:text-[#7dcfff] font-sans flex overflow-x-hidden">
+    <div className="h-[100dvh] w-full bg-[#1a1b26] text-[#c0caf5] antialiased selection:bg-[#7aa2f7]/30 selection:text-[#7dcfff] font-sans flex overflow-hidden fixed inset-0">
       {/* Responsive Collapsible Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -241,7 +241,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-72 sm:lg:pl-80 transition-all duration-300 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-72 sm:lg:pl-80 transition-all duration-300 h-full overflow-hidden">
         {/* Top Navbar */}
         <Navbar
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
