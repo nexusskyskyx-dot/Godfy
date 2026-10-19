@@ -1,102 +1,79 @@
-# Godfy AI Engine `v1`
+# Godfy AI Chat Engine `v1`
 
-> **An AI Engine with its own mind.**  
-> Broadcasts user prompts in parallel to multiple free open-weight AI models, adjudicates contradictions, and synthesizes the optimal master response through its unified autonomous mind.
+> **An AI Chatting Engine with its own autonomous mind.**  
+> Built strictly as a multi-model conversational intelligence platform. When you ask Godfy a question (e.g. *"Make a landing page"*, *"Explain quantum computing"*, *"Write an API in Go"*), Godfy calls 5 Free open-weight AIs simultaneously, sends the exact same prompt to all of them, and synthesizes the optimal master response combining all their answers through its own mind.
 
 ---
 
 ## 🎨 Official Color Identity
 
-Strictly built adhering to the specified design system:
+Strictly designed with the user-specified design system:
 - **Main Color:** White Cream (`#FAF7EE` / `cream-100`)
-- **Secondary Color:** White (`#FFFFFF`)
-- **2nd Secondary Color:** Cyan Light (`#E0F7FA` / `cyanlight-brand`)
-- **Text & Accents:** High-contrast Charcoal (`#1E293B`) & Cyan Glow (`#22D3EE`)
+- **Secondary Color:** Pure White (`#FFFFFF`)
+- **2nd Secondary Color:** Cyan Light (`#E0F7FA` / `cyanlight-brand` / `#22D3EE` glows)
+- **Text:** High-contrast Slate (`#0F172A` / `#1E293B`) exceeding WCAG AAA standards
 
 ---
 
-## 🧠 Core Architecture: Godfy's Mind
+## 🧠 How the Chat Engine Works
 
 ```
-                        [ User Prompt ]
-                      "Make a landing page"
-                                │
-                                ▼
-         ┌─────────────────────────────────────────────┐
-         │     Godfy Engine Parallel Dispatcher        │
-         └──────────────────────┬──────────────────────┘
-                                │
-       ┌───────────┬────────────┼────────────┬───────────┐
-       ▼           ▼            ▼            ▼           ▼
-   Llama 3.3   DeepSeek R1   Mistral 24B  Qwen 2.5    Gemma 2
-  (Hierarchy)   (Reasoning)    (Styling)   (Copywriting) (Audit)
-       │           │            │            │           │
-       └───────────┴────────────┼────────────┴───────────┘
-                                │
-                                ▼
-         ┌─────────────────────────────────────────────┐
-         │              GODFY'S OWN MIND               │
-         │  • Cross-Verification & Truth Adjudication  │
-         │  • Redundancy Pruning                       │
-         │  • Multi-Model Component Fusion             │
-         └──────────────────────┬──────────────────────┘
-                                │
-                                ▼
-              [ Transcendent Master Artifact v1 ]
-             + Interactive Live Sandbox Preview
+                     User Chat Input
+                 "Make a landing page"
+                           │
+                           ▼
+     ┌──────────────────────────────────────────────┐
+     │      Godfy Parallel Multi-AI Fan-Out        │
+     └─────────────────────┬────────────────────────┘
+                           │
+    ┌──────────┬───────────┼───────────┬──────────┐
+    ▼          ▼           ▼           ▼          ▼
+Llama 3.3  DeepSeek R1 Mistral 24B  Qwen 2.5   Gemma 2
+ (Meta)    (DeepSeek)  (Mistral AI) (Alibaba)  (Google)
+    │          │           │           │          │
+    └──────────┴───────────┼───────────┴──────────┘
+                           │
+                           ▼
+     ┌──────────────────────────────────────────────┐
+     │              GODFY'S OWN MIND                │
+     │ • Cross-verification & truth adjudication    │
+     │ • Redundancy pruning & conflict resolution   │
+     │ • Synthesizes the single best combined reply │
+     └─────────────────────┬────────────────────────┘
+                           │
+                           ▼
+             [ Master Synthesized Message ]
+            + Compare the 5 AI Answers Drawer
+            + Live Interactive Preview Sandbox
 ```
 
-### 1. Parallel Model Mesh
-When a query (such as `"Make a landing page"`) is received, Godfy fan-outs the request across 5 Free AI models simultaneously:
-1. **Llama 3.3 70B (Meta Free)** — Structural architecture, semantic container hierarchy.
-2. **DeepSeek R1 (Free Reasoning)** — Conversion psychology, algorithmic validation, proof terminal.
-3. **Mistral Open 24B** — Modern Tailwind CSS styling tokens (White Cream + Cyan Light).
-4. **Qwen 2.5 72B** — High-converting copywriting and emotional hooks.
-5. **Gemma 2 27B (Google Free)** — Accessibility standards (WCAG AAA) and brevity checks.
-
-### 2. Autonomous Mind Adjudication
-Godfy's mind evaluates all incoming proposals:
-- Resolves syntax differences (e.g. standardizes raw CSS into clean Tailwind tokens).
-- Selects the best hero copy and value proposition.
-- Integrates social proof and latency telemetry.
-- Synthesizes a unified, production-ready deliverable with zero duplicate code.
+### Example Flow:
+- **User:** *"Make a landing page"*
+- **Godfy Engine:**
+  1. Calls 5 Free AIs in parallel (Llama 3.3, DeepSeek R1, Mistral Open, Qwen 2.5, Gemma 2).
+  2. Sends the exact same prompt to all models.
+  3. Reconciles structural, logic, styling, and copy differences.
+  4. Returns the single best master response combining all AI answers, with an inline **Live Preview Sandbox** to interact with the page!
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Key Chat Features
 
-### Prerequisites
-- Node.js (v18+)
-- npm
+1. **Dedicated Chat Mode:** Clean, distraction-free conversational UI built for both mobile and desktop.
+2. **Mobile Drawer Sidebar:** Tap hamburger (`☰`) on mobile to open chat history, start new chats, and check live telemetry for the 5 AI nodes.
+3. **Compare the 5 Free AI Answers:** Under any response, click the accordion to see what each individual model (Llama, DeepSeek, Mistral, Qwen, Gemma) independently answered.
+4. **Godfy Mind Reasoning Trace:** Expand the `<think>` block to read Godfy's autonomous internal monologue.
+5. **Interactive Live Sandbox:** When code or landing pages are generated, tap **Live Preview Sandbox** to test in Desktop, Tablet, and Mobile viewports.
+6. **Updates Lifecycle:** Versioned as **`v1`**.
 
-### 1. Start Web Engine UI
+---
+
+## 💻 CLI & Local Development
+
 ```bash
-npm install
+# Run local dev server (port 3000)
 npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the live dashboard.
 
-### 2. Run CLI Engine
-```bash
-# Example 1: Landing page generation
+# Run Godfy Chat Engine in terminal
 node bin/godfy.js "Make a landing page"
-
-# Example 2: Custom query
-node bin/godfy.js "Build a SaaS pricing calculator"
 ```
-
----
-
-## 📦 Updates Lifecycle
-All versioning adheres to the format:
-- Current release: **`v1`**
-- Future milestones: `v2`, `v3`
-
----
-
-## 🛠 Features in Godfy v1
-- **Live Interactive Sandbox:** Instant preview iframe with responsive toggles (Desktop, Tablet, Mobile) and live execution.
-- **AI Council Submissions View:** Inspect what each individual free model returned side-by-side.
-- **Godfy Mind Inspector:** Real-time visualization of the cognitive adjudication trace, conflict resolution log, and consensus score.
-- **1-Click Export:** Copy synthesized HTML/Tailwind code or download standalone files.
-- **Configurable Mind Modes:** Harmonic Mind, Master Architect, Creative Alchemist, and Ruthless Synthesizer.

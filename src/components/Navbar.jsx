@@ -1,13 +1,11 @@
 import React from 'react';
-import { Menu, MessageSquare, Sparkles, Sliders, Brain, Layers, ExternalLink } from 'lucide-react';
+import { Menu, Plus, Sliders, Brain, ExternalLink } from 'lucide-react';
 
 export default function Navbar({
   onToggleSidebar,
+  onNewChat,
   onOpenSettings,
-  currentMindPreset,
-  isProcessing,
-  activeView,
-  setActiveView
+  isProcessing
 }) {
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-white/90 border-b border-cream-200">
@@ -17,8 +15,8 @@ export default function Navbar({
           <button
             onClick={onToggleSidebar}
             className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-cream-100 transition lg:hidden"
-            title="Open Sidebar"
-            aria-label="Toggle Navigation Sidebar"
+            title="Open Chat Sidebar"
+            aria-label="Toggle Sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -37,62 +35,40 @@ export default function Navbar({
                 v1
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-medium hidden md:block">
-              Multi-AI Autonomous Consensus
+            <p className="text-[10px] text-slate-500 font-medium hidden sm:block">
+              Multi-AI Autonomous Chat Engine
             </p>
           </div>
         </div>
 
-        {/* Center: Mode switcher (Studio vs Mind Chat) */}
-        <div className="flex items-center space-x-1 p-1 rounded-xl bg-cream-100/90 border border-cream-200 text-xs font-semibold">
-          <button
-            onClick={() => setActiveView('chat')}
-            className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition ${
-              activeView === 'chat'
-                ? 'bg-white text-slate-900 shadow-sm border border-cream-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-cyan-600" />
-            <span className="hidden sm:inline">Mind Chat</span>
-            <span className="sm:hidden">Chat</span>
-          </button>
-
-          <button
-            onClick={() => setActiveView('studio')}
-            className={`px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition ${
-              activeView === 'studio'
-                ? 'bg-white text-slate-900 shadow-sm border border-cream-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
-            <span className="hidden sm:inline">Studio Workbench</span>
-            <span className="sm:hidden">Studio</span>
-          </button>
+        {/* Center: Live Mind Status */}
+        <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-cream-50 border border-cream-200 text-xs font-medium text-slate-700">
+          <div className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-cyan-500 animate-ping' : 'bg-emerald-500'}`}></div>
+          <span className="font-semibold text-slate-800">Mind:</span>
+          <span className="text-slate-600">
+            {isProcessing ? 'Arbitrating 5 Free AIs...' : 'Online & Autonomous'}
+          </span>
+          <span className="text-cream-300">|</span>
+          <span className="text-cyan-800 font-mono text-[11px] font-semibold">5 Nodes Synced</span>
         </div>
 
         {/* Right: Actions */}
         <div className="flex items-center space-x-2">
-          {/* Vercel quick pill */}
-          <a
-            href="https://godfy-flux-cf70.vercel.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-cream-100 hover:bg-cream-200 text-cyan-900 text-xs font-semibold border border-cream-300 transition"
+          <button
+            onClick={onNewChat}
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm transition active:scale-[0.98]"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Vercel Live</span>
-            <ExternalLink className="w-3 h-3 text-cyan-700" />
-          </a>
+            <Plus className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden sm:inline">New Chat</span>
+          </button>
 
           <button
             onClick={onOpenSettings}
-            className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-cyan-400 text-slate-700 hover:text-slate-900 text-xs font-semibold shadow-sm transition"
-            title="Engine Configuration"
+            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-white border border-slate-200 hover:border-cyan-400 text-slate-700 hover:text-slate-900 text-xs font-semibold shadow-sm transition flex items-center space-x-1.5"
+            title="Engine Settings"
           >
             <Sliders className="w-3.5 h-3.5 text-cyan-600" />
-            <span className="hidden md:inline">Settings</span>
+            <span className="hidden sm:inline">Settings</span>
           </button>
         </div>
       </div>
