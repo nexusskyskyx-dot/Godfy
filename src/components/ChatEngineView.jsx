@@ -224,27 +224,23 @@ export default function ChatEngineView({
                 <span className="text-[10px]">{msg.timestamp}</span>
               </div>
 
-              {/* Message Bubble */}
+              {/* Message Content */}
               <div
-                className={`w-full max-w-full sm:max-w-[90%] rounded-2xl p-3.5 sm:p-5 transition-all ${
+                className={`w-full transition-all ${
                   isUser
-                    ? 'bg-[#1f2335] border border-[#292e42] text-[#c0caf5] rounded-tr-xs ml-auto sm:w-auto sm:max-w-[80%]'
-                    : 'bg-[#16161e] border border-[#292e42] text-[#c0caf5] rounded-tl-xs shadow-cursor-card'
+                    ? 'bg-[#1f2335] border border-[#292e42] text-[#c0caf5] rounded-2xl px-4 py-2.5 max-w-[85%] sm:max-w-[80%] ml-auto shadow-xs'
+                    : 'bg-transparent border-0 shadow-none px-1 py-0.5 text-[#c0caf5]'
                 }`}
               >
-                {/* Clean Thought Indicator Drawer */}
+                {/* Clean Thought Indicator (Unboxed, Cursor-style line) */}
                 {!isUser && msg.thinkTrace && (
-                  <div className="mb-2.5 pb-2 border-b border-[#292e42]">
+                  <div className="mb-2 pb-1">
                     <button
                       onClick={() => setExpandedThinks(p => ({ ...p, [msgId]: !p[msgId] }))}
-                      className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-[#9aa5ce] hover:text-[#7dcfff] transition py-0.5 px-2 rounded-lg hover:bg-[#1f2335]"
+                      className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-[#565f89] hover:text-[#7dcfff] transition py-0.5 px-1.5 rounded hover:bg-[#1f2335]/50"
                     >
                       <Brain className="w-3.5 h-3.5 text-[#7aa2f7]" />
                       <span>Thought for {msg.cognitiveMeta?.durationMs ? `${(msg.cognitiveMeta.durationMs / 1000).toFixed(1)}s` : '1.2s'}</span>
-                      <span className="text-[#565f89]">•</span>
-                      <span>16 neurons</span>
-                      <span className="text-[#565f89]">•</span>
-                      <span className="text-[#7dcfff]">{msg.consensusScore || '98%'}</span>
                       {expandedThinks[msgId] ? (
                         <ChevronUp className="w-3 h-3 text-[#565f89]" />
                       ) : (
@@ -254,11 +250,8 @@ export default function ChatEngineView({
 
                     {/* Collapsed Thought Trace */}
                     {expandedThinks[msgId] && (
-                      <div className="mt-2 p-3 rounded-xl bg-[#1a1b26] border border-[#292e42] text-xs font-mono text-[#9aa5ce] space-y-1.5 animate-node-enter">
-                        <div className="text-[10px] uppercase font-bold text-[#7dcfff] tracking-wider">
-                          Tree-of-Thought Deliberation
-                        </div>
-                        <div className="whitespace-pre-wrap text-[11px] text-[#9aa5ce] leading-relaxed max-h-48 overflow-y-auto">
+                      <div className="mt-1.5 pl-3 border-l border-[#292e42] text-xs font-mono text-[#9aa5ce] space-y-1 animate-node-enter">
+                        <div className="whitespace-pre-wrap text-[11px] text-[#565f89] leading-relaxed max-h-48 overflow-y-auto">
                           {msg.thinkTrace}
                         </div>
                       </div>
