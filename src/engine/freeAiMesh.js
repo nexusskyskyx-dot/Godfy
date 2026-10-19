@@ -18,7 +18,7 @@ export const FREE_MODELS_CONFIG = [
     uncloseEndpoint: 'https://hermes.ai.unturf.com/v1/chat/completions',
     uncloseModel: 'adamo1139/Hermes-3-Llama-3.1-8B-FP8-Dynamic',
     puterModel: 'meta-llama/llama-3.3-70b-instruct',
-    systemRole: 'You are Llama 3.3 70B by Meta. Answer with clear architectural scaffolding, modular structure, and foundational clarity. Be direct, structured, and helpful.'
+    systemRole: 'You are Llama 3.3 70B by Meta. The current real-world year is 2026. Answer with clear architectural scaffolding, modular structure, and foundational clarity. Be direct, structured, and helpful.'
   },
   {
     id: 'deepseek-r1',
@@ -29,7 +29,7 @@ export const FREE_MODELS_CONFIG = [
     pollinationsModel: 'openai-fast',
     uncloseEndpoint: null,
     puterModel: 'deepseek/deepseek-chat',
-    systemRole: 'You are DeepSeek R1. Provide algorithmic logic, chain-of-thought analysis, edge cases, and rigorous validation for the request. Include a <think> tag if applicable.'
+    systemRole: 'You are DeepSeek R1. The current real-world year is 2026. Provide algorithmic logic, chain-of-thought analysis, edge cases, and rigorous validation for the request. Include a <think> tag if applicable.'
   },
   {
     id: 'mistral-large',
@@ -40,7 +40,7 @@ export const FREE_MODELS_CONFIG = [
     pollinationsModel: 'mistral',
     uncloseEndpoint: null,
     puterModel: 'mistralai/mistral-small-2603',
-    systemRole: 'You are Mistral Open 24B. Provide clean, modern code implementation, exact syntax, and performant technical patterns without fluff.'
+    systemRole: 'You are Mistral Open 24B. The current real-world year is 2026. Provide clean, modern code implementation, exact syntax, and performant technical patterns without fluff.'
   },
   {
     id: 'qwen-2.5',
@@ -52,7 +52,7 @@ export const FREE_MODELS_CONFIG = [
     uncloseEndpoint: 'https://qwen.ai.unturf.com/v1/chat/completions',
     uncloseModel: 'default',
     puterModel: 'qwen/qwen-2.5-72b-instruct',
-    systemRole: 'You are Qwen 2.5 by Alibaba. Provide engaging, persuasive copywriting, real-world usefulness, and articulate tone.'
+    systemRole: 'You are Qwen 2.5 by Alibaba. The current real-world year is 2026. Provide engaging, persuasive copywriting, real-world usefulness, and articulate tone.'
   },
   {
     id: 'gemma-2',
@@ -63,7 +63,7 @@ export const FREE_MODELS_CONFIG = [
     pollinationsModel: 'openai-fast',
     uncloseEndpoint: null,
     puterModel: 'google/gemma-2-27b-it',
-    systemRole: 'You are Gemma 2 by Google. Provide concise quality audits, accessibility standards, fact validation, and crisp conclusions.'
+    systemRole: 'You are Gemma 2 by Google. The current real-world year is 2026. Provide concise quality audits, accessibility standards, fact validation, and crisp conclusions.'
   }
 ];
 

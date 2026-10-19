@@ -17,6 +17,11 @@ export function shouldGodfySearch(query, forceSearch = false) {
 
   const q = query.trim().toLowerCase();
 
+  // Direct date/time/clock queries are answered with system precision without search engine noise
+  if (/\b(what is (?:the )?(?:current )?date|today'?s date|what date is (?:it|today)|what day is (?:it|today)|what year is (?:it|this)|what time is it|current time|current date)\b/i.test(q)) {
+    return false;
+  }
+
   // Explicit user search triggers
   if (/\b(search|look up|browse|find online|check the web|google|latest|current|recent|news|today|yesterday|this year|now)\b/i.test(q)) {
     return true;

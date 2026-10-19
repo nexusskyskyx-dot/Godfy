@@ -66,6 +66,11 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   let queryForFriends = query;
   const contextParts = [];
 
+  // Temporal grounding context so friend models operate in the real-world present
+  const currentDate = new Date();
+  const dateFormatted = currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  contextParts.push(`[System Context]: Current date is ${dateFormatted} (${currentDate.getFullYear()}). All temporal references must reflect this real-world present.`);
+
   if (memoryContext) {
     contextParts.push(memoryContext);
   }
@@ -171,6 +176,8 @@ function stripAiBoilerplate(text) {
   cleaned = cleaned.replace(/^(based on my analysis,?\s*)/i, '');
   cleaned = cleaned.replace(/^(according to (?:live )?web search results,?\s*)/i, '');
   cleaned = cleaned.replace(/^(based on current web data,?\s*)/i, '');
+  cleaned = cleaned.replace(/^(as the (?:live )?web search findings (?:indicate|suggest|show|state)?\s*,?\s*)/i, '');
+  cleaned = cleaned.replace(/^(the current date is [^,]+, as the (?:live )?web search findings[^\n]*\n*)/i, '');
   // Strip common conversational intros
   cleaned = cleaned.replace(/^(sure!?|certainly!?|here is|here are|as an ai|hello!|i'd be happy to help|here's a|as requested|below is)[\s\S]*?:\s*\n*/i, '');
   cleaned = cleaned.replace(/^here is the combined answer from my friends:?\s*\n*/i, '');
@@ -185,6 +192,7 @@ function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData =
   const q = (query || '').trim();
   const lower = q.toLowerCase();
 
+  const isAskingDate = /\b(what is (?:the )?(?:current )?date|today'?s date|what date is (?:it|today)|what day is (?:it|today)|what year is (?:it|this)|what time is it|current time|current date)\b/i.test(lower);
   const isAskingName = /\b(what is my name|who am i|do you know my name|what's my name|my name\?)\b/i.test(lower);
   const isAskingMemories = /\b(what do you remember|what are my memories|what do you know about me|my preferences|what is my project)\b/i.test(lower);
   const isAskingPrevious = /\b(what was my last question|what did i ask earlier|summarize our conversation|what did i say before|my previous question)\b/i.test(lower);
@@ -194,6 +202,43 @@ function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData =
   const memoryNote = memories.length > 0 
     ? `\n- Brain Memory: Recalled ${memories.length} active memories (${memories.map(m => m.key).slice(0, 3).join(', ')}).`
     : '';
+
+  // DIRECT TEMPORAL RECALL: CURRENT DATE & TIME
+  if (isAskingDate) {
+    const now = new Date();
+    const dateFormatted = now.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const timeFormatted = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    });
+
+    const think = `Godfy Brain:${memoryNote}
+- User asked for the current real-world date/time.
+- Verified system environment and real-time clock.
+- Current Date: ${dateFormatted} (${timeFormatted}).
+- What I'm going to do: Provide the verified current date and time immediately.`;
+
+    return {
+      consensusScore: '100%',
+      thinkTrace: think,
+      masterText: `Today is **${dateFormatted}** (\`${timeFormatted}\`).`,
+      codeArtifact: null,
+      codeLanguage: null,
+      extractions: ['System Clock: Verified real-time date'],
+      suggestedFollowUps: [
+        'What are the latest AI news today?',
+        'What is the best AI model in 2026?',
+        'What do you remember about me?'
+      ]
+    };
+  }
 
   // DIRECT MEMORY RECALL: USER NAME
   if (isAskingName) {
