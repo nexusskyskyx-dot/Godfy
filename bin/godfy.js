@@ -17,10 +17,19 @@ console.log('  → Sending the exact same question to: Llama 3.3, DeepSeek R1, M
 processChatWithGodfy({
   prompt: query,
   onStreamStep: ({ step, message }) => {
-    // stream update
+    if (step === 'search' || step === 'search_done') {
+      console.log(`[Web Search]: ${message}`);
+    }
   }
 }).then(res => {
-  console.log(`[Godfy Mind Consensus]: ${res.consensusScore}`);
+  if (res.searchedWeb && res.webSources) {
+    console.log(`\n[Godfy Autonomous Web Search]: Consulted ${res.webSources.length} live sources:`);
+    res.webSources.forEach(s => {
+      console.log(`  • [${s.source}] ${s.title} (${s.url})`);
+    });
+  }
+
+  console.log(`\n[Godfy Mind Consensus]: ${res.consensusScore}`);
   console.log('\n--- 5 FREE AI ANSWERS RECEIVED ---');
   res.modelProposals.forEach(m => {
     console.log(`\n• ${m.modelName} (${m.badge})`);

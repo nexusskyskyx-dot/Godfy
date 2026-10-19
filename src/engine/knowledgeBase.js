@@ -158,6 +158,16 @@ export const TOPIC_KNOWLEDGE = {
       '**Core Paradigms:** Divide-and-conquer (MergeSort), greedy approaches (Dijkstra), dynamic programming (memoization/tabulation), and graph traversals (BFS/DFS).',
       '**Determinism & Verification:** Formal proof of termination, correctness invariants, and worst-case bounds.'
     ]
+  },
+  'ai in 2026': {
+    title: 'Artificial Intelligence Landscape in 2026',
+    summary: 'In 2026, the artificial intelligence landscape is defined by autonomous agentic architectures, open-weight reasoning models (DeepSeek-R1, Llama 3.3, Qwen 2.5), widespread local edge inference, and multi-model consensus engines.',
+    keyPoints: [
+      '**Open-Weight Reasoning Revolution:** Models like DeepSeek R1 and Llama 3.3 match or exceed previous proprietary frontier benchmarks at a fraction of the inference cost, enabling free and open deployments.',
+      '**Agent Mode & Autonomous Workflows:** AI has transitioned from simple conversational chatbots into multi-step autonomous execution engines capable of browsing the live web, writing code, and self-debugging.',
+      '**Consensus & Verification Architecture:** Modern systems (like Godfy) broadcast queries to multiple specialized open models in parallel, eliminating single-model hallucinations through cross-model adjudication.'
+    ],
+    analogy: 'AI transitioned from an encyclopedic question-answer bot into an orchestrated council of specialized autonomous agents.'
   }
 };
 
@@ -167,6 +177,11 @@ export const TOPIC_KNOWLEDGE = {
 export function lookupKnowledge(query) {
   if (!query) return null;
   const lower = query.toLowerCase();
+
+  // Special match for current 2026 AI landscape
+  if ((lower.includes('ai') || lower.includes('artificial intelligence')) && (lower.includes('2026') || lower.includes('news') || lower.includes('latest'))) {
+    return TOPIC_KNOWLEDGE['ai in 2026'];
+  }
 
   for (const [key, item] of Object.entries(TOPIC_KNOWLEDGE)) {
     if (lower.includes(key)) {

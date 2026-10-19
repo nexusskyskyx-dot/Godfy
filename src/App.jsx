@@ -49,7 +49,7 @@ export default function App() {
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
   const messages = activeSession?.messages || [];
 
-  const handleSendMessage = async (userText) => {
+  const handleSendMessage = async (userText, forceSearch = false) => {
     if (!userText.trim() || isProcessing) return;
 
     const userMessage = {
@@ -78,13 +78,14 @@ export default function App() {
     );
 
     setIsProcessing(true);
-    setStreamMessage('Calling 5 Free AIs in parallel...');
+    setStreamMessage('Godfy Brain: Analyzing prompt and checking live web...');
 
     try {
       const godfyResponse = await processChatWithGodfy({
         prompt: userText,
         history: messages,
         mindPreset,
+        forceSearch,
         onStreamStep: ({ message }) => {
           setStreamMessage(message);
         }

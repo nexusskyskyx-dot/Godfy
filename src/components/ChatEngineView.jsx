@@ -44,6 +44,8 @@ export default function ChatEngineView({
   const [inputText, setInputText] = useState('');
   const [expandedThinks, setExpandedThinks] = useState({});
   const [expandedCouncils, setExpandedCouncils] = useState({});
+  const [expandedWebSources, setExpandedWebSources] = useState({});
+  const [forceWebSearch, setForceWebSearch] = useState(false);
   const [activeCouncilModel, setActiveCouncilModel] = useState({});
   const [copiedCodeId, setCopiedCodeId] = useState(null);
   const [previewModalArtifact, setPreviewModalArtifact] = useState(null);
@@ -61,7 +63,7 @@ export default function ChatEngineView({
     if (!inputText.trim() || isProcessing) return;
     const msg = inputText.trim();
     setInputText('');
-    onSendMessage(msg);
+    onSendMessage(msg, forceWebSearch);
   };
 
   const handleCopy = (code, id) => {
@@ -199,9 +201,18 @@ export default function ChatEngineView({
                 {/* Godfy Brain Indicator */}
                 {!isUser && (
                   <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-cream-200 text-xs">
-                    <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyanlight-50 text-cyan-900 text-[11px] font-mono font-bold border border-cyanlight-200">
-                      <Brain className="w-3 h-3 text-cyan-600" />
-                      <span>Brain: Combined 5 Friends</span>
+                    <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                      <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyanlight-50 text-cyan-900 text-[11px] font-mono font-bold border border-cyanlight-200">
+                        <Brain className="w-3 h-3 text-cyan-600" />
+                        <span>Brain: Combined 5 Friends</span>
+                      </div>
+
+                      {msg.searchedWeb && (
+                        <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-200 shadow-2xs">
+                          <Globe className="w-2.5 h-2.5 text-emerald-600 animate-pulse" />
+                          <span>Live Web Search</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-[10px] font-mono text-slate-400">
@@ -238,6 +249,60 @@ export default function ChatEngineView({
                           className="godfy-markdown text-xs text-slate-700 leading-relaxed"
                           dangerouslySetInnerHTML={{ __html: marked.parse(msg.thinkTrace || '') }}
                         />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Expandable Live Web Sources Drawer */}
+                {!isUser && msg.webSources && msg.webSources.length > 0 && (
+                  <div className="mb-3">
+                    <button
+                      onClick={() => setExpandedWebSources(p => ({ ...p, [msgId]: !p[msgId] }))}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-50/70 hover:bg-emerald-50 border border-emerald-200 text-xs font-mono text-emerald-900 transition"
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="font-semibold text-emerald-950 text-[11px]">
+                          Live Web Sources ({msg.webSources.length} consulted)
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-emerald-700 text-[10px]">
+                        <span>{expandedWebSources[msgId] ? 'Hide' : 'Inspect'}</span>
+                        {expandedWebSources[msgId] ? (
+                          <ChevronUp className="w-3 h-3 text-emerald-600" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3 text-emerald-600" />
+                        )}
+                      </div>
+                    </button>
+
+                    {expandedWebSources[msgId] && (
+                      <div className="mt-2 p-3 rounded-xl bg-white border border-emerald-200 space-y-2 shadow-sm">
+                        <div className="text-[10px] uppercase font-mono font-bold text-emerald-800 tracking-wider pb-1 border-b border-cream-200 flex items-center justify-between">
+                          <span>Verified Live Web Citations</span>
+                          <span className="text-slate-400">Current</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {msg.webSources.map((source, idx) => (
+                            <a
+                              key={idx}
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block p-2 rounded-lg bg-cream-50 hover:bg-cream-100 border border-cream-200 transition group text-left"
+                            >
+                              <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 group-hover:text-cyan-800">
+                                <span className="truncate max-w-[85%]">{source.title}</span>
+                                <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-cyan-600 shrink-0" />
+                              </div>
+                              <div className="text-[10px] text-emerald-700 font-mono mt-0.5">{source.source}</div>
+                              <div className="text-[11px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                                {source.snippet}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -388,6 +453,32 @@ export default function ChatEngineView({
       {/* Bottom Sticky Input Form */}
       <div className="p-3 bg-white/95 backdrop-blur-md border-t border-cream-200">
         <form onSubmit={handleSubmit} className="relative">
+          {/* Web Search & Mind Mode Bar */}
+          <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono mb-1.5 px-1">
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => setForceWebSearch(v => !v)}
+                className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono transition border ${
+                  forceWebSearch 
+                    ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-sm' 
+                    : 'bg-white hover:bg-cream-100 text-slate-700 border-cream-300'
+                }`}
+                title="Godfy decides autonomously when to search, or toggle ON to force web search for every query"
+              >
+                <Globe className={`w-3 h-3 ${forceWebSearch ? 'text-slate-950 animate-pulse' : 'text-cyan-600'}`} />
+                <span>{forceWebSearch ? 'Live Web Search: FORCED ON' : 'Live Web Search: Auto (Brain Decides)'}</span>
+              </button>
+            </div>
+
+            <div className="hidden sm:flex items-center space-x-2 text-[10px] text-slate-400">
+              <span className="flex items-center space-x-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Web Access Active</span>
+              </span>
+            </div>
+          </div>
+
           <div className="flex items-center space-x-2 p-1.5 rounded-2xl bg-cream-50 border-2 border-cream-200/90 focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyanlight-100/50 transition">
             
             <input
