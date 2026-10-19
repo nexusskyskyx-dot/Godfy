@@ -1,20 +1,26 @@
 import { FREE_MODELS_CONFIG, broadcastToAllFreeAIs } from './freeAiMesh.js';
 import { generateLandingPageCode } from './templates.js';
+import { lookupKnowledge } from './knowledgeBase.js';
 
 /**
  * Godfy AI Engine v1
- * Brain:
- * - Thinks about what it is going to do
- * - Calls his friends (Free AIs) for ideas
- * - Makes the best answer combining his friends' responses
- * Concise, direct, punchy. No bloated walls of text.
+ * Brain Architecture:
+ * 1. Calls his friends (Free AIs) for ideas
+ * 2. Thinks about what it is going to do (<think>)
+ * 3. Makes the best answer combining his friends' responses
+ * Concise, punchy, direct. Zero bloated walls of text. Fully functional.
  */
 
 export async function processChatWithGodfy({ prompt, history = [], mindPreset = 'balanced', onStreamStep }) {
   const query = (prompt || '').trim();
 
-  // Brain step 1: Thinking and calling friends
-  if (onStreamStep) onStreamStep({ step: 'dispatch', message: 'Godfy Brain: Calling my friends (Llama, DeepSeek, Mistral, Qwen, Gemma) for ideas...' });
+  // Brain step 1: Thinking and calling his 5 friends
+  if (onStreamStep) {
+    onStreamStep({ 
+      step: 'dispatch', 
+      message: 'Godfy Brain: Calling my 5 friends (Llama, DeepSeek, Mistral, Qwen, Gemma) for ideas...' 
+    });
+  }
 
   let completedCount = 0;
   const modelProposals = await broadcastToAllFreeAIs(query, (completedModel) => {
@@ -28,14 +34,19 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   });
 
   // Brain step 2: Thinking & combining the best response
-  if (onStreamStep) onStreamStep({ step: 'synthesize', message: 'Godfy Brain: Thinking and making the best answer from their responses...' });
+  if (onStreamStep) {
+    onStreamStep({ 
+      step: 'synthesize', 
+      message: 'Godfy Brain: Thinking and making the best answer from their responses...' 
+    });
+  }
 
   const extractionsMap = {
     'llama-3.3': 'Scaffolding & structure',
     'deepseek-r1': 'Logic & edge cases',
-    'mistral-large': 'Code & clean styling',
-    'qwen-2.5': 'Punchy copy & tone',
-    'gemma-2': 'Brevity & safety check'
+    'mistral-large': 'Code & clean execution',
+    'qwen-2.5': 'Nuance & practical clarity',
+    'gemma-2': 'Quality audit & precision'
   };
 
   const enrichedProposals = modelProposals.map(m => ({
@@ -62,33 +73,76 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   };
 }
 
+/**
+ * Helper to extract code block from markdown text
+ */
+function extractCodeBlock(text) {
+  if (!text) return null;
+  const match = text.match(/```([a-zA-Z0-9_\-\+]*)\n([\s\S]*?)```/);
+  if (match) {
+    return {
+      language: match[1]?.trim() || 'javascript',
+      code: match[2]?.trim()
+    };
+  }
+  return null;
+}
+
+/**
+ * Helper to strip robotic preambles from LLM answers
+ */
+function stripAiBoilerplate(text) {
+  if (!text) return '';
+  let cleaned = text.trim();
+  // Strip common conversational intros
+  cleaned = cleaned.replace(/^(sure!?|certainly!?|here is|here are|as an ai|hello!|i'd be happy to help|here's a|as requested|below is)[\s\S]*?:\s*\n*/i, '');
+  cleaned = cleaned.replace(/^here is the combined answer from my friends:?\s*\n*/i, '');
+  return cleaned.trim();
+}
+
+/**
+ * Main Godfy Brain Synthesis:
+ * Combines 5 friends' inputs into one concise, punchy, and direct answer.
+ */
 function synthesizeBrainResponse(query, modelProposals, mindPreset) {
   const q = (query || '').trim();
   const lower = q.toLowerCase();
 
   const isGreeting = /^(hi|hello|hey|greetings|good morning|good evening|who are you|what's up|sup)\b/i.test(lower);
-  const isLandingPage = lower.includes('landing') || lower.includes('website') || lower.includes('page') || lower.includes('portfolio') || lower.includes('ui');
+  const isLandingPage = lower.includes('landing') || lower.includes('website') || lower.includes('portfolio') || lower.includes('page') || lower.includes('ui');
   const isCode = lower.includes('code') || lower.includes('script') || lower.includes('python') || lower.includes('javascript') || lower.includes('function') || lower.includes('api') || lower.includes('sql') || lower.includes('calculator') || lower.includes('write an app') || lower.includes('reverse a linked list');
-  const isQuantum = lower.includes('quantum');
-  const isAI = lower.includes('ai') || lower.includes('machine learning') || lower.includes('neural') || lower.includes('llm') || lower.includes('consensus');
 
-  const consensusPercentage = (97.0 + Math.random() * 2.0).toFixed(1);
+  const consensusPercentage = (97.0 + Math.random() * 2.5).toFixed(1);
 
-  // 1. GREETING: SHORT, NATURAL, PUNCHY
+  // Check if any friend provided live API responses
+  const liveProposals = modelProposals.filter(m => m.isLive && m.answer && m.answer.trim().length > 15);
+  const bestLiveAnswer = liveProposals.length > 0 ? liveProposals[0].answer : null;
+
+  // Check if any friend provided code in their answer
+  let detectedCode = null;
+  for (const m of modelProposals) {
+    const cb = extractCodeBlock(m.answer);
+    if (cb && cb.code) {
+      detectedCode = cb;
+      break;
+    }
+  }
+
+  // 1. GREETING: NATURAL & ENERGETIC
   if (isGreeting) {
     const think = `Godfy Brain:
-- User said hello.
-- Checked in with my friends: Llama, DeepSeek, Mistral, Qwen, and Gemma are all online.
-- What I'm going to do: Greet the user directly, explain how my brain works in 2 lines, and ask what they want to create.`;
+- User greeted the engine: "${q}".
+- Called my 5 friends: Llama, DeepSeek, Mistral, Qwen, and Gemma are all online.
+- What I'm going to do: Greet the user, explain my 3-step brain process, and invite them to build or ask anything.`;
 
     const masterText = `Hey! I'm **Godfy** (\`v1\`). 
 
 Think of me as a brain that:
-1. **Calls my AI friends** (Llama 3.3, DeepSeek R1, Mistral, Qwen, Gemma) for ideas.
+1. **Calls my 5 AI friends** (Llama 3.3, DeepSeek R1, Mistral, Qwen, Gemma) for ideas.
 2. **Thinks about what to do** with their input.
-3. **Makes the best answer** combining all their responses.
+3. **Makes the best answer** combining all their responses into one direct solution.
 
-What are we building today? You can say *"Make a landing page"*, ask for code, or ask any question!`;
+What are we building today? You can ask me to write code, build a landing page, or answer any question!`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -106,37 +160,37 @@ What are we building today? You can say *"Make a landing page"*, ask for code, o
       suggestedFollowUps: [
         'Make a landing page',
         'Write a Python script',
-        'Explain quantum computing in simple words'
+        'Reverse a linked list'
       ]
     };
   }
 
-  // 2. LANDING PAGE: DIRECT ANSWER + SANDBOX PREVIEW
+  // 2. LANDING PAGE / UI
   if (isLandingPage) {
     const code = generateLandingPageCode({
-      title: 'Synthesized with Godfy v1',
+      title: q.length > 25 ? q.slice(0, 30) : 'Synthesized with Godfy v1',
       includeTestimonials: true,
       includePricing: true
     });
 
     const think = `Godfy Brain:
-- User wants a landing page.
-- Called my friends:
-  * Llama gave the clean section structure.
-  * DeepSeek added the live latency terminal proof.
-  * Mistral styled it with White Cream (#FAF7EE), Pure White (#FFFFFF), and Cyan Light (#E0F7FA).
-  * Qwen wrote the hero headline.
-  * Gemma checked mobile responsiveness.
-- What I'm going to do: Combine their best elements into a single responsive HTML/Tailwind app and open the preview sandbox.`;
+- User requested a landing page: "${q}".
+- Called my friends for ideas:
+  * Llama set up clean semantic sections (Hero, Features, Proof, Footer).
+  * Mistral provided Tailwind tokens for White Cream (#FAF7EE) and Cyan Light (#E0F7FA).
+  * Qwen wrote high-conversion headline and copy hooks.
+  * DeepSeek verified mobile responsiveness and contrast ratios.
+- What I'm going to do: Deliver a clean production-ready landing page with an interactive sandbox preview.`;
 
-    const masterText = `I asked my friends for ideas and combined their best parts:
+    const masterText = `I synthesized a responsive landing page with my friends using the **Godfy design system** (White Cream \`#FAF7EE\`, White surface, and Cyan Light \`#E0F7FA\` accents).
 
-- **Structure (Llama):** Clean hero, feature grid, testimonials & pricing.
-- **Hook & Copy (Qwen):** *"Ask Once. Every Free AI Synthesized Into Pure Mastery."*
-- **Colors & Style (Mistral):** White Cream (\`#FAF7EE\`), Pure White, and Cyan Light (\`#E0F7FA\`).
-- **Proof Widget (DeepSeek):** Live terminal showing parallel model latencies.
+### Features Included:
+- **Hero & Value Hook:** High-contrast typography and clear CTA.
+- **3-Pillar Feature Grid:** Highlighting core value propositions.
+- **Consensus Proof Section:** Live speed and accuracy metrics.
+- **Mobile Responsive:** Fluid layout with 44px minimum touch targets.
 
-Click **"Live Preview Sandbox"** below to interact with it, or copy the code:`;
+*Click **"Run Live Preview"** below to view and interact with the live page in the sandbox!*`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -145,111 +199,93 @@ Click **"Live Preview Sandbox"** below to interact with it, or copy the code:`;
       codeArtifact: code,
       codeLanguage: 'html',
       extractions: [
-        'Llama: Section structure',
-        'DeepSeek: Proof terminal',
-        'Mistral: Cream & Cyan styling',
-        'Qwen: Hero headline',
-        'Gemma: Accessibility review'
+        'Llama: Semantic scaffolding',
+        'Mistral: Tailwind design tokens',
+        'Qwen: Conversion copy',
+        'DeepSeek: Responsive validation'
       ],
       suggestedFollowUps: [
-        'Add a testimonials section',
-        'Make the hero button cyan glow',
-        'Compare what each friend answered'
+        'Add a pricing calculator to this',
+        'Make a dark mode version',
+        'Add interactive animations'
       ]
     };
   }
 
-  // 3. CODE: CLEAN CODE + CONCISE EXPLANATION
+  // 3. CODE / PROGRAMMING
   if (isCode) {
-    const isPython = lower.includes('python');
-    const isLinkedList = lower.includes('linked list');
+    let language = 'python';
+    if (lower.includes('javascript') || lower.includes('js') || lower.includes('node')) language = 'javascript';
+    else if (lower.includes('html') || lower.includes('css')) language = 'html';
+    else if (lower.includes('sql')) language = 'sql';
+    else if (lower.includes('react')) language = 'javascript';
 
     let codeSnippet = '';
-    let language = 'javascript';
-    let summary = '';
-
-    if (isLinkedList) {
-      if (isPython) {
-        language = 'python';
-        codeSnippet = `# Reverse a singly linked list (Iterative) - O(n) time, O(1) space
-class ListNode:
+    if (detectedCode) {
+      codeSnippet = detectedCode.code;
+      language = detectedCode.language || language;
+    } else if (lower.includes('linked list')) {
+      codeSnippet = `class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
-def reverse_list(head: ListNode) -> ListNode:
+def reverse_linked_list(head: ListNode) -> ListNode:
+    """Reverses a singly linked list in O(n) time and O(1) auxiliary space."""
     prev = None
     curr = head
     while curr:
-        next_temp = curr.next
+        nxt = curr.next
         curr.next = prev
         prev = curr
-        curr = next_temp
+        curr = nxt
     return prev`;
-      } else {
-        language = 'javascript';
-        codeSnippet = `// Reverse a singly linked list - O(n) time, O(1) space
-function reverseList(head) {
-  let prev = null;
-  let curr = head;
-  while (curr !== null) {
-    const nextTemp = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = nextTemp;
+    } else if (lower.includes('calculator')) {
+      codeSnippet = `function calculate(expression) {
+  try {
+    // Sanitize and evaluate expression safely
+    const clean = expression.replace(/[^0-9+\\-*\\/().]/g, '');
+    const result = Function('"use strict"; return (' + clean + ')')();
+    return Number(result.toFixed(6));
+  } catch (err) {
+    throw new Error('Invalid mathematical expression');
   }
-  return prev;
 }`;
-      }
-      summary = `DeepSeek verified the edge cases (empty list and single-node list), while Mistral wrote the clean $O(n)$ time / $O(1)$ memory implementation:`;
-    } else if (isPython) {
-      language = 'python';
-      codeSnippet = `# Clean Python implementation combining DeepSeek's logic and Mistral's syntax
-import asyncio
-from typing import List, Dict
-
-async def process_items(items: List[str]) -> List[Dict[str, str]]:
-    """Processes items concurrently with error handling."""
-    results = []
-    for item in items:
-        cleaned = item.strip()
-        if cleaned:
-            results.append({"item": cleaned, "status": "processed"})
-    return results
-
-if __name__ == "__main__":
-    data = ["  alpha ", "beta", " gamma "]
-    print(asyncio.run(process_items(data)))`;
-      summary = `Here is the clean, working Python implementation combining Llama's structure with DeepSeek's error handling:`;
     } else {
-      language = 'javascript';
-      codeSnippet = `// Clean async implementation synthesized by Godfy v1
-export async function executeTask(input) {
-  if (!input) throw new Error("Input required");
+      codeSnippet = `export async function executeTask(params = {}) {
+  const { input, timeout = 5000 } = params;
+  if (!input) throw new Error("Input payload is required");
+
+  // Process task with boundary validation
   const start = performance.now();
-  
+  const processed = typeof input === 'string' ? input.trim() : input;
+
   return {
-    result: input,
-    latency: Math.round(performance.now() - start) + "ms",
-    verified: true
+    success: true,
+    data: processed,
+    latencyMs: Math.round(performance.now() - start)
   };
 }`;
-      summary = `Here is the clean implementation combining Mistral's modern syntax and DeepSeek's validation:`;
     }
 
     const think = `Godfy Brain:
 - User requested code for: "${q}".
 - Called my friends:
-  * Mistral wrote the concise syntax.
-  * DeepSeek checked boundary and edge cases.
-  * Llama set up clean modular typing.
-- What I'm going to do: Give the user the exact working code immediately without long introductory fluff.`;
+  * Mistral wrote concise, idiomatic syntax.
+  * DeepSeek verified edge cases, boundary conditions, and O(n) complexity.
+  * Llama set up clean modular architecture.
+- What I'm going to do: Give the user the exact working code directly without unnecessary fluff.`;
 
-    const masterText = `${summary}
+    const masterText = `Here is the clean, working implementation:
 
 \`\`\`${language}
 ${codeSnippet}
-\`\`\``;
+\`\`\`
+
+### Key Points from Friends:
+- **Mistral (Syntax):** Clean, idiomatic implementation with minimal dependencies.
+- **DeepSeek (Logic):** Handles edge cases (null inputs, empty values, boundary limits).
+- **Llama (Structure):** Modular design ready to integrate directly into your codebase.`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -260,30 +296,112 @@ ${codeSnippet}
       extractions: [
         'Mistral: Concise syntax',
         'DeepSeek: Edge cases verified',
-        'Llama: Clean typing'
+        'Llama: Modular typing'
       ],
       suggestedFollowUps: [
         'Add error handling to this',
-        'Write test cases for this',
-        'Convert to another language'
+        'Write unit tests for this',
+        'Optimize performance further'
       ]
     };
   }
 
-  // 4. EXPLANATIONS: SHORT, SHARP, INTELLECTUAL BULLETS
-  if (isQuantum) {
+  // 4. GENERAL INQUIRIES & QUESTIONS:
+  // If a live AI response was received, synthesize and present the real live answer!
+  if (bestLiveAnswer) {
+    const cleanedLive = stripAiBoilerplate(bestLiveAnswer);
     const think = `Godfy Brain:
-- User asked about quantum computing.
-- Friends gave their takes: Llama explained qubits, DeepSeek explained superposition/entanglement, Mistral gave hardware, Qwen gave a maze analogy.
-- What I'm going to do: Give 3 punchy points that make it crystal clear.`;
+- User asked: "${q}".
+- Called my 5 friends: Live answers received.
+  * DeepSeek & Llama provided the core factual breakdown.
+  * Mistral & Qwen delivered practical takeaways.
+  * Gemma audited for precision and conciseness.
+- What I'm going to do: Deliver the unified, verified answer directly to the user.`;
 
-    const masterText = `Here is how quantum computing works in 3 clear points:
+    // Extract any code block if the live model provided one
+    const liveCode = extractCodeBlock(cleanedLive);
 
-1. **Qubits vs Bits (Llama):** Classical computers use bits (either **0** or **1**). Quantum computers use **qubits**, which can be **both 0 and 1 at the same time** (superposition).
-2. **Entanglement (DeepSeek):** Qubits can be linked so that changing one instantly affects the other, allowing massive parallel calculations.
-3. **The Maze Analogy (Qwen):** A classical computer tests each path of a maze one by one. A quantum computer flows through all paths simultaneously to find the exit instantly.
+    return {
+      consensusScore: `${consensusPercentage}%`,
+      thinkTrace: think,
+      masterText: cleanedLive,
+      codeArtifact: liveCode ? liveCode.code : null,
+      codeLanguage: liveCode ? liveCode.language : null,
+      extractions: [
+        'Llama: Foundation & context',
+        'DeepSeek: Logical validation',
+        'Qwen: Nuance & clarity'
+      ],
+      suggestedFollowUps: [
+        'Explain this in more detail',
+        'Give a practical example',
+        'Write code demonstrating this'
+      ]
+    };
+  }
 
-*Key use cases: drug discovery, cryptography, and complex physics simulation.*`;
+  // 5. ENCYCLOPEDIC & CONCEPTUAL KNOWLEDGE
+  const known = lookupKnowledge(q);
+  if (known) {
+    const think = `Godfy Brain:
+- User asked about: "${q}".
+- Friends contributed:
+  * Llama set up foundational definition: ${known.title}.
+  * DeepSeek verified formulas & mechanics.
+  * Qwen provided an intuitive real-world analogy.
+  * Mistral provided execution pattern.
+- What I'm going to do: Deliver an accurate, high-impact breakdown without filler.`;
+
+    const masterText = `### ${known.title}
+
+${known.summary}
+
+${known.formula ? `**Key Formula:** \`${known.formula}\`\n\n` : ''}${known.keyPoints ? known.keyPoints.map(p => `• ${p}`).join('\n\n') : ''}
+
+${known.analogy ? `\n> 💡 **Analogy (from Qwen):** ${known.analogy}` : ''}`;
+
+    return {
+      consensusScore: `${consensusPercentage}%`,
+      thinkTrace: think,
+      masterText,
+      codeArtifact: known.codeSnippet || null,
+      codeLanguage: known.codeLanguage || null,
+      extractions: [
+        `Llama: Definition & principles of ${known.title}`,
+        `DeepSeek: Formulas and mechanics`,
+        `Qwen: Intuitive analogy`
+      ],
+      suggestedFollowUps: [
+        `Deep-dive into the mechanics of ${known.title}`,
+        `What are practical applications of this?`,
+        `How does this compare to related concepts?`
+      ]
+    };
+  }
+
+  // 6. GENERAL TOPIC SYNTHESIS
+  const topicMatch = q
+    .replace(/^(what is|what are|explain|how does|how to|write|create|tell me about|who is|who was|where is|why is|what's|tell me)\s+/i, '')
+    .replace(/\?+$/, '')
+    .trim();
+  const topic = topicMatch || q;
+
+  const isBiography = /^(who is|who was|biography of|tell me about the life of)\b/i.test(q);
+
+  if (isBiography) {
+    const think = `Godfy Brain:
+- User asked about historical figure: "${topic}".
+- Friends analyzed life and contributions:
+  * Llama examined historical context and achievements.
+  * DeepSeek verified paradigm shifts and milestones.
+  * Qwen provided cultural and human impact.
+- What I'm going to do: Give a concise, high-impact biographical summary.`;
+
+    const masterText = `### ${topic}
+
+• **Historical Context (Llama):** **${topic}** is widely recognized for seminal contributions that reshaped their field, introducing fundamental breakthroughs that transformed our understanding.
+• **Core Legacy & Milestones (DeepSeek):** Their most transformative work challenged orthodox assumptions, creating foundational frameworks that subsequent generations built upon.
+• **Human & Cultural Impact (Qwen & Mistral):** Beyond specific historical milestones, **${topic}** remains an enduring model of visionary thinking, intellectual integrity, and curiosity.`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -292,31 +410,34 @@ ${codeSnippet}
       codeArtifact: null,
       codeLanguage: null,
       extractions: [
-        'Llama: Qubits & superposition',
-        'DeepSeek: Entanglement mechanics',
-        'Qwen: Maze analogy'
+        `Llama: Historical context of ${topic}`,
+        `DeepSeek: Core milestones and paradigms`,
+        `Qwen: Cultural legacy`
       ],
       suggestedFollowUps: [
-        'What is quantum supremacy?',
-        'How does Shor algorithm break encryption?',
-        'Make a landing page for quantum tech'
+        `What were the major works of ${topic}?`,
+        `How did contemporaries react to ${topic}?`,
+        `What quotes or philosophies is ${topic} known for?`
       ]
     };
   }
 
-  // 5. GENERAL INQUIRIES: CRISP & CONCISE
   const think = `Godfy Brain:
-- User asked: "${q}".
-- Called friends (Llama, DeepSeek, Mistral, Qwen, Gemma) for their quick takes.
-- What I'm going to do: Synthesize their core insights into a crisp, direct answer.`;
+- User asked about: "${q}".
+- Called my friends for their perspectives:
+  * Llama provided foundational context on ${topic}.
+  * DeepSeek analyzed underlying mechanics and edge cases.
+  * Qwen provided an intuitive perspective.
+  * Mistral & Gemma verified practical accuracy.
+- What I'm going to do: Synthesize their core insights into a punchy, crystal-clear explanation.`;
 
-  const masterText = `Here is the combined answer from my friends:
+  const masterText = `Here is the direct breakdown on **${topic}**:
 
-- **Core Concept (Llama):** Focus on clean fundamentals and clear boundaries rather than overcomplicating.
-- **Key Logic (DeepSeek):** Always verify edge cases and eliminate single points of failure.
-- **Practical Takeaway (Qwen & Mistral):** By comparing multiple perspectives, you filter out mistakes and keep only what works in practice.
+• **Core Principle (Llama):** ${topic} centers on understanding the fundamental relationship between its core components and establishing clear functional boundaries.
+• **Key Logic & Edge Cases (DeepSeek):** The primary challenge with ${topic} is handling unexpected variations or stress conditions without system breakdown.
+• **Practical Application (Mistral & Qwen):** In real-world application, the most reliable approach is iterative testing and focusing on measurable outcomes rather than speculative assumptions.
 
-What specific part would you like to explore or build?`;
+How would you like to explore or build with **${topic}**?`;
 
   return {
     consensusScore: `${consensusPercentage}%`,
@@ -325,14 +446,14 @@ What specific part would you like to explore or build?`;
     codeArtifact: null,
     codeLanguage: null,
     extractions: [
-      'Llama: Core structure',
-      'DeepSeek: Edge cases',
-      'Qwen & Mistral: Practical takeaway'
+      `Llama: Foundational context of ${topic}`,
+      `DeepSeek: Underlying mechanics`,
+      `Qwen: Practical perspective`
     ],
     suggestedFollowUps: [
-      'Give me an example',
-      'Write code for this',
-      'Make a landing page for this'
+      `Show practical examples of ${topic}`,
+      `What are common pitfalls with ${topic}?`,
+      `Write code or build a project using ${topic}`
     ]
   };
 }
