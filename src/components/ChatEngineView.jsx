@@ -46,8 +46,6 @@ export default function ChatEngineView({
   const [inputText, setInputText] = useState('');
   const [expandedThinks, setExpandedThinks] = useState({});
   const [expandedCouncils, setExpandedCouncils] = useState({});
-  const [forceWebSearch, setForceWebSearch] = useState(false);
-  const [forceImageSearch, setForceImageSearch] = useState(false);
   const [selectedImageModal, setSelectedImageModal] = useState(null);
   const [copiedCodeId, setCopiedCodeId] = useState(null);
   const [previewModalArtifact, setPreviewModalArtifact] = useState(null);
@@ -65,7 +63,14 @@ export default function ChatEngineView({
     if (!inputText.trim() || isProcessing) return;
     const msg = inputText.trim();
     setInputText('');
-    onSendMessage(msg, forceWebSearch, forceImageSearch ? 'images' : 'auto');
+    onSendMessage(msg, false, 'auto');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   const handleCopy = (code, id) => {
@@ -175,7 +180,7 @@ export default function ChatEngineView({
                     : 'bg-[#16161e] border border-[#292e42] text-[#c0caf5] rounded-tl-xs shadow-cursor-card'
                 }`}
               >
-                {/* Clean, Non-Crowded Thought Indicator (Discreet Drawer) */}
+                {/* Clean Thought Indicator Drawer */}
                 {!isUser && msg.thinkTrace && (
                   <div className="mb-2.5 pb-2 border-b border-[#292e42]">
                     <button
@@ -372,7 +377,7 @@ export default function ChatEngineView({
           );
         })}
 
-        {/* Live Autonomous Cognitive Pipeline Animation (Tokyo Night Pulse) */}
+        {/* Live Autonomous Cognitive Pipeline Animation */}
         {isProcessing && (
           <div className="flex flex-col space-y-2 p-3.5 sm:p-4 rounded-2xl bg-[#16161e] border border-[#7aa2f7]/50 shadow-glow-blue max-w-lg overflow-hidden relative animate-node-enter">
             <div className="flex items-center space-x-3 relative z-10">
@@ -420,75 +425,55 @@ export default function ChatEngineView({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Cursor Floating Input Form */}
-      <div className="p-2 sm:p-3 bg-[#16161e]/95 backdrop-blur-xl border-t border-[#292e42] flex-shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      {/* Sleek Cursor Input Card (Clean, Automatic Search, Zero Clutter) */}
+      <div className="p-2 sm:p-3 bg-[#16161e]/95 backdrop-blur-xl border-t border-[#292e42] flex-shrink-0 pb-[max(0.6rem,env(safe-area-inset-bottom))]">
         <form onSubmit={handleSubmit} className="relative max-w-3xl mx-auto">
-          {/* Quick tool pills row */}
-          <div className="flex items-center justify-between text-[11px] text-[#565f89] font-mono mb-1.5 px-1">
-            <div className="flex items-center space-x-1">
-              <button
-                type="button"
-                onClick={() => setForceWebSearch(v => !v)}
-                className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-mono transition border ${
-                  forceWebSearch 
-                    ? 'bg-[#7dcfff] text-[#16161e] border-[#7dcfff] font-bold' 
-                    : 'bg-[#1f2335] hover:bg-[#24283b] text-[#9aa5ce] border-[#292e42]'
-                }`}
-                title="Force live web search"
-              >
-                <Globe className={`w-3 h-3 ${forceWebSearch ? 'text-[#16161e]' : 'text-[#7dcfff]'}`} />
-                <span>Web: {forceWebSearch ? 'ON' : 'Auto'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setForceImageSearch(v => !v)}
-                className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-mono transition border ${
-                  forceImageSearch 
-                    ? 'bg-[#7aa2f7] text-[#16161e] border-[#7aa2f7] font-bold' 
-                    : 'bg-[#1f2335] hover:bg-[#24283b] text-[#9aa5ce] border-[#292e42]'
-                }`}
-                title="Force image search"
-              >
-                <ImageIcon className={`w-3 h-3 ${forceImageSearch ? 'text-[#16161e]' : 'text-[#7aa2f7]'}`} />
-                <span>Images: {forceImageSearch ? 'ON' : 'Auto'}</span>
-              </button>
-            </div>
-
-            <select
-              value={mindPreset}
-              onChange={(e) => setMindPreset(e.target.value)}
-              disabled={isProcessing}
-              className="bg-[#1f2335] text-[#9aa5ce] text-[10px] font-mono focus:outline-none cursor-pointer rounded px-1.5 py-0.5 border border-[#292e42]"
-            >
-              {MIND_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Cursor Input Capsule */}
-          <div className="flex items-center space-x-2 p-1.5 rounded-2xl bg-[#1f2335] border border-[#292e42] focus-within:border-[#7aa2f7] focus-within:ring-2 focus-within:ring-[#7aa2f7]/20 transition">
-            <input
+          <div className="bg-[#1f2335] rounded-2xl border border-[#292e42] focus-within:border-[#7aa2f7] focus-within:ring-2 focus-within:ring-[#7aa2f7]/20 transition-all shadow-lg p-2 sm:p-2.5">
+            {/* Input textarea */}
+            <textarea
               ref={inputRef}
-              type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask Godfy to make a project, code, or answer..."
+              onKeyDown={handleKeyDown}
+              placeholder="Ask Godfy anything... (Enter to send, Shift+Enter for new line)"
               disabled={isProcessing}
-              className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-[#c0caf5] placeholder-[#565f89] focus:outline-none font-normal min-w-0"
+              rows={1}
+              className="w-full bg-transparent px-2 py-1 text-xs sm:text-sm text-[#c0caf5] placeholder-[#565f89] focus:outline-none resize-none font-normal leading-relaxed max-h-32 min-h-[36px]"
             />
 
-            <button
-              type="submit"
-              disabled={isProcessing || !inputText.trim()}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#7aa2f7] hover:bg-[#89b4fa] disabled:opacity-30 text-[#16161e] flex items-center justify-center shadow-sm transition active:scale-95 flex-shrink-0"
-              title="Send message"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+            {/* Bottom action bar inside the card */}
+            <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-[#292e42]/60">
+              {/* Left pills: Preset & Autonomous Search Status */}
+              <div className="flex items-center space-x-2">
+                <select
+                  value={mindPreset}
+                  onChange={(e) => setMindPreset(e.target.value)}
+                  disabled={isProcessing}
+                  className="bg-[#16161e] text-[#9aa5ce] hover:text-[#c0caf5] text-[11px] font-mono px-2 py-1 rounded-lg border border-[#292e42] focus:outline-none cursor-pointer"
+                >
+                  {MIND_PRESETS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="hidden xs:flex items-center space-x-1.5 px-2 py-0.5 rounded-lg bg-[#16161e]/60 text-[10px] font-mono text-[#565f89]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#9ece6a] animate-pulse"></span>
+                  <span>Auto Web & Images</span>
+                </div>
+              </div>
+
+              {/* Right: Send button */}
+              <button
+                type="submit"
+                disabled={isProcessing || !inputText.trim()}
+                className="w-8 h-8 rounded-xl bg-[#7aa2f7] hover:bg-[#89b4fa] disabled:opacity-25 text-[#16161e] flex items-center justify-center shadow-sm transition active:scale-95 flex-shrink-0"
+                title="Send message (Enter)"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </form>
       </div>
