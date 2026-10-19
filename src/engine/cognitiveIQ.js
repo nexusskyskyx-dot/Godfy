@@ -152,7 +152,7 @@ ${Object.values(toolDecisions.decisions).map(t => `  * **${t.tool}:** [${t.statu
 
 ### 6. Godfy Autonomous Deliberation (Thinking of Its Own)
 - **1. What the user is asking:** "${query.length > 90 ? query.slice(0, 90) + '...' : query}"
-- **2. What my friends contributed:** Evaluated ideas and edge cases across 16 specialized neurons.
+- **2. Multi-Model Deliberation:** Evaluated ideas and edge cases across specialized neurons.
 - **3. What I'm going to do:** ${actionPlan}
 - **Consensus Horizon:** ${(98.2 + Math.random() * 1.6).toFixed(1)}% verified multi-model agreement reached in ${durationMs}ms.`;
 }

@@ -219,7 +219,12 @@ export default function ProjectEditorView({
     e.preventDefault();
     if (!aiPrompt.trim() || isAiExecuting) return;
     setIsAiExecuting(true);
-    setAiActionMessage(`Godfy Mind: "${aiPrompt.trim().slice(0, 32)}..."`);
+    const actionLabel = 
+      /(\b(delete|remove|rm|drop|erase)\b)/i.test(aiPrompt) ? 'Removing...' :
+      /(\b(edit|modify|update|change|refactor|fix|patch)\b)/i.test(aiPrompt) ? 'Editing...' :
+      /(\b(create|add|new|make)\b)/i.test(aiPrompt) ? 'Creating...' :
+      'Thinking...';
+    setAiActionMessage(actionLabel);
     try {
       if (onAskMindToModify) {
         await onAskMindToModify(aiPrompt.trim(), project);
@@ -441,18 +446,14 @@ export default function ProjectEditorView({
           </div>
         </div>
 
-        {/* Animated Mind Activity Banner */}
+        {/* Simple Cursor-Style Activity Status (No Box) */}
         {isAiExecuting && (
-          <div className="px-3 py-1.5 bg-[#1a1b26] text-[#7dcfff] text-xs font-mono flex items-center justify-between border-t border-[#292e42] relative overflow-hidden">
-            <div className="flex items-center space-x-2 relative z-10">
-              <Brain className="w-3.5 h-3.5 text-[#7aa2f7] animate-spin-slow" />
-              <span className="font-semibold text-[11px] truncate">{aiActionMessage || 'Godfy Mind is editing project hierarchy...'}</span>
-            </div>
-            <div className="flex items-center space-x-1 relative z-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#7dcfff] animate-ping"></span>
-              <span className="text-[10px] text-[#7dcfff] uppercase font-bold">Synthesizing</span>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#7aa2f7]/10 to-transparent animate-shimmer pointer-events-none"></div>
+          <div className="px-3 py-1.5 bg-[#16161e] text-xs font-mono flex items-center space-x-2 border-t border-[#292e42]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7aa2f7] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7aa2f7]"></span>
+            </span>
+            <span className="text-[#c0caf5] font-medium">{aiActionMessage || 'Editing...'}</span>
           </div>
         )}
 

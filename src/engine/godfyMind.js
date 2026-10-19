@@ -44,22 +44,20 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   const intent = evaluateCognitiveIntent(query, chatHistory, memories);
   updateCognitiveProfile(query, intent);
 
+  const isEditing = /(\b(edit|modify|update|change|refactor|fix|patch|rewrite)\b)/i.test(query);
+  const isRemoving = /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(query);
+  const isCreating = /(\b(create|make|build|generate|new project|new file)\b)/i.test(query);
+  const defaultAction = isEditing ? 'Editing...' : isRemoving ? 'Removing...' : isCreating ? 'Creating...' : 'Thinking...';
+
   if (onStreamStep) {
     onStreamStep({ 
-      step: 'intent', 
-      message: `🧠 Cognitive Phase 1: Intent Profiling [${intent.type}] (Complexity: ${intent.complexity}/5)...` 
+      step: isEditing ? 'editing' : isRemoving ? 'removing' : isCreating ? 'creating' : 'thinking', 
+      message: defaultAction 
     });
   }
 
   // Cognitive Step 2: Autonomous Tool Deliberation Engine
   const toolDecisions = deliberateToolDecisions({ query, intent, searchMode, forceSearch, memories });
-
-  if (onStreamStep) {
-    onStreamStep({ 
-      step: 'tools', 
-      message: `⚙️ Cognitive Phase 2: Autonomous Tool Matrix: ${toolDecisions.summary}...` 
-    });
-  }
 
   // Execute Web / Visual Search if decided
   let searchData = null;
@@ -69,19 +67,11 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     if (onStreamStep) {
       onStreamStep({ 
         step: 'search', 
-        message: toolDecisions.decisions.liveImageSearch.status === 'ACTIVATED'
-          ? '🔍 Autonomous Tool: Crawling live web repositories for verified visual imagery...'
-          : '🌐 Autonomous Tool: Crawling live 2026 web sources for grounded facts...'
+        message: 'Searching...'
       });
     }
     try {
       searchData = await performLiveWebSearch(query, { includeImages: true });
-      if (onStreamStep && (searchData.count > 0 || searchData.images?.length > 0)) {
-        onStreamStep({ 
-          step: 'search_done', 
-          message: `🔍 Tool Result: Acquired ${searchData.count} web citations & ${searchData.images?.length || 0} media assets.` 
-        });
-      }
     } catch {
       // Continue if search fails or times out
     }
@@ -111,31 +101,25 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     queryForFriends = `${query}\n\n${contextParts.join('\n\n')}\n\nNote: Use the verified context above to formulate your response.`;
   }
 
-  // Cognitive Step 3: Parallel Dispatch to 16 Neural Pathways
+  // Cognitive Step 3: Parallel Dispatch to Neural Pathways
   const totalFriends = FREE_MODELS_CONFIG.length;
   if (onStreamStep) {
     onStreamStep({ 
-      step: 'dispatch', 
-      message: `⚡ Cognitive Phase 3: Parallel dispatch to ${totalFriends} Neural Cortex Pathways (4 Lobes: Reasoning, Code AST, Red-Teaming, Synthesis)...` 
+      step: isEditing ? 'editing' : isRemoving ? 'removing' : isCreating ? 'creating' : 'thinking', 
+      message: defaultAction 
     });
   }
 
   let completedCount = 0;
-  const modelProposals = await broadcastToAllFreeAIs(queryForFriends, chatHistory, memories, (completedModel) => {
+  const modelProposals = await broadcastToAllFreeAIs(queryForFriends, chatHistory, memories, () => {
     completedCount++;
-    if (onStreamStep) {
-      onStreamStep({ 
-        step: 'collect', 
-        message: `Got ideas from ${completedModel.modelName} (${completedCount}/${totalFriends} neural pathways)...` 
-      });
-    }
   });
 
-  // Cognitive Step 4: Multi-Model Consensus & Conflict Resolution
+  // Cognitive Step 4: Multi-Model Consensus & Synthesis
   if (onStreamStep) {
     onStreamStep({ 
-      step: 'synthesize', 
-      message: `⚖️ Cognitive Phase 4: Cross-model consensus & Tree-of-Thought synthesis across ${totalFriends} neural pathways...` 
+      step: isEditing ? 'editing' : isRemoving ? 'removing' : 'synthesizing', 
+      message: isEditing ? 'Editing...' : isRemoving ? 'Removing...' : 'Synthesizing...' 
     });
   }
 
@@ -776,7 +760,7 @@ ${solution.explanation || 'Modular implementation ready for production deploymen
 - What I'm going to do: Deliver the verified live answer directly to the user.`
       : `Godfy Brain:${memoryNote}
 - User asked: "${q}".
-- Called my 10 friends: Multi-model consensus synthesized.
+- Multi-model consensus synthesized:
   * DeepSeek & Phi-4 provided the core logical breakdown.
   * Mistral, Hermes & Qwen delivered practical takeaways and creative angles.
   * Claude, Nemotron & Gemma audited for precision, systems integrity, and conciseness.
@@ -859,7 +843,7 @@ Godfy connects these models simultaneously so you get verified consensus without
   if (known) {
     const think = `Godfy Brain:
 - User asked about: "${q}".
-- Friends contributed:
+- Models evaluated:
   * Llama set up foundational definition: ${known.title}.
   * DeepSeek verified formulas & mechanics.
   * Qwen provided an intuitive real-world analogy.

@@ -110,7 +110,13 @@ export default function App() {
     );
 
     setIsProcessing(true);
-    setStreamMessage(searchMode === 'images' ? 'Godfy Brain: Searching live web for images & visual media...' : 'Godfy Brain: Analyzing prompt and synthesizing...');
+    const initialAction = 
+      /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(userText) ? 'Removing...' :
+      /(\b(edit|modify|update|change|refactor|fix|patch)\b)/i.test(userText) ? 'Editing...' :
+      /(\b(create|make|build|generate|new project|new file)\b)/i.test(userText) ? 'Creating...' :
+      /(\b(search|find|lookup|images|photos)\b)/i.test(userText) || searchMode === 'images' ? 'Searching...' :
+      'Thinking...';
+    setStreamMessage(initialAction);
 
     try {
       const godfyResponse = await processChatWithGodfy({

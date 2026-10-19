@@ -212,10 +212,10 @@ export default function Sidebar({
             )}
           </div>
 
-          {/* Connected AI Friends */}
+          {/* Connected AI Models */}
           <div className="p-3 rounded-xl bg-[#1a1b26] border border-[#292e42]">
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#565f89] mb-2 flex items-center justify-between">
-              <span>Free AI Friends</span>
+              <span>AI Models</span>
               <span className="text-[#9ece6a] flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#9ece6a] animate-pulse"></span>
                 <span>5 Online</span>

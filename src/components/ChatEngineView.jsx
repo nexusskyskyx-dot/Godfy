@@ -3,7 +3,7 @@ import {
   Send, Sparkles, Brain, Eye, Copy, Check, ChevronDown, ChevronUp, 
   Code, Download, ExternalLink, X, Monitor, Tablet, Smartphone,
   Layers, ArrowRight, Zap, Globe, Image as ImageIcon,
-  ZoomIn, FolderTree, FileCode, Sliders
+  ZoomIn, FolderTree, FileCode, Sliders, Loader2, Edit3, Trash2, Plus
 } from 'lucide-react';
 import { marked } from 'marked';
 import { MIND_PRESETS } from '../engine/models.js';
@@ -12,6 +12,58 @@ marked.setOptions({
   gfm: true,
   breaks: true
 });
+
+function getSimpleStatus(streamMessage) {
+  const msg = (streamMessage || '').toLowerCase();
+  
+  if (msg.includes('edit') || msg.includes('modify') || msg.includes('update') || msg.includes('patch')) {
+    return {
+      type: 'editing',
+      label: 'Editing...',
+      icon: <Edit3 className="w-3.5 h-3.5 text-[#e0af68] animate-bounce" />,
+      dotColor: 'bg-[#e0af68]'
+    };
+  }
+  if (msg.includes('remov') || msg.includes('delet') || msg.includes('clean') || msg.includes('drop')) {
+    return {
+      type: 'removing',
+      label: 'Removing...',
+      icon: <Trash2 className="w-3.5 h-3.5 text-[#f7768e] animate-pulse" />,
+      dotColor: 'bg-[#f7768e]'
+    };
+  }
+  if (msg.includes('creat') || msg.includes('build') || msg.includes('generat')) {
+    return {
+      type: 'creating',
+      label: 'Creating...',
+      icon: <Plus className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />,
+      dotColor: 'bg-[#9ece6a]'
+    };
+  }
+  if (msg.includes('search') || msg.includes('crawl') || msg.includes('web') || msg.includes('image')) {
+    return {
+      type: 'searching',
+      label: 'Searching...',
+      icon: <Globe className="w-3.5 h-3.5 text-[#7dcfff] animate-spin" />,
+      dotColor: 'bg-[#7dcfff]'
+    };
+  }
+  if (msg.includes('synth')) {
+    return {
+      type: 'synthesizing',
+      label: 'Synthesizing...',
+      icon: <Sparkles className="w-3.5 h-3.5 text-[#bb9af7] animate-pulse" />,
+      dotColor: 'bg-[#bb9af7]'
+    };
+  }
+  
+  return {
+    type: 'thinking',
+    label: 'Thinking...',
+    icon: <Loader2 className="w-3.5 h-3.5 text-[#7aa2f7] animate-spin" />,
+    dotColor: 'bg-[#7aa2f7]'
+  };
+}
 
 marked.use({
   renderer: {
@@ -330,31 +382,7 @@ export default function ChatEngineView({
                   </div>
                 )}
 
-                {/* Minimalist AI Friends Council Link */}
-                {!isUser && msg.modelProposals && msg.modelProposals.length > 0 && (
-                  <div className="mt-2.5 pt-2 border-t border-[#292e42] flex items-center justify-between text-[11px] font-mono text-[#565f89]">
-                    <button
-                      onClick={() => setExpandedCouncils(p => ({ ...p, [msgId]: !p[msgId] }))}
-                      className="hover:text-[#7dcfff] transition flex items-center space-x-1"
-                    >
-                      <span>5 AI friends consulted</span>
-                      <ChevronDown className={`w-3 h-3 transition ${expandedCouncils[msgId] ? 'rotate-180' : ''}`} />
-                    </button>
-                    <span>Autonomous arbitrated</span>
-                  </div>
-                )}
-
-                {/* Collapsed Model Council Grid */}
-                {!isUser && expandedCouncils[msgId] && msg.modelProposals && (
-                  <div className="mt-2 space-y-1.5 animate-node-enter">
-                    {msg.modelProposals.map((m, i) => (
-                      <div key={i} className="p-2 rounded-lg bg-[#1a1b26] border border-[#292e42] text-[11px]">
-                        <div className="font-semibold text-[#c0caf5] mb-0.5">{m.modelName} ({m.source})</div>
-                        <div className="text-[#9aa5ce] line-clamp-2">{m.answer}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* End of message bubble */}
               </div>
 
               {/* Minimal Follow-Up Chips */}
@@ -377,50 +405,24 @@ export default function ChatEngineView({
           );
         })}
 
-        {/* Live Autonomous Cognitive Pipeline Animation */}
-        {isProcessing && (
-          <div className="flex flex-col space-y-2 p-3.5 sm:p-4 rounded-2xl bg-[#16161e] border border-[#7aa2f7]/50 shadow-glow-blue max-w-lg overflow-hidden relative animate-node-enter">
-            <div className="flex items-center space-x-3 relative z-10">
-              <div className="relative flex-shrink-0">
-                <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center border border-[#292e42] overflow-hidden animate-neural-pulse">
-                  <img src="/logo.png" alt="Godfy" className="w-full h-full object-cover" />
-                </div>
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7dcfff] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#7dcfff]"></span>
+        {/* Cursor-Style Status Indicator (Clean, Simple, Zero Box) */}
+        {isProcessing && (() => {
+          const status = getSimpleStatus(streamMessage);
+          return (
+            <div className="flex items-center space-x-2.5 py-1.5 px-1 text-xs sm:text-sm font-mono text-[#c0caf5] select-none animate-node-enter">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${status.dotColor} opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${status.dotColor}`}></span>
+              </span>
+              <div className="flex items-center space-x-1.5">
+                {status.icon}
+                <span className="font-medium tracking-wide">
+                  {status.label}
                 </span>
               </div>
-              <div className="overflow-hidden flex-1 min-w-0">
-                <div className="flex items-center space-x-1.5 text-[10px] font-mono text-[#7dcfff] font-bold uppercase tracking-wider">
-                  <span>Godfy Mind Cortex</span>
-                  <span className="text-[#565f89]">•</span>
-                  <span className="text-[#9aa5ce]">Tree-of-Thought</span>
-                </div>
-                <div className="text-xs font-mono text-[#c0caf5] font-semibold truncate mt-0.5">
-                  {streamMessage || 'Arbitrating 5 free AI friends & formulating plan...'}
-                </div>
-              </div>
             </div>
-
-            {/* Neural progress indicators */}
-            <div className="grid grid-cols-3 gap-1.5 pt-1 relative z-10 text-[10px] font-mono">
-              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-[#1f2335] border border-[#292e42] text-[#9aa5ce]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#7dcfff] animate-pulse"></span>
-                <span className="truncate">1. Friends</span>
-              </div>
-              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-[#1f2335] border border-[#292e42] text-[#9aa5ce]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#7aa2f7] animate-pulse"></span>
-                <span className="truncate">2. Deliberates</span>
-              </div>
-              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-[#1f2335] border border-[#292e42] text-[#9aa5ce]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#9ece6a] animate-pulse"></span>
-                <span className="truncate">3. Synthesizes</span>
-              </div>
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#7aa2f7]/10 to-transparent animate-shimmer pointer-events-none"></div>
-          </div>
-        )}
+          );
+        })()}
 
         <div ref={messagesEndRef} />
       </div>
