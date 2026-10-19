@@ -49,7 +49,7 @@ export default function App() {
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
   const messages = activeSession?.messages || [];
 
-  const handleSendMessage = async (userText, forceSearch = false) => {
+  const handleSendMessage = async (userText, forceSearch = false, searchMode = 'auto') => {
     if (!userText.trim() || isProcessing) return;
 
     const userMessage = {
@@ -78,7 +78,7 @@ export default function App() {
     );
 
     setIsProcessing(true);
-    setStreamMessage('Godfy Brain: Analyzing prompt and checking live web...');
+    setStreamMessage(searchMode === 'images' ? 'Godfy Brain: Searching live web for images & visual media...' : 'Godfy Brain: Analyzing prompt and checking live web...');
 
     try {
       const godfyResponse = await processChatWithGodfy({
@@ -86,6 +86,7 @@ export default function App() {
         history: messages,
         mindPreset,
         forceSearch,
+        searchMode,
         onStreamStep: ({ message }) => {
           setStreamMessage(message);
         }

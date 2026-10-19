@@ -481,9 +481,10 @@ ${known.analogy || known.summary}`;
 - [x] ${known.keyPoints && known.keyPoints[2] ? known.keyPoints[2] : 'Precision checked.'}`;
   }
 
-  // Extract primary topic / subject from prompt
-  const topicMatch = q.replace(/^(what is|what are|explain|how does|how to|write|create|build|tell me about|who is|can you)\s+/i, '').trim();
-  const topic = topicMatch || q;
+  // Extract primary topic / subject from prompt, stripping injected system context markers
+  const cleanQ = q.split('\n\n[System Context]')[0].split('\n\n[Live Web Search')[0].split('\n\n[Context from')[0].trim();
+  const topicMatch = cleanQ.replace(/^(what is|what are|explain|how does|how to|write|create|build|tell me about|who is|can you)\s+/i, '').trim();
+  const topic = topicMatch || cleanQ;
 
   const isGreeting = /^(hi|hello|hey|greetings|good morning|good evening|who are you|what's up|sup)\b/i.test(lower);
   const isLandingPage = lower.includes('landing') || lower.includes('website') || lower.includes('portfolio') || lower.includes('ui');

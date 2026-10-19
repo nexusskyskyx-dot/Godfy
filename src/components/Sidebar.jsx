@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Plus, MessageSquare, Trash2, Sliders, ExternalLink, 
-  Sparkles, CheckCircle2, ChevronRight, Zap, Brain, RotateCcw
+  Sparkles, CheckCircle2, ChevronRight, Zap, Brain, RotateCcw,
+  Globe, Image as ImageIcon
 } from 'lucide-react';
 import { FREE_AI_MODELS } from '../engine/models.js';
 import { getStoredMemories, clearAllMemories } from '../engine/brainMemory.js';
@@ -193,6 +194,34 @@ export default function Sidebar({
                   <span className="text-[10px] font-mono text-cyan-800">{m.latency}</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Live Web & Visual Media Engine */}
+          <div className="p-3 rounded-2xl bg-white border border-cream-200 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                Web & Media Engine
+              </span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Live 2026
+              </span>
+            </div>
+            <div className="space-y-1 text-[10px] text-slate-600 font-mono">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center space-x-1">
+                  <Globe className="w-3 h-3 text-cyan-600" />
+                  <span>Real-Time Web</span>
+                </span>
+                <span className="text-emerald-700 font-semibold">Active</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center space-x-1">
+                  <ImageIcon className="w-3 h-3 text-cyan-600" />
+                  <span>Visual Image Search</span>
+                </span>
+                <span className="text-emerald-700 font-semibold">Ready</span>
+              </div>
             </div>
           </div>
 
