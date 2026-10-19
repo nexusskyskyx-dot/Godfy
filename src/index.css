@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-main: #FAF7EE;      /* White cream */
+  --color-secondary: #FFFFFF; /* White */
+  --color-cyanlight: #E0F7FA; /* Cyan light */
+}
+
+body {
+  background-color: var(--color-main);
+  color: #1E293B;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
