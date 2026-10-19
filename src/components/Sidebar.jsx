@@ -215,26 +215,22 @@ export default function Sidebar({
           {/* Connected AI Models */}
           <div className="p-3 rounded-xl bg-[#1a1b26] border border-[#292e42]">
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#565f89] mb-2 flex items-center justify-between">
-              <span>AI Models</span>
+              <span>20 AI Models</span>
               <span className="text-[#9ece6a] flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#9ece6a] animate-pulse"></span>
-                <span>5 Online</span>
+                <span>Active Council</span>
               </span>
             </div>
 
-            <div className="space-y-1 text-[11px] font-mono text-[#9aa5ce]">
-              <div className="flex items-center justify-between py-0.5">
-                <span>DeepSeek R1</span>
-                <span className="text-[9px] text-[#565f89]">Reasoning</span>
-              </div>
-              <div className="flex items-center justify-between py-0.5">
-                <span>Mistral / Codestral</span>
-                <span className="text-[9px] text-[#565f89]">AST Code</span>
-              </div>
-              <div className="flex items-center justify-between py-0.5">
-                <span>Phi-4 & Qwen 2.5</span>
-                <span className="text-[9px] text-[#565f89]">Synthesis</span>
-              </div>
+            <div className="max-h-48 overflow-y-auto space-y-1 text-[11px] font-mono text-[#9aa5ce] pr-1 scrollbar-thin">
+              {FREE_AI_MODELS.map(m => (
+                <div key={m.id} className="flex items-center justify-between py-0.5 hover:text-[#c0caf5] transition">
+                  <span className="truncate pr-1">{m.name}</span>
+                  <span className="text-[9px] text-[#565f89] bg-[#16161e] px-1.5 py-0.5 rounded border border-[#292e42] flex-shrink-0">
+                    {m.badge}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -130,23 +130,27 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     'gemini-thinking': 'Tree-of-Thought hypothesis exploration',
     'phi-4': 'Formal invariants & discrete bounds',
     'deepseek-v3': 'MoE optimization & mathematical synthesis',
-    'qwen-2.5': 'AST structure & full-stack design',
+    'kimi-k2.5': 'Long-context dependency graph & document flow',
+    'qwen-coder': 'AST production code & runnable assertions',
     'codestral': 'Systems kernel & pointer hygiene',
-    'llama-3.3': 'Scaffolding & system architecture',
-    'claude-hybrid': 'Type safety & structural integrity',
+    'llama-3.3': 'Scaffolding & modular system architecture',
+    'claude-hybrid': 'Type safety, ergonomics & structural integrity',
+    'glm-5': 'Enterprise design patterns & data pipelines',
     'nemotron-70b': 'Vulnerability injection & guardrails',
-    'hermes-3': 'Adversarial edge stress & fuzzing',
+    'hermes-3': 'Adversarial edge stress & lateral critique',
     'command-r-plus': 'Enterprise citation grounding & truth audit',
     'gemma-2': 'Fact validation & strict precision audit',
-    'mistral-large': 'Production code & benchmark velocity',
+    'smollm-2': 'Edge invariant fuzzing & boundary validation',
+    'qwen-2.5': 'Intuitive analogies & persuasive copywriting',
     'gemini-flash': 'Real-time telemetry & latency minimization',
+    'cerebras-llama': 'Ultra-fast 800 tok/sec throughput stream',
     'gpt-4o-mini': 'Deterministic instruction compliance',
-    'godfy-cortex': 'Master executive consensus'
+    'godfy-cortex': 'Master executive consensus arbitration'
   };
 
   const enrichedProposals = modelProposals.map(m => ({
     ...m,
-    keyExtracted: extractionsMap[m.modelId] || 'Friend idea'
+    keyExtracted: extractionsMap[m.modelId] || 'Council contribution'
   }));
 
   const synthesis = synthesizeBrainResponse(

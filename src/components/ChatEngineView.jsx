@@ -176,7 +176,7 @@ export default function ChatEngineView({
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-[#9aa5ce] max-w-md mx-auto mb-6 font-sans">
-              Autonomous multi-AI consensus engine in Tokyo Night theme. Arbitrates 5 free frontier models and builds complete projects with zero templates.
+              Autonomous 20-model consensus engine in Tokyo Night theme. Models coordinate across 4 cognitive lobes with mutual peer awareness to build complete projects with zero templates.
             </p>
 
             {/* Quick Starter Suggestions */}

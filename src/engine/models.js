@@ -44,12 +44,23 @@ export const FREE_AI_MODELS = [
     latency: '310ms',
     defaultWeight: 0.95
   },
+  {
+    id: 'kimi-k2.5',
+    name: 'Kimi K2.5 256K',
+    provider: 'Moonshot AI (Free Tier)',
+    badge: 'Context Memory',
+    lobe: 'reasoning',
+    color: 'from-cyan-500 to-teal-600',
+    specialty: 'Long-context dependency graph, document flow & multi-turn memory coherence',
+    latency: '360ms',
+    defaultWeight: 0.94
+  },
 
   // LOBE 2: KERNEL, AST & SOFTWARE ARCHITECTURE
   {
-    id: 'mistral-large',
+    id: 'qwen-coder',
     name: 'Qwen 2.5 Coder 32B',
-    provider: 'Alibaba / Mistral (Free Tier)',
+    provider: 'Alibaba (Free Open)',
     badge: 'AST Code Engine',
     lobe: 'code',
     color: 'from-amber-500 to-orange-600',
@@ -82,13 +93,24 @@ export const FREE_AI_MODELS = [
   {
     id: 'claude-hybrid',
     name: 'Claude 3.5 Sonnet',
-    provider: 'Anthropic (Free Tier)',
+    provider: 'Anthropic (Free Puter)',
     badge: 'Polish & Systems',
     lobe: 'code',
     color: 'from-violet-500 to-purple-600',
     specialty: 'Flawless prose, elegant systems synthesis & high-order coherence',
     latency: '390ms',
     defaultWeight: 0.95
+  },
+  {
+    id: 'glm-5',
+    name: 'GLM 5.1 Enterprise',
+    provider: 'Zhipu AI (Free Tier)',
+    badge: 'Enterprise Logic',
+    lobe: 'code',
+    color: 'from-indigo-500 to-blue-600',
+    specialty: 'Enterprise design patterns, scalable data pipelines & API interface contracts',
+    latency: '330ms',
+    defaultWeight: 0.91
   },
 
   // LOBE 3: ADVERSARIAL RED-TEAM & INVARIANT AUDIT
@@ -136,6 +158,17 @@ export const FREE_AI_MODELS = [
     latency: '250ms',
     defaultWeight: 0.88
   },
+  {
+    id: 'smollm-2',
+    name: 'SmolLM2 1.7B',
+    provider: 'HuggingFace (Free Open)',
+    badge: 'Edge Invariant Fuzzer',
+    lobe: 'adversarial',
+    color: 'from-amber-400 to-red-500',
+    specialty: 'Rapid fuzz testing, resource-constrained edge validation & boundary stress',
+    latency: '190ms',
+    defaultWeight: 0.87
+  },
 
   // LOBE 4: HIGH-VELOCITY SYNTHESIS & SPEED
   {
@@ -159,6 +192,17 @@ export const FREE_AI_MODELS = [
     specialty: 'Ultra-fast synthesis, real-time facts & action-oriented checklists',
     latency: '220ms',
     defaultWeight: 0.90
+  },
+  {
+    id: 'cerebras-llama',
+    name: 'Cerebras Llama 3.3',
+    provider: 'Cerebras (Free LPU)',
+    badge: 'Hyper-Speed Stream',
+    lobe: 'synthesis',
+    color: 'from-blue-400 to-cyan-500',
+    specialty: 'Ultra-fast 800 tok/sec inference, rapid drafting & token velocity',
+    latency: '160ms',
+    defaultWeight: 0.92
   },
   {
     id: 'gpt-4o-mini',
@@ -188,26 +232,26 @@ export const MIND_PRESETS = [
   {
     id: 'genius',
     name: 'IQ 185 Genius Cortex',
-    description: 'Maximal depth: Tree-of-Thought branching, formal proofs, and adversarial red-teaming.'
+    description: 'Maximal depth: Tree-of-Thought branching, formal proofs, and adversarial red-teaming across 20 models.'
   },
   {
     id: 'coding',
     name: 'IQ 175 Code & AST Engine',
-    description: 'Zero placeholders, typed signatures, Big-O bounds, and runnable test suites.'
+    description: 'Zero placeholders, typed signatures, Big-O bounds, and runnable test suites by Qwen Coder & Codestral.'
   },
   {
     id: 'architect',
     name: 'IQ 170 Systems Architect',
-    description: 'Scalable architecture, fault tolerance, component hierarchy, and design tokens.'
+    description: 'Scalable architecture, fault tolerance, component hierarchy, and design tokens by Llama 3.3 & Claude.'
   },
   {
     id: 'balanced',
-    name: 'Harmonic 16-Neuron Cortex',
-    description: 'Even distribution across all 4 brain lobes for balanced analytical brilliance.'
+    name: 'Harmonic 20-Model Cortex',
+    description: 'Even distribution across all 4 brain lobes for balanced analytical brilliance and multi-model consensus.'
   },
   {
     id: 'creative',
     name: 'Creative Alchemist',
-    description: 'Lateral innovation, Hermes 3 counter-angles, and high-converting copy.'
+    description: 'Lateral innovation, Hermes 3 counter-angles, and high-converting copy by Qwen 2.5.'
   }
 ];
