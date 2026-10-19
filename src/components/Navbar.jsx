@@ -1,11 +1,14 @@
 import React from 'react';
-import { Menu, Plus, Sliders, Brain, ExternalLink } from 'lucide-react';
+import { Menu, Plus, Sliders, MessageSquare, FolderTree } from 'lucide-react';
 
 export default function Navbar({
   onToggleSidebar,
   onNewChat,
   onOpenSettings,
-  isProcessing
+  isProcessing,
+  currentView = 'chat',
+  onSelectView,
+  hasProject = false
 }) {
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-white/90 border-b border-cream-200">
@@ -21,14 +24,14 @@ export default function Navbar({
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 cursor-pointer" onClick={() => onSelectView && onSelectView('chat')}>
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyanlight-200 via-cyanlight-100 to-cream-100 border border-cyanlight-300 flex items-center justify-center shadow-sm">
               <span className="font-extrabold text-slate-900 text-base sm:text-lg tracking-wider">G</span>
             </div>
             <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 border-2 border-white animate-pulse"></div>
           </div>
 
-          <div>
+          <div className="cursor-pointer" onClick={() => onSelectView && onSelectView('chat')}>
             <div className="flex items-center space-x-1.5">
               <span className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 font-display">Godfy</span>
               <span className="px-1.5 py-0.5 rounded-md bg-cyanlight-100 text-cyan-900 text-[10px] sm:text-xs font-bold font-mono border border-cyanlight-200 tracking-wide">
@@ -36,20 +39,38 @@ export default function Navbar({
               </span>
             </div>
             <p className="text-[10px] text-slate-500 font-medium hidden sm:block">
-              Multi-AI Autonomous Chat Engine
+              Multi-AI Autonomous Engine & Studio
             </p>
           </div>
         </div>
 
-        {/* Center: Live Mind Status */}
-        <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-cream-50 border border-cream-200 text-xs font-medium text-slate-700">
-          <div className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-cyan-500 animate-ping' : 'bg-emerald-500'}`}></div>
-          <span className="font-semibold text-slate-800">Mind:</span>
-          <span className="text-slate-600">
-            {isProcessing ? 'Arbitrating 5 Free AIs...' : 'Online & Autonomous'}
-          </span>
-          <span className="text-cream-300">|</span>
-          <span className="text-cyan-800 font-mono text-[11px] font-semibold">5 Nodes Synced</span>
+        {/* Center: Navigation Mode Toggle (Chat | Project Editor) */}
+        <div className="flex items-center space-x-1 bg-cream-100 p-1 rounded-xl border border-cream-300/80 text-xs font-mono">
+          <button
+            onClick={() => onSelectView && onSelectView('chat')}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentView === 'chat'
+                ? 'bg-white text-slate-950 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-cyan-700" />
+            <span className="font-sans text-xs">Chat</span>
+          </button>
+          <button
+            onClick={() => onSelectView && onSelectView('editor')}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentView === 'editor'
+                ? 'bg-white text-slate-950 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FolderTree className="w-3.5 h-3.5 text-cyan-700" />
+            <span className="font-sans text-xs">Project Editor</span>
+            {hasProject && (
+              <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+            )}
+          </button>
         </div>
 
         {/* Right: Actions */}

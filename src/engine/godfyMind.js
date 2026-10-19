@@ -4,6 +4,7 @@ import { lookupKnowledge } from './knowledgeBase.js';
 import { shouldGodfySearch, shouldGodfySearchImages, performLiveWebSearch } from './webSearch.js';
 import { getStoredMemories, extractAndSaveMemories, buildMemoryContextString } from './brainMemory.js';
 import { generateIntelligentCode, detectLanguage } from './codeSynthesizer.js';
+import { generateDynamicMultiFileProject } from './projectEngine.js';
 import { 
   evaluateCognitiveIntent, 
   deliberateToolDecisions, 
@@ -196,6 +197,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     codeFileName: synthesis.codeFileName || null,
     codeComplexity: synthesis.codeComplexity || null,
     codeEdgeCases: synthesis.codeEdgeCases || null,
+    projectData: synthesis.projectData || null,
     modelProposals: enrichedProposals,
     webSources: searchData && searchData.results && searchData.results.length > 0 ? searchData.results : null,
     searchedWeb: searchData && searchData.count > 0,
@@ -643,60 +645,61 @@ My 16-neuron cortex is warmed up across deep reasoning, code generation, and adv
     };
   }
 
-  // 2. LANDING PAGE / UI
-  if (isLandingPage) {
+  // 2. MULTI-FILE PROJECT / LANDING PAGE / WEB APP (NO TEMPLATES)
+  const isProject = /\b(project|multi-file|multifile|folder|folders|carpet|carpets|carpeta|carpetas|full app|whole app|workspace|editor)\b/i.test(lower);
+
+  if (isProject || isLandingPage) {
     const rawTopic = q
-      .replace(/^(make|create|build|generate|design|show me|give me)?\s*(a\s+)?(landing page|landingpage|website|portfolio site|web page|page|ui design|ui)\s*(for|about|on)?\s*/i, '')
+      .replace(/^(make|create|build|generate|design|show me|give me)?\s*(a\s+)?(project|multi-file project|app|landing page|landingpage|website|portfolio site|web page|page|ui design|ui)\s*(for|about|on)?\s*/i, '')
       .replace(/\?+$/, '')
       .trim();
-    const topic = rawTopic && rawTopic.length > 2 ? rawTopic : 'Modern Digital Product';
+    const topic = rawTopic && rawTopic.length > 2 ? rawTopic : 'Interactive Web Application';
     const topicClean = topic.replace(/^(an?\s+|the\s+)/i, '');
     const formattedTitle = topicClean.replace(/\b\w/g, c => c.toUpperCase());
 
-    const code = generateLandingPageCode({
-      title: formattedTitle,
-      tagline: `Engineered for modern performance, speed, and scale. Built specifically for ${formattedTitle}.`,
-      cta: 'Get Started Today',
-      includeTestimonials: true,
-      includePricing: true
-    });
+    const project = generateDynamicMultiFileProject(formattedTitle);
+    const mainFile = project.nodes.find(n => n.id === project.activeFileId) || project.nodes.find(n => n.type === 'file');
+    const fileCount = project.nodes.filter(n => n.type === 'file').length;
+    const folderCount = project.nodes.filter(n => n.type === 'folder' && n.id !== 'root').length;
 
     const think = `Godfy Brain Deliberation:${memoryNote}
-- Input: User requested a landing page for "${formattedTitle}".
+- Input: User requested a complete multi-file project for "${formattedTitle}".
 - Cortex Lobe Dispatch:
-  * Layout & Structure: Formulated clean semantic sections (Hero, 3-Pillar Grid, Proof, Footer).
-  * Design Tokens: Calibrated signature White Cream (#FAF7EE) canvas with Cyan Light (#E0F7FA) focus accents.
-  * Conversion Copy: Tailored high-converting value propositions for "${formattedTitle}".
-  * Mobile Engine: Verified 44px minimum touch targets and responsive flex layouts.
-- What I'm going to do: Deliver a custom, production-ready landing page for "${formattedTitle}" with an interactive sandbox preview.`;
+  * Architecture Lobe: Synthesized full modular folder ("carpet") hierarchy with /src, /src/styles, /src/js, /src/js/components.
+  * Code AST Lobe: Generated zero-template responsive UI, interactive JavaScript engine, and design system.
+  * Integration Engine: Linked HTML templates, stylesheets, and modular scripts into an interactive runtime.
+- What I'm going to do: Deliver a multi-file project with ${fileCount} files across ${folderCount} folders ("carpets") ready to run and edit in the Studio.`;
 
-    const masterText = `Here is the custom landing page for **${formattedTitle}**!
+    const masterText = `I have generated a complete multi-file project for **${formattedTitle}** with **zero templates**!
 
-I designed it with conversion-focused sections:
-- **Hero & Value Proposition:** High-contrast headline tailored to **${formattedTitle}** with clear call-to-action.
-- **3-Pillar Feature Grid:** Highlighting core capabilities and architecture.
-- **Consensus & Proof:** Real-time performance and reliability metrics.
-- **Mobile Responsive:** Fluid layout with 44px minimum touch targets.
+### Project Structure (${fileCount} files in ${folderCount} folders/carpets):
+- 📁 **src/** (source root)
+  - 📁 **styles/** (\`main.css\` design system with Cream & Cyan Light palette)
+  - 📁 **js/** (\`app.js\` core runtime state)
+    - 📁 **components/** (\`data.js\` dynamic reactive logic)
+  - 📄 \`index.html\` (semantic HTML structure)
+  - 📄 \`README.md\` (project documentation & architecture)
 
-*Click **"Run Live Preview"** below to interact with the live page in the sandbox.*`;
+You can preview it live, or open the **Project Editor** to add new files, create new folders/carpets, rename files, and edit code.`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
       thinkTrace: deepCognitiveThink,
       masterText,
-      codeArtifact: code,
-      codeLanguage: 'html',
-      codeFileName: `${formattedTitle.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}_landing.html`,
+      codeArtifact: mainFile ? mainFile.content : null,
+      codeLanguage: mainFile ? mainFile.language : 'html',
+      codeFileName: mainFile ? mainFile.name : 'index.html',
+      projectData: project,
       extractions: [
-        `Architecture: Semantic HTML for ${formattedTitle}`,
-        'Styling: Tailwind design tokens in Cream & Cyan Light',
-        'Conversion: Custom copy & clear CTA',
-        'Accessibility: Mobile responsive with WCAG compliance'
+        `Architecture: Multi-file project for ${formattedTitle}`,
+        `Folders: ${folderCount} modular carpets (/src, /styles, /js, /components)`,
+        `Files: ${fileCount} source files generated without templates`,
+        'Preview: Live interactive bundle compiled'
       ],
       suggestedFollowUps: [
-        'Add an interactive pricing calculator',
-        'Add a dark mode toggle',
-        'Add smooth scroll animations'
+        'Open in Project Editor',
+        'Add a new carpet and file',
+        'Export full project'
       ]
     };
   }

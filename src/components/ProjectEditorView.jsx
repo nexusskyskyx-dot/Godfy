@@ -1,0 +1,644 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  Folder, FolderOpen, File, FileCode, Plus, Edit2, Trash2, Check, X,
+  Play, Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
+  Monitor, Tablet, Smartphone, Sparkles, Brain, ArrowLeft, Maximize2,
+  FolderPlus, FilePlus, Layers, Save, Terminal
+} from 'lucide-react';
+import { 
+  addFileToProject, 
+  addFolderToProject, 
+  renameProjectNode, 
+  deleteProjectNode, 
+  updateFileContent, 
+  toggleFolderOpen,
+  buildProjectPreviewBundle,
+  getLanguageFromFilename
+} from '../engine/projectEngine.js';
+
+export default function ProjectEditorView({
+  project,
+  onUpdateProject,
+  onBackToChat,
+  onAskMindToModify
+}) {
+  const [activeFileId, setActiveFileId] = useState(project?.activeFileId || null);
+  const [openTabIds, setOpenTabIds] = useState(project?.openTabIds || []);
+  const [viewMode, setViewMode] = useState('split'); // 'editor' | 'preview' | 'split'
+  const [viewport, setViewport] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
+  const [previewKey, setPreviewKey] = useState(0);
+
+  // Rename states
+  const [editingNodeId, setEditingNodeId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+
+  // Add new file / folder modals or inline inputs
+  const [creatingType, setCreatingType] = useState(null); // 'file' | 'folder' | null
+  const [creatingParentId, setCreatingParentId] = useState('root');
+  const [creatingName, setCreatingName] = useState('');
+
+  // Editor prompt bar state
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isAiExecuting, setIsAiExecuting] = useState(false);
+  const [copiedFile, setCopiedFile] = useState(false);
+
+  const editorTextareaRef = useRef(null);
+
+  // Sync active file with project changes
+  useEffect(() => {
+    if (project?.nodes) {
+      const files = project.nodes.filter(n => n.type === 'file');
+      if (files.length > 0 && (!activeFileId || !files.find(f => f.id === activeFileId))) {
+        setActiveFileId(files[0].id);
+        if (!openTabIds.includes(files[0].id)) {
+          setOpenTabIds(prev => [...prev, files[0].id]);
+        }
+      }
+    }
+  }, [project, activeFileId, openTabIds]);
+
+  const activeFile = useMemo(() => {
+    return project?.nodes?.find(n => n.id === activeFileId && n.type === 'file') || null;
+  }, [project, activeFileId]);
+
+  // Compute file and folder counts
+  const stats = useMemo(() => {
+    const files = project?.nodes?.filter(n => n.type === 'file') || [];
+    const folders = project?.nodes?.filter(n => n.type === 'folder' && n.id !== 'root') || [];
+    const totalLines = files.reduce((acc, f) => acc + (f.content?.split('\n').length || 0), 0);
+    return {
+      fileCount: files.length,
+      folderCount: folders.length,
+      totalLines
+    };
+  }, [project]);
+
+  // Generate live preview bundle
+  const previewHtml = useMemo(() => {
+    return buildProjectPreviewBundle(project);
+  }, [project, previewKey]);
+
+  // File explorer node actions
+  const handleStartRename = (e, node) => {
+    e.stopPropagation();
+    setEditingNodeId(node.id);
+    setEditingName(node.name);
+  };
+
+  const handleSaveRename = (nodeId) => {
+    if (!editingName.trim()) {
+      setEditingNodeId(null);
+      return;
+    }
+    const updated = renameProjectNode(project, nodeId, editingName.trim());
+    onUpdateProject(updated);
+    setEditingNodeId(null);
+    setEditingName('');
+  };
+
+  const handleDelete = (e, nodeId) => {
+    e.stopPropagation();
+    if (confirm('Delete this item from project?')) {
+      const updated = deleteProjectNode(project, nodeId);
+      onUpdateProject(updated);
+      setOpenTabIds(prev => prev.filter(id => id !== nodeId));
+    }
+  };
+
+  const handleStartCreate = (type, parentId = 'root') => {
+    setCreatingType(type);
+    setCreatingParentId(parentId);
+    setCreatingName(type === 'file' ? 'new_file.js' : 'new_carpet');
+  };
+
+  const handleConfirmCreate = () => {
+    if (!creatingName.trim()) {
+      setCreatingType(null);
+      return;
+    }
+    let updated;
+    if (creatingType === 'file') {
+      updated = addFileToProject(project, creatingParentId, creatingName.trim(), '// Start coding here\n');
+      const newFile = updated.nodes.find(n => n.name === creatingName.trim() && n.parentId === creatingParentId);
+      if (newFile) {
+        setActiveFileId(newFile.id);
+        setOpenTabIds(prev => [...prev, newFile.id]);
+      }
+    } else {
+      updated = addFolderToProject(project, creatingParentId, creatingName.trim());
+    }
+    onUpdateProject(updated);
+    setCreatingType(null);
+    setCreatingName('');
+  };
+
+  const handleOpenFile = (fileNode) => {
+    setActiveFileId(fileNode.id);
+    if (!openTabIds.includes(fileNode.id)) {
+      setOpenTabIds(prev => [...prev, fileNode.id]);
+    }
+  };
+
+  const handleCloseTab = (e, fileId) => {
+    e.stopPropagation();
+    const nextTabs = openTabIds.filter(id => id !== fileId);
+    setOpenTabIds(nextTabs);
+    if (activeFileId === fileId) {
+      setActiveFileId(nextTabs.length > 0 ? nextTabs[nextTabs.length - 1] : null);
+    }
+  };
+
+  const handleCodeChange = (newCode) => {
+    if (!activeFile) return;
+    const updated = updateFileContent(project, activeFile.id, newCode);
+    onUpdateProject(updated);
+  };
+
+  const handleCopyActiveCode = () => {
+    if (!activeFile) return;
+    navigator.clipboard.writeText(activeFile.content);
+    setCopiedFile(true);
+    setTimeout(() => setCopiedFile(false), 2000);
+  };
+
+  const handleDownloadActiveFile = () => {
+    if (!activeFile) return;
+    const blob = new Blob([activeFile.content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = activeFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadWholeProject = () => {
+    const files = project?.nodes?.filter(n => n.type === 'file') || [];
+    if (files.length === 0) return;
+
+    // Create a combined source file manifest
+    const manifest = files.map(f => `=== FILE: ${f.path} ===\n\n${f.content}\n\n`).join('=' .repeat(50) + '\n\n');
+    const blob = new Blob([manifest], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${project.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_full_project.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleAiExecute = async (e) => {
+    e.preventDefault();
+    if (!aiPrompt.trim() || isAiExecuting) return;
+    setIsAiExecuting(true);
+    try {
+      if (onAskMindToModify) {
+        await onAskMindToModify(aiPrompt.trim(), project);
+      }
+      setAiPrompt('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAiExecuting(false);
+    }
+  };
+
+  // Render tree node recursively
+  const renderTree = (parentId = 'root', depth = 0) => {
+    const children = project?.nodes?.filter(n => n.parentId === parentId) || [];
+    // Sort: folders first, then files
+    const sorted = [...children].sort((a, b) => {
+      if (a.type === b.type) return a.name.localeCompare(b.name);
+      return a.type === 'folder' ? -1 : 1;
+    });
+
+    return (
+      <div className="space-y-0.5">
+        {sorted.map(node => {
+          const isFolder = node.type === 'folder';
+          const isActive = node.id === activeFileId;
+          const isEditing = node.id === editingNodeId;
+
+          return (
+            <div key={node.id} style={{ paddingLeft: `${depth * 12}px` }}>
+              <div 
+                onClick={() => {
+                  if (isFolder) {
+                    onUpdateProject(toggleFolderOpen(project, node.id));
+                  } else {
+                    handleOpenFile(node);
+                  }
+                }}
+                className={`group flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer select-none ${
+                  isActive 
+                    ? 'bg-cyanlight-100 text-cyan-950 font-bold border border-cyanlight-200' 
+                    : 'text-slate-700 hover:bg-cream-100/80 hover:text-slate-950'
+                }`}
+              >
+                <div className="flex items-center space-x-1.5 truncate flex-1 min-w-0 pr-1">
+                  {isFolder ? (
+                    <>
+                      {node.isOpen ? (
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      ) : (
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                      )}
+                      {node.isOpen ? (
+                        <FolderOpen className="w-3.5 h-3.5 text-cyan-600 flex-shrink-0" />
+                      ) : (
+                        <Folder className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                      )}
+                    </>
+                  ) : (
+                    <FileCode className={`w-3.5 h-3.5 flex-shrink-0 ${
+                      node.name.endsWith('.html') ? 'text-orange-500' :
+                      node.name.endsWith('.css') ? 'text-blue-500' :
+                      node.name.endsWith('.js') ? 'text-amber-500' :
+                      node.name.endsWith('.json') ? 'text-emerald-500' : 'text-slate-500'
+                    }`} />
+                  )}
+
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveRename(node.id);
+                        if (e.key === 'Escape') setEditingNodeId(null);
+                      }}
+                      onBlur={() => handleSaveRename(node.id)}
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-white border border-cyan-400 rounded px-1 text-xs text-slate-900 font-mono w-full focus:outline-none"
+                    />
+                  ) : (
+                    <span className="truncate">{node.name}</span>
+                  )}
+                </div>
+
+                {/* Node hover controls */}
+                {!isEditing && (
+                  <div className="opacity-0 group-hover:opacity-100 flex items-center space-x-1 flex-shrink-0">
+                    {isFolder && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleStartCreate('file', node.id); }}
+                          className="p-1 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          title="Add file inside carpet"
+                        >
+                          <FilePlus className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleStartCreate('folder', node.id); }}
+                          className="p-1 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          title="Add sub-carpet"
+                        >
+                          <FolderPlus className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={(e) => handleStartRename(e, node)}
+                      className="p-1 hover:bg-white rounded text-slate-500 hover:text-slate-900"
+                      title="Rename"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </button>
+                    {node.id !== 'root' && (
+                      <button
+                        onClick={(e) => handleDelete(e, node.id)}
+                        className="p-1 hover:bg-white rounded text-slate-400 hover:text-rose-600"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Render children if folder is open */}
+              {isFolder && node.isOpen && renderTree(node.id, depth + 1)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] bg-white overflow-hidden">
+      {/* Top Studio Bar */}
+      <div className="h-14 border-b border-cream-200 px-4 flex items-center justify-between bg-cream-50/70">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onBackToChat}
+            className="p-1.5 rounded-xl hover:bg-cream-100 text-slate-600 hover:text-slate-950 transition flex items-center space-x-1 text-xs font-semibold"
+            title="Back to Godfy Chat"
+          >
+            <ArrowLeft className="w-4 h-4 text-cyan-700" />
+            <span className="hidden sm:inline">Chat</span>
+          </button>
+
+          <div className="h-5 w-px bg-cream-300"></div>
+
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 rounded-lg bg-cyanlight-200 border border-cyanlight-300 flex items-center justify-center text-cyan-900">
+              <Layers className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <h2 className="text-xs font-black text-slate-900 truncate max-w-[160px] sm:max-w-xs">
+                {project?.name || 'Untitled Project'}
+              </h2>
+              <span className="text-[10px] font-mono text-slate-500">
+                {stats.fileCount} files • {stats.folderCount} carpets • {stats.totalLines} lines
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* View mode switcher */}
+        <div className="flex items-center space-x-2">
+          <div className="inline-flex rounded-xl bg-cream-200/80 p-0.5 border border-cream-300 text-xs font-mono">
+            <button
+              onClick={() => setViewMode('editor')}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                viewMode === 'editor' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Code Only
+            </button>
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                viewMode === 'split' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Split View
+            </button>
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`px-2.5 py-1 rounded-lg transition ${
+                viewMode === 'preview' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Live Preview
+            </button>
+          </div>
+
+          <button
+            onClick={handleDownloadWholeProject}
+            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+            title="Download full project code manifest"
+          >
+            <Download className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden md:inline">Export Project</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Workspace Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel: File & Carpet Tree Explorer */}
+        <aside className="w-60 sm:w-64 border-r border-cream-200 flex flex-col bg-[#FDFBF7] flex-shrink-0">
+          <div className="p-3 border-b border-cream-200 flex items-center justify-between text-xs font-mono">
+            <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px]">
+              Files & Carpets
+            </span>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => handleStartCreate('file', 'root')}
+                className="p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                title="New File (Nuevo Archivo)"
+              >
+                <FilePlus className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => handleStartCreate('folder', 'root')}
+                className="p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                title="New Carpet / Folder (Nueva Carpeta)"
+              >
+                <FolderPlus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Creation input if active */}
+          {creatingType && (
+            <div className="p-2 bg-cyanlight-50 border-b border-cyanlight-200 text-xs font-mono">
+              <div className="text-[10px] text-cyan-900 font-bold mb-1">
+                New {creatingType === 'file' ? 'File' : 'Carpet / Folder'}:
+              </div>
+              <div className="flex items-center space-x-1">
+                <input
+                  type="text"
+                  value={creatingName}
+                  onChange={(e) => setCreatingName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleConfirmCreate();
+                    if (e.key === 'Escape') setCreatingType(null);
+                  }}
+                  autoFocus
+                  placeholder={creatingType === 'file' ? 'filename.js' : 'folder_name'}
+                  className="w-full bg-white border border-cyan-400 rounded px-1.5 py-1 text-xs font-mono focus:outline-none"
+                />
+                <button
+                  onClick={handleConfirmCreate}
+                  className="p-1 bg-cyan-400 text-slate-950 rounded hover:bg-cyan-300"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => setCreatingType(null)}
+                  className="p-1 bg-cream-200 text-slate-600 rounded hover:bg-cream-300"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tree Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-2">
+            {renderTree('root', 0)}
+          </div>
+        </aside>
+
+        {/* Center: Code Editor Panel */}
+        {(viewMode === 'editor' || viewMode === 'split') && (
+          <div className={`flex flex-col bg-[#0F172A] min-w-0 ${viewMode === 'split' ? 'w-1/2 border-r border-slate-800' : 'flex-1'}`}>
+            {/* Editor Tabs Bar */}
+            <div className="h-10 bg-[#090D16] border-b border-slate-800 flex items-center px-2 overflow-x-auto space-x-1 flex-shrink-0">
+              {openTabIds.map(tabId => {
+                const file = project?.nodes?.find(n => n.id === tabId);
+                if (!file) return null;
+                const isTabActive = file.id === activeFileId;
+
+                return (
+                  <div
+                    key={file.id}
+                    onClick={() => setActiveFileId(file.id)}
+                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg text-xs font-mono transition cursor-pointer select-none border-t-2 ${
+                      isTabActive
+                        ? 'bg-[#0F172A] border-cyan-400 text-cyan-300 font-semibold'
+                        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    }`}
+                  >
+                    <FileCode className="w-3 h-3" />
+                    <span className="truncate max-w-[120px]">{file.name}</span>
+                    <button
+                      onClick={(e) => handleCloseTab(e, file.id)}
+                      className="hover:text-rose-400 p-0.5 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Active file breadcrumb & actions */}
+            {activeFile && (
+              <div className="px-4 py-1.5 bg-[#0A0E1A] border-b border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+                <span className="text-[11px] truncate">{activeFile.path}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] text-cyan-400 uppercase font-semibold">
+                    {activeFile.language}
+                  </span>
+                  <button
+                    onClick={handleCopyActiveCode}
+                    className="p-1 hover:text-white rounded text-slate-400"
+                    title="Copy File Code"
+                  >
+                    {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={handleDownloadActiveFile}
+                    className="p-1 hover:text-white rounded text-slate-400"
+                    title="Download File"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Code Content Area */}
+            {activeFile ? (
+              <div className="flex-1 flex overflow-hidden relative">
+                {/* Line Numbers */}
+                <div className="w-12 bg-[#090D16] text-slate-600 font-mono text-xs text-right pr-3 pt-3 select-none overflow-hidden">
+                  {activeFile.content.split('\n').map((_, idx) => (
+                    <div key={idx} className="leading-relaxed">{idx + 1}</div>
+                  ))}
+                </div>
+
+                {/* Editable Codearea */}
+                <textarea
+                  ref={editorTextareaRef}
+                  value={activeFile.content}
+                  onChange={(e) => handleCodeChange(e.target.value)}
+                  spellCheck="false"
+                  className="flex-1 bg-[#0F172A] text-slate-100 font-mono text-xs p-3 leading-relaxed focus:outline-none resize-none overflow-auto"
+                />
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-slate-500 font-mono text-xs">
+                Select or create a file to start editing.
+              </div>
+            )}
+
+            {/* Bottom Mind AI Command Bar */}
+            <form onSubmit={handleAiExecute} className="p-2.5 bg-[#090D16] border-t border-slate-800 flex items-center space-x-2">
+              <div className="p-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400">
+                <Brain className="w-3.5 h-3.5" />
+              </div>
+              <input
+                type="text"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="Ask Godfy Mind to create new files, carpets, or refactor code..."
+                className="flex-1 bg-[#0F172A] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-400"
+              />
+              <button
+                type="submit"
+                disabled={!aiPrompt.trim() || isAiExecuting}
+                className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs font-mono transition disabled:opacity-40"
+              >
+                {isAiExecuting ? 'Executing...' : 'Apply'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Right: Live Preview Panel */}
+        {(viewMode === 'preview' || viewMode === 'split') && (
+          <div className={`flex flex-col bg-slate-100 min-w-0 ${viewMode === 'split' ? 'w-1/2' : 'flex-1'}`}>
+            {/* Preview Toolbar */}
+            <div className="h-10 bg-white border-b border-cream-200 px-3 flex items-center justify-between">
+              <div className="flex items-center space-x-1 text-xs font-mono text-slate-500">
+                <Eye className="w-3.5 h-3.5 text-cyan-600" />
+                <span className="font-bold text-slate-800 text-[11px]">Interactive Preview</span>
+              </div>
+
+              {/* Viewport controls */}
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => setViewport('desktop')}
+                  className={`p-1 rounded ${viewport === 'desktop' ? 'bg-cream-100 text-cyan-800 font-bold' : 'text-slate-400'}`}
+                  title="Desktop (100%)"
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewport('tablet')}
+                  className={`p-1 rounded ${viewport === 'tablet' ? 'bg-cream-100 text-cyan-800 font-bold' : 'text-slate-400'}`}
+                  title="Tablet (768px)"
+                >
+                  <Tablet className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewport('mobile')}
+                  className={`p-1 rounded ${viewport === 'mobile' ? 'bg-cream-100 text-cyan-800 font-bold' : 'text-slate-400'}`}
+                  title="Mobile (375px)"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPreviewKey(k => k + 1)}
+                  className="p-1 hover:bg-cream-100 rounded text-slate-500 transition ml-2"
+                  title="Reload Preview"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Iframe Container */}
+            <div className="flex-1 bg-slate-200/80 p-2 sm:p-4 flex items-center justify-center overflow-auto">
+              <div 
+                className={`bg-white rounded-xl shadow-lg overflow-hidden border border-slate-300 transition-all duration-300 h-full ${
+                  viewport === 'desktop' ? 'w-full' :
+                  viewport === 'tablet' ? 'w-[768px] max-w-full' : 'w-[375px] max-w-full'
+                }`}
+              >
+                <iframe
+                  key={previewKey}
+                  srcDoc={previewHtml}
+                  title="Project Live Preview"
+                  sandbox="allow-scripts allow-modals allow-forms allow-same-origin"
+                  className="w-full h-full border-0"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

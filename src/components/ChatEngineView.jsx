@@ -3,7 +3,7 @@ import {
   Send, Sparkles, Brain, Users, Eye, Copy, Check, ChevronDown, ChevronUp, 
   RotateCcw, Code, Download, ExternalLink, X, Monitor, Tablet, Smartphone,
   Layers, ArrowRight, Zap, CheckCircle2, Globe, Bot, Image as ImageIcon,
-  ZoomIn, Search, ChevronLeft, ChevronRight
+  ZoomIn, Search, ChevronLeft, ChevronRight, FolderTree, FileCode
 } from 'lucide-react';
 import { marked } from 'marked';
 import { MIND_PRESETS } from '../engine/models.js';
@@ -40,7 +40,8 @@ export default function ChatEngineView({
   isProcessing,
   streamMessage,
   mindPreset,
-  setMindPreset
+  setMindPreset,
+  onOpenProjectInEditor
 }) {
   const [inputText, setInputText] = useState('');
   const [expandedThinks, setExpandedThinks] = useState({});
@@ -522,6 +523,50 @@ export default function ChatEngineView({
                   />
                 )}
 
+                {/* Multi-File Project Studio Card (Zero Templates) */}
+                {!isUser && msg.projectData && (
+                  <div className="mt-4 rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-[#0C1B2A] text-white border border-cyan-800/60 shadow-lg p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-600/60 flex items-center justify-center text-cyan-300">
+                          <Layers className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-bold text-sm text-slate-100">{msg.projectData.name}</h4>
+                            <span className="px-2 py-0.5 rounded-full bg-cyan-900/60 text-cyan-300 text-[10px] font-mono border border-cyan-700/60 font-semibold">
+                              Multi-File Project
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {msg.projectData.nodes.filter(n => n.type === 'file').length} files across {msg.projectData.nodes.filter(n => n.type === 'folder' && n.id !== 'root').length} carpets (folders) • Zero templates
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => onOpenProjectInEditor && onOpenProjectInEditor(msg.projectData)}
+                          className="px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+                        >
+                          <FolderTree className="w-3.5 h-3.5" />
+                          <span>Open in Project Editor</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Folder & File Tree Preview */}
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                      {msg.projectData.nodes.filter(n => n.type === 'file').slice(0, 4).map(file => (
+                        <div key={file.id} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center space-x-2">
+                          <FileCode className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                          <span className="truncate text-slate-300 text-[11px]">{file.path}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Code & Landing Page Artifact Card */}
                 {!isUser && msg.codeArtifact && (
                   <div className="mt-4 rounded-xl bg-slate-950 text-white border border-slate-800 shadow-md overflow-hidden">
@@ -553,6 +598,21 @@ export default function ChatEngineView({
 
                       {/* Actions */}
                       <div className="flex items-center space-x-1.5">
+                        <button
+                          onClick={() => {
+                            if (msg.projectData && onOpenProjectInEditor) {
+                              onOpenProjectInEditor(msg.projectData);
+                            } else if (onOpenProjectInEditor) {
+                              onOpenProjectInEditor();
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 font-bold text-xs flex items-center space-x-1 transition shadow-sm active:scale-95"
+                          title="Open in Project Studio"
+                        >
+                          <FolderTree className="w-3.5 h-3.5" />
+                          <span>Editor</span>
+                        </button>
+
                         {msg.codeLanguage === 'html' && (
                           <button
                             onClick={() => setPreviewModalArtifact(msg.codeArtifact)}
