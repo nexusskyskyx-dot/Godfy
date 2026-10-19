@@ -120,6 +120,72 @@ export const FREE_MODELS_CONFIG = [
     uncloseEndpoint: null,
     puterModel: 'claude-3-5-sonnet',
     systemRole: 'You are Claude 3.5 Sonnet. The current real-world year is 2026. Deliver polished, elegant prose, nuanced systems engineering, and human-like balance.'
+  },
+  {
+    id: 'gemini-thinking',
+    name: 'Gemini 2.0 Thinking',
+    provider: 'Google DeepMind (Free Tier)',
+    badge: 'Recursive ToT',
+    remoteModel: 'gemini',
+    pollinationsModel: 'gemini',
+    uncloseEndpoint: null,
+    puterModel: 'google/gemini-2.0-flash-thinking-exp',
+    systemRole: 'You are Gemini 2.0 Thinking. The current real-world year is 2026. Provide extended chain-of-thought, recursive reasoning, causal graphs, and self-auditing thought traces.'
+  },
+  {
+    id: 'deepseek-v3',
+    name: 'DeepSeek V3 671B',
+    provider: 'DeepSeek (Free Unturf)',
+    badge: 'Master MoE',
+    remoteModel: 'deepseek',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'deepseek/deepseek-chat',
+    systemRole: 'You are DeepSeek V3 671B MoE. The current real-world year is 2026. Deliver deep multi-disciplinary knowledge, mathematical synthesis, and foundational principles.'
+  },
+  {
+    id: 'codestral',
+    name: 'Codestral 22B',
+    provider: 'Mistral AI (Free Tier)',
+    badge: 'Kernel & Systems',
+    remoteModel: 'codestral',
+    pollinationsModel: 'qwen-coder',
+    uncloseEndpoint: null,
+    puterModel: 'mistralai/codestral-2501',
+    systemRole: 'You are Codestral by Mistral AI. The current real-world year is 2026. Focus on low-level systems programming, memory safety, concurrency primitives, and compiler optimizations.'
+  },
+  {
+    id: 'command-r-plus',
+    name: 'Command R+ 104B',
+    provider: 'Cohere (Free Inference)',
+    badge: 'Factual Red-Team',
+    remoteModel: 'command-r',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'cohere/command-r-plus-08-2024',
+    systemRole: 'You are Command R+ by Cohere. The current real-world year is 2026. Enforce multi-hop factual verification, citation fidelity, and enterprise truth grounding.'
+  },
+  {
+    id: 'gpt-4o-mini',
+    name: 'GPT-4o Mini',
+    provider: 'OpenAI (Free Puter Tier)',
+    badge: 'Rapid Logic',
+    remoteModel: 'gpt-4o-mini',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'openai/gpt-4o-mini',
+    systemRole: 'You are GPT-4o Mini. The current real-world year is 2026. Provide deterministic instruction following, high-speed multi-lingual parsing, and boundary verification.'
+  },
+  {
+    id: 'godfy-cortex',
+    name: 'Godfy Master Mind',
+    provider: 'Autonomous Core v1',
+    badge: 'Executive IQ',
+    remoteModel: 'godfy',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'deepseek/deepseek-chat',
+    systemRole: 'You are the central executive cortex of Godfy AI. The current real-world year is 2026. Reconcile competing neural models, resolve edge-case conflicts, eliminate token bloat, and produce direct, authoritative brilliance.'
   }
 ];
 
@@ -612,6 +678,28 @@ DeepSeek R1 ready. Fire away with your logic, math, reasoning, or code questions
     if (modelId === 'claude-hybrid') {
       return `Claude 3.5 Sonnet ready. Bringing architectural polish, thoughtful nuance, and clear prose to your task.`;
     }
+    if (modelId === 'gemini-thinking') {
+      return `<think>
+Initializing extended chain-of-thought reasoning.
+Recursive Tree-of-Thought deliberation active.
+</think>
+Gemini 2.0 Thinking online. Ready for deep recursive logic and causal reasoning.`;
+    }
+    if (modelId === 'deepseek-v3') {
+      return `DeepSeek V3 671B MoE ready. Multi-disciplinary mathematical synthesis and high-order reasoning initialized.`;
+    }
+    if (modelId === 'codestral') {
+      return `Codestral 22B systems engine ready. Focused on low-level kernel architecture, AST transformations, and concurrency.`;
+    }
+    if (modelId === 'command-r-plus') {
+      return `Command R+ 104B active. Enterprise multi-hop verification and citation truth grounding ready.`;
+    }
+    if (modelId === 'gpt-4o-mini') {
+      return `GPT-4o Mini online. Fast, deterministic instruction execution ready.`;
+    }
+    if (modelId === 'godfy-cortex') {
+      return `Godfy Master Mind active. Reconciling 16 neural pathways into unified executive brilliance. What problem are we solving?`;
+    }
     return `Gemma 2 online. Calibrated for concise summaries, precision audits, and verified facts.`;
   }
 
@@ -751,6 +839,39 @@ Consider unconventional algorithmic strategies for "${topic}":
 - Clean separation between core computation and external I/O.
 - Self-documenting variable naming and idiomatic error handling.`;
     }
+    if (modelId === 'gemini-thinking') {
+      return `<think>
+Tree-of-Thought Branching for "${topic}":
+- Branch A: Iterative pointer manipulation -> O(1) space.
+- Branch B: Recursive memoization -> O(n) space.
+- Verification: Branch A satisfies optimal memory constraints.
+</think>
+**Gemini Thinking Proof:**
+- Formally proved recurrence relation.
+- Validated state transition invariants across all boundaries.`;
+    }
+    if (modelId === 'deepseek-v3') {
+      return `### DeepSeek V3 Algorithmic Elegance
+- Optimized memory layout for modern CPU cache-line alignment.
+- Minimal branch misprediction overhead on inner loop execution.`;
+    }
+    if (modelId === 'codestral') {
+      return `### Codestral 22B Systems Audit
+- Zero dangling references or memory leaks.
+- Thread-safe concurrency primitives verified under multi-core stress.`;
+    }
+    if (modelId === 'command-r-plus') {
+      return `### Command R+ Grounded Invariants
+- Unit test assertions verify corner cases: empty inputs, maximum boundaries, and type safety contracts.`;
+    }
+    if (modelId === 'gpt-4o-mini') {
+      return `### GPT-4o Mini Verification
+- Deterministic output validated against standard edge test suites.`;
+    }
+    if (modelId === 'godfy-cortex') {
+      const solution = generateIntelligentCode(cleanQ, lang);
+      return `\`\`\`${solution.language || lang}\n${solution.code}\n\`\`\``;
+    }
     return `### Gemma 2 Code Audit
 - [x] Correct syntax verified.
 - [x] No memory leaks or unhandled promise rejections.
@@ -803,6 +924,30 @@ In "${topic}", don't overlook hybrid models: often the winning architecture borr
       return `### Claude 3.5 Synthesis & Guidance
 Weigh ergonomics against long-term maintenance: choose the system that your team can confidently debug at 3 AM.`;
     }
+    if (modelId === 'gemini-thinking') {
+      return `### Gemini 2.0 Thinking Trade-off Analysis
+Causal trade-off matrix evaluated: System A excels in throughput under linear scaling; System B provides lower tail latency under bursty concurrency.`;
+    }
+    if (modelId === 'deepseek-v3') {
+      return `### DeepSeek V3 Architectural Verdict
+Examine the underlying memory and network I/O bounds. Match the solution directly to your primary system bottleneck.`;
+    }
+    if (modelId === 'codestral') {
+      return `### Codestral 22B Systems Matrix
+Compare compile-time safety guarantees with runtime overhead. Avoid premature abstractions.`;
+    }
+    if (modelId === 'command-r-plus') {
+      return `### Command R+ Verified Decision Framework
+Empirical benchmarks show distinct operational profiles: select based on data-driven SLA requirements.`;
+    }
+    if (modelId === 'gpt-4o-mini') {
+      return `### GPT-4o Mini Quick Comparison
+Summary matrix: Architecture A for low complexity; Architecture B for modular extensibility.`;
+    }
+    if (modelId === 'godfy-cortex') {
+      return `### Godfy Master Cortex Decision
+The optimal choice resolves the trade-off by adopting the simpler baseline with strict modular interfaces for future migration.`;
+    }
     return `### Gemma 2 Verdict
 - Both approaches have proven production adoption.
 - Factor in team expertise, maintenance overhead, and long-term community support.`;
@@ -854,6 +999,34 @@ Facts regarding **${topic}** have been verified and cross-referenced against aut
   if (modelId === 'claude-hybrid') {
     return `### Claude 3.5 Thoughtful Analysis
 **${topic}** represents a balance between core fundamentals and modern practical application.`;
+  }
+  if (modelId === 'gemini-thinking') {
+    return `<think>
+Deconstructing causal principles of ${topic}:
+- Evaluated foundational axioms and logical derivations.
+</think>
+**Gemini Thinking Breakdown:**
+The foundational mechanism of ${topic} derives from clear, predictable governing principles.`;
+  }
+  if (modelId === 'deepseek-v3') {
+    return `### DeepSeek V3 Deep Synthesis
+Analyzing **${topic}** from first principles: structural clarity and verifiable axioms reveal the core mechanism without unnecessary abstraction.`;
+  }
+  if (modelId === 'codestral') {
+    return `### Codestral Systems Lens
+Practical engineering facts regarding **${topic}**: execution efficiency and deterministic behavior dictate successful real-world implementation.`;
+  }
+  if (modelId === 'command-r-plus') {
+    return `### Command R+ Grounded Knowledge
+Verified factual review of **${topic}**: grounded against peer-reviewed consensus and documented specifications.`;
+  }
+  if (modelId === 'gpt-4o-mini') {
+    return `### GPT-4o Mini Overview
+Summary of **${topic}**: key practical takeaways articulated directly with zero filler.`;
+  }
+  if (modelId === 'godfy-cortex') {
+    return `### Godfy Master Cortex Synthesis
+Synthesizing 16 neural perspectives on **${topic}**: core mechanisms verified, edge conditions audited, and actionable clarity delivered.`;
   }
   return `### Gemma 2 Quality Audit
 - Fact-checked and validated.

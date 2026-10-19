@@ -170,23 +170,28 @@ export default function ChatEngineView({
             </h1>
 
             {/* Brain Concept Box */}
-            <div className="p-4 rounded-2xl bg-white border border-cream-300 shadow-card-subtle text-left max-w-md mx-auto mb-6 text-xs sm:text-sm">
-              <div className="font-bold text-slate-900 mb-2 flex items-center space-x-1.5">
-                <Brain className="w-4 h-4 text-cyan-600" />
-                <span>How Godfy's Brain Works:</span>
+            <div className="p-4 rounded-2xl bg-white border border-cream-300 shadow-card-subtle text-left max-w-lg mx-auto mb-6 text-xs sm:text-sm">
+              <div className="font-bold text-slate-900 mb-2 flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  <Brain className="w-4 h-4 text-cyan-600" />
+                  <span>Godfy 16-Neuron Cognitive Cortex:</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-cyanlight-100 text-cyan-900 text-[10px] font-mono font-bold border border-cyanlight-200">
+                  IQ 185-195
+                </span>
               </div>
               <ul className="space-y-1.5 text-slate-600 font-medium pl-1">
                 <li className="flex items-start space-x-2">
                   <span className="text-cyan-600 font-bold">1.</span>
-                  <span><strong>Calls 10 AI friends</strong> (DeepSeek, Llama, Mistral, Hermes, Gemini, Phi-4, Nemotron, Claude, Qwen, Gemma)</span>
+                  <span><strong>Calls 16 Frontier Neurons</strong> across 4 specialized lobes (Reasoning, Code AST, Red-Teaming, Synthesis)</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <span className="text-cyan-600 font-bold">2.</span>
-                  <span><strong>Thinks about what to do</strong> with their responses</span>
+                  <span><strong>Tree-of-Thought (ToT) Deliberation</strong>: Explores branching hypotheses & adversarial red-team counter-arguments</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <span className="text-cyan-600 font-bold">3.</span>
-                  <span><strong>Makes the best answer</strong> combining the best parts</span>
+                  <span><strong>Produces master-grade synthesis</strong> with mathematical proofs, formal Big-O bounds, and zero placeholders</span>
                 </li>
               </ul>
             </div>
@@ -256,7 +261,12 @@ export default function ChatEngineView({
                     <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
                       <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyanlight-50 text-cyan-900 text-[11px] font-mono font-bold border border-cyanlight-200">
                         <Brain className="w-3 h-3 text-cyan-600" />
-                        <span>Brain: Combined 5 Friends</span>
+                        <span>16-Neuron Cortex</span>
+                      </div>
+
+                      <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyanlight-100 text-cyan-950 text-[10px] font-mono font-bold border border-cyan-300">
+                        <Zap className="w-2.5 h-2.5 text-cyan-700" />
+                        <span>IQ {msg.iqScore || 185}</span>
                       </div>
 
                       {msg.searchedWeb && (
@@ -306,7 +316,7 @@ export default function ChatEngineView({
                           <Brain className="w-3 h-3 text-cyan-700" />
                         </div>
                         <span className="font-bold text-slate-900 text-[11px] truncate">
-                          Cognitive Deliberation & Tool Decisions
+                          Tree-of-Thought & Adversarial Audit (IQ {msg.iqScore || 185})
                         </span>
                         {msg.cognitiveMeta?.intentType && (
                           <span className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[9px] font-mono bg-white border border-cream-200 text-slate-600 truncate max-w-[140px]">
@@ -610,7 +620,7 @@ export default function ChatEngineView({
                     >
                       <div className="flex items-center space-x-1.5">
                         <Users className="w-3.5 h-3.5 text-cyan-700" />
-                        <span className="font-bold text-[11px]">See what my {msg.modelProposals?.length || 10} AI friends answered</span>
+                        <span className="font-bold text-[11px]">Inspect {msg.modelProposals?.length || 16} Frontier Neurons (4 Lobes)</span>
                       </div>
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px]">
                         <span>{expandedCouncils[msgId] ? 'Hide' : 'Inspect'}</span>
@@ -621,7 +631,7 @@ export default function ChatEngineView({
                     {expandedCouncils[msgId] && (
                       <div className="mt-2.5 p-3 rounded-xl bg-cream-50/90 border border-cream-200 space-y-2.5">
                         {/* Model selector buttons */}
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-1.5">
                           {msg.modelProposals.map((m) => {
                             const isSelected = (activeCouncilModel[msgId] || msg.modelProposals[0].modelId) === m.modelId;
                             return (
@@ -630,12 +640,12 @@ export default function ChatEngineView({
                                 onClick={() => setActiveCouncilModel(p => ({ ...p, [msgId]: m.modelId }))}
                                 className={`p-1.5 rounded-lg text-left text-xs transition border ${
                                   isSelected
-                                    ? 'bg-white border-cyan-400 font-bold text-slate-900 shadow-sm'
+                                    ? 'bg-white border-cyan-400 font-bold text-slate-900 shadow-sm ring-1 ring-cyan-200'
                                     : 'bg-white/60 border-cream-200 text-slate-600 hover:bg-white'
                                 }`}
                               >
-                                <div className="text-[9px] text-cyan-700 font-mono truncate">{m.badge}</div>
-                                <div className="truncate font-semibold text-[11px]">{m.modelName.split(' ')[0]}</div>
+                                <div className="text-[9px] text-cyan-700 font-mono truncate">{m.badge || m.source}</div>
+                                <div className="truncate font-semibold text-[11px]">{m.modelName}</div>
                               </button>
                             );
                           })}

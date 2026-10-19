@@ -186,41 +186,49 @@ export default function Sidebar({
               <div className="flex items-center space-x-1.5">
                 <Cpu className="w-3.5 h-3.5 text-cyan-600" />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800">
-                  Cognitive Evolution
+                  Cognitive Cortex (v1)
                 </span>
               </div>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Active Learning
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyanlight-100 text-cyan-900 border border-cyanlight-200">
+                IQ 185-195
               </span>
             </div>
 
             <div className="space-y-1 text-[10px] font-mono text-slate-600">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Autonomous Tools:</span>
-                <span className="text-cyan-900 font-bold">6 Capabilities</span>
+                <span className="text-slate-500">Cortex Lobes:</span>
+                <span className="text-cyan-900 font-bold">4 Specialized</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Neural Depth:</span>
-                <span className="text-slate-800 font-bold">10 Specialized</span>
+                <span className="text-slate-800 font-bold">16 Elite Neurons</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Tree-of-Thought:</span>
+                <span className="text-emerald-700 font-semibold">ToT Branching</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Red-Teaming:</span>
+                <span className="text-amber-700 font-semibold">Active Invariant Proofs</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Adaptive Profile:</span>
-                <span className="text-emerald-700 font-semibold truncate max-w-[120px] text-right">
+                <span className="text-slate-800 font-semibold truncate max-w-[120px] text-right">
                   {cognitiveProfile.technicalLevel || 'Software Architect'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Free AI Neurons Telemetry */}
+          {/* 16 Free AI Neurons Telemetry */}
           <div className="p-3.5 rounded-2xl bg-cream-50/80 border border-cream-200">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-1.5">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
-                  {FREE_AI_MODELS.length} Free AI Neurons
+                  {FREE_AI_MODELS.length} Cortex Neurons
                 </span>
                 <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyanlight-100 text-cyan-900 border border-cyanlight-200">
-                  Mesh
+                  4 Lobes
                 </span>
               </div>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

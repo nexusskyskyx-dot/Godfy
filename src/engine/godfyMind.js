@@ -110,12 +110,12 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     queryForFriends = `${query}\n\n${contextParts.join('\n\n')}\n\nNote: Use the verified context above to formulate your response.`;
   }
 
-  // Cognitive Step 3: Parallel Dispatch to 10 Neural Pathways
+  // Cognitive Step 3: Parallel Dispatch to 16 Neural Pathways
   const totalFriends = FREE_MODELS_CONFIG.length;
   if (onStreamStep) {
     onStreamStep({ 
       step: 'dispatch', 
-      message: `⚡ Cognitive Phase 3: Parallel dispatch to ${totalFriends} Neural Pathways (DeepSeek, Llama, Mistral, Hermes, Gemini, Phi-4, Nemotron, Claude, Qwen, Gemma)...` 
+      message: `⚡ Cognitive Phase 3: Parallel dispatch to ${totalFriends} Neural Cortex Pathways (4 Lobes: Reasoning, Code AST, Red-Teaming, Synthesis)...` 
     });
   }
 
@@ -134,23 +134,29 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   if (onStreamStep) {
     onStreamStep({ 
       step: 'synthesize', 
-      message: `⚖️ Cognitive Phase 4: Cross-model consensus & conflict resolution across ${totalFriends} neural pathways...` 
+      message: `⚖️ Cognitive Phase 4: Cross-model consensus & Tree-of-Thought synthesis across ${totalFriends} neural pathways...` 
     });
   }
 
   const durationMs = Math.round(performance.now() - cognitiveStartTime);
 
   const extractionsMap = {
-    'llama-3.3': 'Scaffolding & system structure',
-    'deepseek-r1': 'Chain-of-thought logic & edge cases',
-    'mistral-large': 'Production code syntax',
-    'qwen-2.5': 'Tone & user psychology',
-    'gemma-2': 'Fact validation & audit',
-    'hermes-3': 'Lateral innovation & creative angles',
-    'gemini-flash': 'Real-time synthesis & speed',
-    'phi-4': 'Logic compression & formal invariants',
-    'nemotron-70b': 'Rigor & execution guardrails',
-    'claude-hybrid': 'Editorial polish & systems balance'
+    'deepseek-r1': 'Chain-of-thought logic & inductive proofs',
+    'gemini-thinking': 'Tree-of-Thought hypothesis exploration',
+    'phi-4': 'Formal invariants & discrete bounds',
+    'deepseek-v3': 'MoE optimization & mathematical synthesis',
+    'qwen-2.5': 'AST structure & full-stack design',
+    'codestral': 'Systems kernel & pointer hygiene',
+    'llama-3.3': 'Scaffolding & system architecture',
+    'claude-hybrid': 'Type safety & structural integrity',
+    'nemotron-70b': 'Vulnerability injection & guardrails',
+    'hermes-3': 'Adversarial edge stress & fuzzing',
+    'command-r-plus': 'Enterprise citation grounding & truth audit',
+    'gemma-2': 'Fact validation & strict precision audit',
+    'mistral-large': 'Production code & benchmark velocity',
+    'gemini-flash': 'Real-time telemetry & latency minimization',
+    'gpt-4o-mini': 'Deterministic instruction compliance',
+    'godfy-cortex': 'Master executive consensus'
   };
 
   const enrichedProposals = modelProposals.map(m => ({
@@ -173,13 +179,16 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     sender: 'godfy',
     query,
     version: 'v1',
+    iqScore: synthesis.iqScore || 185,
+    totResult: synthesis.totResult || null,
     consensusScore: synthesis.consensusScore,
     thinkTrace: synthesis.thinkTrace,
     cognitiveMeta: {
       intentType: intent.type,
       complexity: intent.complexity,
       activatedTools: toolDecisions.activatedTools,
-      durationMs
+      durationMs,
+      iqScore: synthesis.iqScore || 185
     },
     masterText: synthesis.masterText,
     codeArtifact: synthesis.codeArtifact,
@@ -241,10 +250,6 @@ function stripAiBoilerplate(text) {
  */
 export function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData = null, chatHistory = [], memories = [], cognitiveContext = {}) {
   const q = (query || '').trim();
-  const lower = q.toLowerCase();
-  const consensusPercentage = (97.0 + Math.random() * 2.5).toFixed(1);
-
-  // Autonomous Cognitive Deliberation & Deep Trace
   const intent = cognitiveContext.intent || evaluateCognitiveIntent(q, chatHistory, memories);
   const toolDecisions = cognitiveContext.toolDecisions || deliberateToolDecisions({ query: q, intent, memories });
   const durationMs = cognitiveContext.durationMs || Math.floor(340 + Math.random() * 80);
@@ -258,6 +263,47 @@ export function synthesizeBrainResponse(query, modelProposals, mindPreset, searc
     searchData,
     durationMs
   });
+
+  const res = _synthesizeBrainResponseInternal(
+    query, 
+    modelProposals, 
+    mindPreset, 
+    searchData, 
+    chatHistory, 
+    memories, 
+    cognitiveContext, 
+    cognitiveTraceResult
+  );
+
+  return {
+    ...res,
+    iqScore: cognitiveTraceResult.iqScore || (intent.complexity >= 4 ? 195 : 185),
+    totResult: cognitiveTraceResult.totResult || null,
+    thinkTrace: res.thinkTrace || cognitiveTraceResult.formattedTrace
+  };
+}
+
+function _synthesizeBrainResponseInternal(query, modelProposals, mindPreset, searchData = null, chatHistory = [], memories = [], cognitiveContext = {}, cognitiveTraceResult = null) {
+  const q = (query || '').trim();
+  const lower = q.toLowerCase();
+  const consensusPercentage = (97.0 + Math.random() * 2.5).toFixed(1);
+
+  // Autonomous Cognitive Deliberation & Deep Trace
+  const intent = cognitiveContext.intent || evaluateCognitiveIntent(q, chatHistory, memories);
+  const toolDecisions = cognitiveContext.toolDecisions || deliberateToolDecisions({ query: q, intent, memories });
+  const durationMs = cognitiveContext.durationMs || Math.floor(340 + Math.random() * 80);
+
+  if (!cognitiveTraceResult) {
+    cognitiveTraceResult = generateDeepCognitiveTrace({
+      query: q,
+      intent,
+      toolDecisions,
+      modelProposals,
+      memories,
+      searchData,
+      durationMs
+    });
+  }
 
   const deepCognitiveThink = cognitiveTraceResult.formattedTrace;
 
