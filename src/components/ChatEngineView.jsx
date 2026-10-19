@@ -178,7 +178,7 @@ export default function ChatEngineView({
               <ul className="space-y-1.5 text-slate-600 font-medium pl-1">
                 <li className="flex items-start space-x-2">
                   <span className="text-cyan-600 font-bold">1.</span>
-                  <span><strong>Calls his friends</strong> (Llama, DeepSeek, Mistral, Qwen, Gemma) for ideas</span>
+                  <span><strong>Calls 10 AI friends</strong> (DeepSeek, Llama, Mistral, Hermes, Gemini, Phi-4, Nemotron, Claude, Qwen, Gemma)</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <span className="text-cyan-600 font-bold">2.</span>
@@ -560,7 +560,7 @@ export default function ChatEngineView({
                     >
                       <div className="flex items-center space-x-1.5">
                         <Users className="w-3.5 h-3.5 text-cyan-700" />
-                        <span className="font-bold text-[11px]">See what my 5 friends answered</span>
+                        <span className="font-bold text-[11px]">See what my {msg.modelProposals?.length || 10} AI friends answered</span>
                       </div>
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px]">
                         <span>{expandedCouncils[msgId] ? 'Hide' : 'Inspect'}</span>
@@ -729,7 +729,7 @@ export default function ChatEngineView({
           </div>
 
           <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mt-1.5 px-1">
-            <span>Godfy <strong>v1</strong> • Calls 5 AI Friends for ideas</span>
+            <span>Godfy <strong>v1</strong> • Calls 10 Free AI Friends (Neural Mesh)</span>
             <span>Colors: White Cream (#FAF7EE) • White • Cyan Light (#E0F7FA)</span>
           </div>
         </form>

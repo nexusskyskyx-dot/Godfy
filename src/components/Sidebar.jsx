@@ -176,22 +176,30 @@ export default function Sidebar({
             )}
           </div>
 
-          {/* 5 Free AIs Telemetry */}
+          {/* Free AI Neurons Telemetry */}
           <div className="p-3.5 rounded-2xl bg-cream-50/80 border border-cream-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
-                5 Free AI Mesh
-              </span>
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                  {FREE_AI_MODELS.length} Free AI Neurons
+                </span>
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyanlight-100 text-cyan-900 border border-cyanlight-200">
+                  Mesh
+                </span>
+              </div>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
               {FREE_AI_MODELS.map((m) => (
-                <div key={m.id} className="flex items-center justify-between text-[11px] text-slate-600">
-                  <div className="flex items-center space-x-1.5 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                <div key={m.id} className="flex items-center justify-between text-[11px] text-slate-600 hover:text-slate-900 transition">
+                  <div className="flex items-center space-x-1.5 truncate max-w-[60%]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0"></span>
                     <span className="truncate font-medium">{m.name}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-cyan-800">{m.latency}</span>
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-white text-slate-600 border border-cream-200 truncate max-w-[75px]">{m.badge}</span>
+                    <span className="text-[9px] font-mono text-cyan-800">{m.latency}</span>
+                  </div>
                 </div>
               ))}
             </div>

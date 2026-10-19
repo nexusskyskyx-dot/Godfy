@@ -5,12 +5,12 @@ import { FREE_AI_MODELS } from '../engine/models.js';
 export default function SettingsModal({ isOpen, onClose, mindPreset, setMindPreset }) {
   const [apiKey, setApiKey] = useState('');
   const [provider, setProvider] = useState('godfy-mind-core');
-  const [modelWeights, setModelWeights] = useState({
-    'llama-3.3': 85,
-    'deepseek-r1': 92,
-    'mistral-large': 88,
-    'qwen-2.5': 84,
-    'gemma-2': 81
+  const [modelWeights, setModelWeights] = useState(() => {
+    const init = {};
+    FREE_AI_MODELS.forEach(m => {
+      init[m.id] = Math.round((m.defaultWeight || 0.85) * 100);
+    });
+    return init;
   });
   const [savedNotice, setSavedNotice] = useState(false);
 

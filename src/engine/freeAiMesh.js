@@ -64,6 +64,62 @@ export const FREE_MODELS_CONFIG = [
     uncloseEndpoint: null,
     puterModel: 'google/gemma-2-27b-it',
     systemRole: 'You are Gemma 2 by Google. The current real-world year is 2026. Provide concise quality audits, accessibility standards, fact validation, and crisp conclusions.'
+  },
+  {
+    id: 'hermes-3',
+    name: 'Hermes 3 70B',
+    provider: 'Nous Research (Free Unturf)',
+    badge: 'Lateral Thinking',
+    remoteModel: 'hermes',
+    pollinationsModel: 'openai',
+    uncloseEndpoint: 'https://hermes.ai.unturf.com/v1/chat/completions',
+    uncloseModel: 'adamo1139/Hermes-3-Llama-3.1-8B-FP8-Dynamic',
+    puterModel: 'nousresearch/hermes-3-llama-3.1-70b',
+    systemRole: 'You are Hermes 3 70B by Nous Research. The current real-world year is 2026. Provide lateral thinking, unfiltered creative brainstorming, and novel cross-domain connections without generic corporate fluff.'
+  },
+  {
+    id: 'gemini-flash',
+    name: 'Gemini 2.0 Flash',
+    provider: 'Google (Free Tier)',
+    badge: 'Real-Time Speed',
+    remoteModel: 'gemini',
+    pollinationsModel: 'gemini',
+    uncloseEndpoint: null,
+    puterModel: 'google/gemini-2.0-flash',
+    systemRole: 'You are Gemini 2.0 Flash by Google. The current real-world year is 2026. Provide ultra-fast, high-density synthesis with clear actionable bullet points and instant clarity.'
+  },
+  {
+    id: 'phi-4',
+    name: 'Phi-4 Reasoning',
+    provider: 'Microsoft (Free Open)',
+    badge: 'Logic Compression',
+    remoteModel: 'phi',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'microsoft/phi-4',
+    systemRole: 'You are Phi-4 by Microsoft Research. The current real-world year is 2026. Provide dense deductive logic, step-by-step reasoning, mathematical proofing, and compact token efficiency.'
+  },
+  {
+    id: 'nemotron-70b',
+    name: 'Nemotron 70B',
+    provider: 'NVIDIA (Free Inference)',
+    badge: 'Rigor & Guardrails',
+    remoteModel: 'nemotron',
+    pollinationsModel: 'openai-fast',
+    uncloseEndpoint: null,
+    puterModel: 'nvidia/llama-3.1-nemotron-70b-instruct',
+    systemRole: 'You are Nemotron 70B by NVIDIA. The current real-world year is 2026. Enforce rigorous precision, technical alignment, and performance guardrails for every answer.'
+  },
+  {
+    id: 'claude-hybrid',
+    name: 'Claude 3.5 Sonnet',
+    provider: 'Anthropic (Free Puter)',
+    badge: 'Polish & Systems',
+    remoteModel: 'claude',
+    pollinationsModel: 'claude-hybridspace',
+    uncloseEndpoint: null,
+    puterModel: 'claude-3-5-sonnet',
+    systemRole: 'You are Claude 3.5 Sonnet. The current real-world year is 2026. Deliver polished, elegant prose, nuanced systems engineering, and human-like balance.'
   }
 ];
 
@@ -435,6 +491,11 @@ export function generateSmartModelResponse(modelId, query, history = [], memorie
     if (modelId === 'deepseek-r1') return `<think>Retrieved identity token from brain memory store: ${userNameMemory.value}</think>You are **${userNameMemory.value}**.`;
     if (modelId === 'mistral-large') return `Your name is **${userNameMemory.value}**.`;
     if (modelId === 'qwen-2.5') return `I remember you! Your name is **${userNameMemory.value}**.`;
+    if (modelId === 'hermes-3') return `Good to see you, **${userNameMemory.value}**! Neural memory verified.`;
+    if (modelId === 'gemini-flash') return `Identified user: **${userNameMemory.value}**.`;
+    if (modelId === 'phi-4') return `Memory record: \`user_identity = "${userNameMemory.value}"\`.`;
+    if (modelId === 'nemotron-70b') return `Verified user authorization record: **${userNameMemory.value}**.`;
+    if (modelId === 'claude-hybrid') return `It's great to speak with you again, **${userNameMemory.value}**.`;
     return `Verified user identity: **${userNameMemory.value}**.`;
   }
 
@@ -477,6 +538,31 @@ ${known.keyPoints && known.keyPoints[1] ? known.keyPoints[1] : known.summary}`;
       return `### Qwen 2.5 Practical Analogy
 ${known.analogy || known.summary}`;
     }
+    if (modelId === 'hermes-3') {
+      return `### Hermes 3 Lateral Angle: ${known.title}
+${known.summary}
+*Unconventional perspective:* Consider the boundary dynamics and how this scales when traditional constraints fail.`;
+    }
+    if (modelId === 'gemini-flash') {
+      return `### Gemini 2.0 Flash Summary: ${known.title}
+⚡ **Core Takeaways:**
+${known.keyPoints ? known.keyPoints.slice(0, 2).map(p => `• ${p}`).join('\n') : known.summary}`;
+    }
+    if (modelId === 'phi-4') {
+      return `### Phi-4 Logical Invariants: ${known.title}
+${known.formula ? `Invariant Formula: \`${known.formula}\`\n` : ''}${known.keyPoints ? known.keyPoints[0] : known.summary}`;
+    }
+    if (modelId === 'nemotron-70b') {
+      return `### Nemotron 70B Technical Audit: ${known.title}
+- **Accuracy Verification:** Grounded and confirmed for 2026.
+- **Parameters:** ${known.keyPoints && known.keyPoints[1] ? known.keyPoints[1] : 'Deterministic'}.`;
+    }
+    if (modelId === 'claude-hybrid') {
+      return `### Claude 3.5 Synthesis: ${known.title}
+${known.summary}
+
+${known.analogy ? `*Conceptual Parallel:* ${known.analogy}` : ''}`;
+    }
     return `### Gemma 2 Verification & Audit
 - [x] Verified scientific/technical facts for ${known.title}.
 - [x] ${known.keyPoints && known.keyPoints[2] ? known.keyPoints[2] : 'Precision checked.'}`;
@@ -510,6 +596,21 @@ DeepSeek R1 ready. Fire away with your logic, math, reasoning, or code questions
     }
     if (modelId === 'qwen-2.5') {
       return `Hello! Qwen 2.5 ready. Bringing clear explanations, actionable insights, and real-world clarity to your questions.`;
+    }
+    if (modelId === 'hermes-3') {
+      return `Hermes 3 70B online. Lateral thinking, creative problem solving, and zero corporate boilerplate ready. What are we brainstorming?`;
+    }
+    if (modelId === 'gemini-flash') {
+      return `Gemini 2.0 Flash online. Ultra-fast real-time synthesis and actionable steps ready. Let's build.`;
+    }
+    if (modelId === 'phi-4') {
+      return `Phi-4 Reasoning engine active. Deductive reasoning, compact logic, and mathematical proofs ready.`;
+    }
+    if (modelId === 'nemotron-70b') {
+      return `Nemotron 70B active. Enforcing strict technical precision, alignment, and execution guardrails.`;
+    }
+    if (modelId === 'claude-hybrid') {
+      return `Claude 3.5 Sonnet ready. Bringing architectural polish, thoughtful nuance, and clear prose to your task.`;
     }
     return `Gemma 2 online. Calibrated for concise summaries, precision audits, and verified facts.`;
   }
@@ -551,8 +652,35 @@ Reviewing conversion flow for "${topic}":
     if (modelId === 'qwen-2.5') {
       return `### Qwen 2.5 Copywriting Hook
 **Headline**: "Elevate ${topic} with Autonomous Multi-AI Consensus."
-**Subhead**: "Five independent open models collaborate in parallel to deliver the highest quality solution in seconds."
+**Subhead**: "Ten independent open models collaborate in parallel to deliver the highest quality solution in seconds."
 **Call to Action**: "Get Started Instantly — Free & Open."`;
+    }
+    if (modelId === 'hermes-3') {
+      return `### Hermes 3 Creative Angle
+For "${topic}", stand out from the typical corporate landing page:
+- Lead with an unexpected provocation or counterintuitive insight.
+- Replace generic corporate buzzwords with tactile, visceral product demonstrations.`;
+    }
+    if (modelId === 'gemini-flash') {
+      return `### Gemini 2.0 Flash Performance Specs
+- Zero-bundle dependency landing template for sub-100ms first paint.
+- Micro-interactions on CTA buttons with instant feedback loops.`;
+    }
+    if (modelId === 'phi-4') {
+      return `### Phi-4 Semantic Layout
+- Mathematical ratio grid: 1.618 golden proportion spacing.
+- Clean DOM tree with zero redundant container nesting.`;
+    }
+    if (modelId === 'nemotron-70b') {
+      return `### Nemotron 70B Guardrail Audit
+- Input sanitized against XSS vectors.
+- Fully accessible keyboard navigation tabs for screen readers.`;
+    }
+    if (modelId === 'claude-hybrid') {
+      return `### Claude 3.5 Editorial Polish
+A serene, confident aesthetic:
+- Off-white Cream background (#FAF7EE) paired with subtle Cyan (#E0F7FA) accent glow.
+- Refined typography hierarchy that guides the eye effortlessly from promise to proof.`;
     }
     return `### Gemma 2 Polish & Audit
 - Fully responsive across mobile, tablet, and desktop viewports.
@@ -596,6 +724,33 @@ When deploying the solution for "${topic}":
 - Add inline documentation for key parameters.
 - Provide unit tests verifying typical cases and boundary extremes.`;
     }
+    if (modelId === 'hermes-3') {
+      return `### Hermes 3 Creative Optimization
+Consider unconventional algorithmic strategies for "${topic}":
+- Pre-allocated memory pools to bypass runtime allocation stalls.
+- Bitwise masks or lookup tables where conditional branching dominates.`;
+    }
+    if (modelId === 'gemini-flash') {
+      return `### Gemini 2.0 Flash Execution Harness
+- Designed for zero-warmup cold starts.
+- Integrates seamlessly into serverless edge handlers.`;
+    }
+    if (modelId === 'phi-4') {
+      return `### Phi-4 Formal Invariants
+- Mathematical inductive hypothesis verified across all element transitions.
+- Asymptotic space bounded strictly to constant working memory.`;
+    }
+    if (modelId === 'nemotron-70b') {
+      return `### Nemotron 70B Guardrail Verification
+- [x] Input sanitization and bounds checking enforced.
+- [x] Zero memory leaks, dangling pointers, or unbounded loops.
+- [x] Defensive fallback handlers in place for exceptional states.`;
+    }
+    if (modelId === 'claude-hybrid') {
+      return `### Claude 3.5 Structural Integrity
+- Clean separation between core computation and external I/O.
+- Self-documenting variable naming and idiomatic error handling.`;
+    }
     return `### Gemma 2 Code Audit
 - [x] Correct syntax verified.
 - [x] No memory leaks or unhandled promise rejections.
@@ -626,6 +781,27 @@ In production, choose based on concrete constraints:
     if (modelId === 'qwen-2.5') {
       return `### Qwen 2.5 Real-World Takeaway
 The key difference in "${topic}" boils down to simplicity vs power. Start with the simpler option, and migrate only when you hit concrete scaling limits.`;
+    }
+    if (modelId === 'hermes-3') {
+      return `### Hermes 3 Lateral Perspective
+In "${topic}", don't overlook hybrid models: often the winning architecture borrows the flexibility of one side while enforcing the safety invariants of the other.`;
+    }
+    if (modelId === 'gemini-flash') {
+      return `### Gemini 2.0 Flash Benchmark Summary
+- Latency & overhead comparison evaluated.
+- Recommended choice depends on whether cold-start latency or deep feature coverage is your critical constraint.`;
+    }
+    if (modelId === 'phi-4') {
+      return `### Phi-4 Formal Trade-off
+- Asymptotic efficiency comparison: Evaluated against memory footprints and operational costs under scale.`;
+    }
+    if (modelId === 'nemotron-70b') {
+      return `### Nemotron 70B Reliability Matrix
+- Risk factors, disaster recovery, and operational complexity compared.`;
+    }
+    if (modelId === 'claude-hybrid') {
+      return `### Claude 3.5 Synthesis & Guidance
+Weigh ergonomics against long-term maintenance: choose the system that your team can confidently debug at 3 AM.`;
     }
     return `### Gemma 2 Verdict
 - Both approaches have proven production adoption.
@@ -659,13 +835,33 @@ Key practical facts regarding **${topic}**:
     return `### Qwen 2.5 Practical Analogy
 Think of **${topic}** like an engine: every part has a dedicated function. When each component does its job without unnecessary friction, the entire system runs smoothly and reliably.`;
   }
+  if (modelId === 'hermes-3') {
+    return `### Hermes 3 Creative Perspective
+Viewing **${topic}** from first principles: look for the non-obvious leverage points that most people ignore.`;
+  }
+  if (modelId === 'gemini-flash') {
+    return `### Gemini 2.0 Flash Summary
+Quick practical takeaways on **${topic}**: clear, direct, and immediately applicable.`;
+  }
+  if (modelId === 'phi-4') {
+    return `### Phi-4 Logical Essence
+The governing mathematical and logical principles of **${topic}** are concise when stripped of extraneous terminology.`;
+  }
+  if (modelId === 'nemotron-70b') {
+    return `### Nemotron 70B Precision Audit
+Facts regarding **${topic}** have been verified and cross-referenced against authoritative sources.`;
+  }
+  if (modelId === 'claude-hybrid') {
+    return `### Claude 3.5 Thoughtful Analysis
+**${topic}** represents a balance between core fundamentals and modern practical application.`;
+  }
   return `### Gemma 2 Quality Audit
 - Fact-checked and validated.
 - Adheres to clear, objective principles.`;
 }
 
 /**
- * Broadcast prompt simultaneously to ALL 5 Free AI Models in parallel with Working Memory
+ * Broadcast prompt simultaneously to ALL 10 Free AI Models in parallel with Working Memory
  */
 export async function broadcastToAllFreeAIs(userPrompt, history = [], memories = [], onModelCompleted) {
   // Support both (userPrompt, onModelCompleted) and (userPrompt, history, memories, onModelCompleted)

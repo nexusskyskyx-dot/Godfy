@@ -90,11 +90,12 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     queryForFriends = `${query}\n\n${contextParts.join('\n\n')}\n\nNote: Use the verified context above to formulate your response.`;
   }
 
-  // Brain step 1: Thinking and calling his 5 friends
+  // Brain step 1: Thinking and calling his free AI friends
+  const totalFriends = FREE_MODELS_CONFIG.length;
   if (onStreamStep) {
     onStreamStep({ 
       step: 'dispatch', 
-      message: 'Godfy Brain: Calling my 5 friends (Llama, DeepSeek, Mistral, Qwen, Gemma) for ideas...' 
+      message: `Godfy Brain: Calling my ${totalFriends} AI friends across the neural mesh for ideas...` 
     });
   }
 
@@ -104,7 +105,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     if (onStreamStep) {
       onStreamStep({ 
         step: 'collect', 
-        message: `Got ideas from ${completedModel.modelName} (${completedCount}/5 friends)...` 
+        message: `Got ideas from ${completedModel.modelName} (${completedCount}/${totalFriends} neural pathways)...` 
       });
     }
   });
@@ -438,6 +439,10 @@ What should we work on today?
     };
   }
 
+  // Check if any friend provided live API responses
+  const liveProposals = (modelProposals || []).filter(m => m.isLive && m.answer && m.answer.trim().length > 15);
+  const bestLiveAnswer = liveProposals.length > 0 ? liveProposals[0].answer : null;
+
   // Check if any friend provided code in their answer
   let detectedCode = null;
   for (const m of modelProposals) {
@@ -458,19 +463,20 @@ What should we work on today?
 
   // 1. GREETING: NATURAL & ENERGETIC
   if (isGreeting) {
+    const totalCount = modelProposals?.length || 10;
     const think = `Godfy Brain:
 - User greeted the engine: "${q}".
-- Called my 5 friends: Llama, DeepSeek, Mistral, Qwen, and Gemma are all online.
+- Called my ${totalCount} AI friends across the neural mesh: DeepSeek R1, Llama 3.3, Mistral, Hermes 3, Gemini Flash, Phi-4, Nemotron 70B, Claude 3.5, Qwen 2.5, and Gemma 2 are all online.
 - What I'm going to do: Greet the user, explain my 3-step brain process, and invite them to build or ask anything.`;
 
     const masterText = `Hey! I'm **Godfy** (\`v1\`). 
 
-Think of me as a brain that:
-1. **Calls my 5 AI friends** (Llama 3.3, DeepSeek R1, Mistral, Qwen, Gemma) for ideas.
-2. **Thinks about what to do** with their input.
+Think of me as an AI brain with **${totalCount} specialized neurons**:
+1. **Calls my ${totalCount} AI friends** (DeepSeek, Llama, Mistral, Hermes, Gemini, Phi-4, Nemotron, Claude, Qwen, Gemma) for ideas.
+2. **Thinks about what to do** with their specialized perspectives.
 3. **Makes the best answer** combining all their responses into one direct solution.
 
-What are we building today? You can ask me to write code, build a landing page, or answer any question!`;
+What are we building today? You can ask me to write code, design a landing page, or answer any complex question!`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -479,11 +485,11 @@ What are we building today? You can ask me to write code, build a landing page, 
       codeArtifact: null,
       codeLanguage: null,
       extractions: [
-        'Llama: Layout ready',
-        'DeepSeek: Logic ready',
-        'Mistral: Code ready',
-        'Qwen: Copy ready',
-        'Gemma: Verified'
+        'DeepSeek: Logic & Reasoning',
+        'Llama & Claude: Systems & Scaffolding',
+        'Mistral: Code & Production Syntax',
+        'Hermes: Lateral Thinking',
+        'Gemini & Phi-4: Speed & Deductive Math'
       ],
       suggestedFollowUps: [
         'Make a landing page',
@@ -608,14 +614,14 @@ ${solution.explanation || 'Modular implementation ready for production deploymen
       ? `Godfy Brain:${memoryNote}
 - User asked: "${q}".
 - Autonomous Decision: LIVE WEB SEARCH ACTIVATED (${searchData.count} live sources: ${searchData.results.map(r => r.source).join(', ')}).
-- Broadcasted query and live web context to 5 friends.
+- Broadcasted query and live web context across the 10 neural pathways.
 - What I'm going to do: Deliver the verified live answer directly to the user.`
       : `Godfy Brain:${memoryNote}
 - User asked: "${q}".
-- Called my 5 friends: Live answers received.
-  * DeepSeek & Llama provided the core factual breakdown.
-  * Mistral & Qwen delivered practical takeaways.
-  * Gemma audited for precision and conciseness.
+- Called my 10 friends: Multi-model consensus synthesized.
+  * DeepSeek & Phi-4 provided the core logical breakdown.
+  * Mistral, Hermes & Qwen delivered practical takeaways and creative angles.
+  * Claude, Nemotron & Gemma audited for precision, systems integrity, and conciseness.
 - What I'm going to do: Deliver the unified, verified answer directly to the user.`;
 
     // Extract any code block if the live model provided one
