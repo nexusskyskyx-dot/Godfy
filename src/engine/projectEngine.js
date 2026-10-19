@@ -99,7 +99,8 @@ export function addFileToProject(project, parentFolderId = 'root', fileName = 'u
     language: lang
   };
 
-  const openTabs = project.openTabIds.includes(newFile.id) ? project.openTabIds : [...project.openTabIds, newFile.id];
+  const currentTabs = project.openTabIds || [];
+  const openTabs = currentTabs.includes(newFile.id) ? currentTabs : [...currentTabs, newFile.id];
 
   return {
     ...project,

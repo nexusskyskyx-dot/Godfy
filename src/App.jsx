@@ -9,8 +9,11 @@ import {
   generateDynamicMultiFileProject, 
   addFileToProject, 
   addFolderToProject, 
-  renameProjectNode 
+  renameProjectNode,
+  deleteProjectNode,
+  updateFileContent
 } from './engine/projectEngine.js';
+import { patchFileLines } from './engine/toolRunner.js';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -167,10 +170,27 @@ export default function App() {
     const addFolderMatch = prompt.match(/(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?(?:carpet|folder|carpeta|dir)\s+(?:called|named)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const renameMatch = prompt.match(/rename\s+([a-zA-Z0-9_\-\.\/]+)\s+to\s+([a-zA-Z0-9_\-\.\/]+)/i);
     const deleteMatch = prompt.match(/(?:delete|remove|rm)\s+(?:file|folder|carpet|carpeta)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
+    const patchLineMatch = prompt.match(/(?:patch|fix|replace)\s+(?:line\s+(\d+)|#(\d+))\s*(?:in|of)?\s*([a-zA-Z0-9_\-\.\/]+)?\s*(?:with|to|as)?\s*(.*)/i);
 
     let updated = { ...proj };
 
-    if (deleteMatch) {
+    if (patchLineMatch) {
+      // Surgical Line Patching instead of whole file generation!
+      const lineNum = parseInt(patchLineMatch[1] || patchLineMatch[2], 10);
+      const specifiedFile = patchLineMatch[3]?.trim();
+      const newContent = patchLineMatch[4] ? patchLineMatch[4].trim().replace(/^["'`]|["'`]$/g, '') : '';
+
+      const targetFile = specifiedFile
+        ? updated.nodes.find(n => n.type === 'file' && (n.name === specifiedFile || n.path.endsWith(specifiedFile)))
+        : (updated.nodes.find(n => n.id === updated.activeFileId) || updated.nodes.find(n => n.type === 'file'));
+
+      if (targetFile && lineNum > 0) {
+        const patchRes = patchFileLines(targetFile.content, { line: lineNum, newContent });
+        if (patchRes.patched) {
+          updated = updateFileContent(updated, targetFile.id, patchRes.content);
+        }
+      }
+    } else if (deleteMatch) {
       const targetName = deleteMatch[1].trim();
       const target = updated.nodes.find(n => n.name === targetName || n.path === targetName || n.path === `/${targetName}`);
       if (target && target.id !== 'root') {
@@ -269,6 +289,8 @@ export default function App() {
             mindPreset={mindPreset}
             setMindPreset={setMindPreset}
             onOpenProjectInEditor={handleOpenProjectInEditor}
+            currentProject={currentProject}
+            onUpdateProject={setCurrentProject}
           />
         ) : (
           <ProjectEditorView
