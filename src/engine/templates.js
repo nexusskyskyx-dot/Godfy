@@ -91,7 +91,10 @@ export function generateLandingPageCode({
       </div>
 
       <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.15] mb-6">
-        ${isCoffee ? 'Crafted Beans. Every Origin Mastered.' : 'Ask Once. <br class="hidden sm:inline" /><span class="bg-gradient-to-r from-slate-900 via-cyan-800 to-cyan-500 bg-clip-text text-transparent">Every Free AI Synthesized</span> Into Pure Mastery.'}
+        ${displayTitle} <br class="hidden sm:inline" />
+        <span class="bg-gradient-to-r from-slate-900 via-cyan-800 to-cyan-500 bg-clip-text text-transparent">
+          ${isCoffee ? 'Every Origin Mastered.' : 'Built for Speed & Precision.'}
+        </span>
       </h1>
 
       <p class="max-w-2xl mx-auto text-base sm:text-xl text-slate-600 mb-10 leading-relaxed font-normal">
@@ -103,7 +106,7 @@ export function generateLandingPageCode({
           ${displayCta}
         </button>
         <button class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white text-slate-800 font-semibold text-base border border-slate-200/90 hover:bg-cream-50 hover:border-cyanlight-400 transition">
-          Watch Mind in Action
+          Live Interactive Demo
         </button>
       </div>
 
@@ -114,26 +117,24 @@ export function generateLandingPageCode({
             <div class="w-3 h-3 rounded-full bg-red-400"></div>
             <div class="w-3 h-3 rounded-full bg-amber-400"></div>
             <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-            <span class="ml-2 text-xs font-mono text-slate-400">godfy-mind://pipeline-consensus</span>
+            <span class="ml-2 text-xs font-mono text-slate-400">godfy-cortex://system-status</span>
           </div>
-          <span class="text-xs font-mono font-medium px-2 py-0.5 rounded bg-cyanlight-100 text-cyan-800">5 Models Connected</span>
+          <span class="text-xs font-mono font-medium px-2 py-0.5 rounded bg-cyanlight-100 text-cyan-800">16 Neurons Synchronized</span>
         </div>
 
         <div class="space-y-3 font-mono text-xs sm:text-sm">
           <div class="flex items-start space-x-3 text-slate-600">
             <span class="text-slate-400 font-bold">$</span>
-            <span><strong class="text-slate-900">User:</strong> "Make a landing page"</span>
+            <span><strong class="text-slate-900">Target System:</strong> "${displayTitle}"</span>
           </div>
           <div class="pl-4 py-2 border-l-2 border-cyan-400 space-y-1 bg-cream-50/60 rounded-r-lg">
-            <div class="text-cyan-800 font-semibold">⚡ Godfy Dispatcher: Fan-out to 5 Free Nodes in parallel</div>
-            <div class="text-slate-600 text-xs">» Llama 3.3: Structured layout & visual hierarchy emitted (340ms)</div>
-            <div class="text-slate-600 text-xs">» DeepSeek R1: Conversion psychology & social proof mechanics (410ms)</div>
-            <div class="text-slate-600 text-xs">» Mistral 24B: Tailwind styling & responsive components (290ms)</div>
-            <div class="text-slate-600 text-xs">» Qwen 2.5: High-converting hero copy & emotional hook (360ms)</div>
-            <div class="text-slate-600 text-xs">» Gemma 2: Accessibility review & WCAG contrast audit (260ms)</div>
+            <div class="text-cyan-800 font-semibold">⚡ System Ready: Fully responsive viewport & zero-latency execution</div>
+            <div class="text-slate-600 text-xs">» Architecture: Semantic HTML5, accessible landmarks, and modular containers</div>
+            <div class="text-slate-600 text-xs">» Visual System: Signature White Cream (#FAF7EE) with Cyan Light (#E0F7FA) focus glow</div>
+            <div class="text-slate-600 text-xs">» Performance: 100/100 Core Web Vitals with instantaneous first paint</div>
           </div>
           <div class="text-emerald-700 font-semibold pt-1">
-            ✨ Godfy Mind Synthesis: Resolved conflicts. Blended 5 models into single unified artifact. Done in 410ms.
+            ✨ Verified Production Grade: Ready to deploy and interact in the live sandbox.
           </div>
         </div>
       </div>

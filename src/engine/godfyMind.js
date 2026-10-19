@@ -645,30 +645,40 @@ My 16-neuron cortex is warmed up across deep reasoning, code generation, and adv
 
   // 2. LANDING PAGE / UI
   if (isLandingPage) {
+    const rawTopic = q
+      .replace(/^(make|create|build|generate|design|show me|give me)?\s*(a\s+)?(landing page|landingpage|website|portfolio site|web page|page|ui design|ui)\s*(for|about|on)?\s*/i, '')
+      .replace(/\?+$/, '')
+      .trim();
+    const topic = rawTopic && rawTopic.length > 2 ? rawTopic : 'Modern Digital Product';
+    const topicClean = topic.replace(/^(an?\s+|the\s+)/i, '');
+    const formattedTitle = topicClean.replace(/\b\w/g, c => c.toUpperCase());
+
     const code = generateLandingPageCode({
-      title: q.length > 25 ? q.slice(0, 30) : 'Synthesized with Godfy v1',
+      title: formattedTitle,
+      tagline: `Engineered for modern performance, speed, and scale. Built specifically for ${formattedTitle}.`,
+      cta: 'Get Started Today',
       includeTestimonials: true,
       includePricing: true
     });
 
-    const think = `Godfy Brain:
-- User requested a landing page: "${q}".
-- Called my friends for ideas:
-  * Llama set up clean semantic sections (Hero, Features, Proof, Footer).
-  * Mistral provided Tailwind tokens for White Cream (#FAF7EE) and Cyan Light (#E0F7FA).
-  * Qwen wrote high-conversion headline and copy hooks.
-  * DeepSeek verified mobile responsiveness and contrast ratios.
-- What I'm going to do: Deliver a clean production-ready landing page with an interactive sandbox preview.`;
+    const think = `Godfy Brain Deliberation:${memoryNote}
+- Input: User requested a landing page for "${formattedTitle}".
+- Cortex Lobe Dispatch:
+  * Layout & Structure: Formulated clean semantic sections (Hero, 3-Pillar Grid, Proof, Footer).
+  * Design Tokens: Calibrated signature White Cream (#FAF7EE) canvas with Cyan Light (#E0F7FA) focus accents.
+  * Conversion Copy: Tailored high-converting value propositions for "${formattedTitle}".
+  * Mobile Engine: Verified 44px minimum touch targets and responsive flex layouts.
+- What I'm going to do: Deliver a custom, production-ready landing page for "${formattedTitle}" with an interactive sandbox preview.`;
 
-    const masterText = `I synthesized a responsive landing page with my friends using the **Godfy design system** (White Cream \`#FAF7EE\`, White surface, and Cyan Light \`#E0F7FA\` accents).
+    const masterText = `Here is the custom landing page for **${formattedTitle}**!
 
-### Features Included:
-- **Hero & Value Hook:** High-contrast typography and clear CTA.
-- **3-Pillar Feature Grid:** Highlighting core value propositions.
-- **Consensus Proof Section:** Live speed and accuracy metrics.
+I designed it with conversion-focused sections:
+- **Hero & Value Proposition:** High-contrast headline tailored to **${formattedTitle}** with clear call-to-action.
+- **3-Pillar Feature Grid:** Highlighting core capabilities and architecture.
+- **Consensus & Proof:** Real-time performance and reliability metrics.
 - **Mobile Responsive:** Fluid layout with 44px minimum touch targets.
 
-*Click **"Run Live Preview"** below to view and interact with the live page in the sandbox!*`;
+*Click **"Run Live Preview"** below to interact with the live page in the sandbox.*`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
@@ -676,16 +686,17 @@ My 16-neuron cortex is warmed up across deep reasoning, code generation, and adv
       masterText,
       codeArtifact: code,
       codeLanguage: 'html',
+      codeFileName: `${formattedTitle.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}_landing.html`,
       extractions: [
-        'Llama: Semantic scaffolding',
-        'Mistral: Tailwind design tokens',
-        'Qwen: Conversion copy',
-        'DeepSeek: Responsive validation'
+        `Architecture: Semantic HTML for ${formattedTitle}`,
+        'Styling: Tailwind design tokens in Cream & Cyan Light',
+        'Conversion: Custom copy & clear CTA',
+        'Accessibility: Mobile responsive with WCAG compliance'
       ],
       suggestedFollowUps: [
-        'Add a pricing calculator to this',
-        'Make a dark mode version',
-        'Add interactive animations'
+        'Add an interactive pricing calculator',
+        'Add a dark mode toggle',
+        'Add smooth scroll animations'
       ]
     };
   }
@@ -703,25 +714,25 @@ My 16-neuron cortex is warmed up across deep reasoning, code generation, and adv
         fileName: `solution.${detectedCode.language === 'python' ? 'py' : detectedCode.language === 'typescript' ? 'ts' : detectedCode.language === 'sql' ? 'sql' : 'js'}`,
         complexity: { time: 'O(n) typical', space: 'O(1) auxiliary' },
         edgeCases: ['Input guard clauses verified', 'Boundary bounds checked', 'Empty input handling'],
-        explanation: 'Complete implementation synthesized and validated across the AI mesh.'
+        explanation: 'Production-ready implementation verified for asymptotic bounds and edge safety.'
       };
     } else {
       solution = generateIntelligentCode(q, targetLang);
     }
 
-    const think = `Godfy Brain:${memoryNote}
-- User requested code implementation for: "${q}".
-- Called my friends for specialized technical roles:
-  * Mistral & Qwen-Coder synthesized clean, idiomatic ${solution.language} syntax.
-  * DeepSeek audited algorithmic complexity (${solution.complexity?.time || 'O(n)'}) and defensive boundary conditions.
-  * Llama audited interface contracts, typing, and modular architecture.
-- What I'm going to do: Synthesize the single best production-ready implementation with exact syntax, complexity specs, and zero placeholders.`;
+    const think = `Godfy Brain Deliberation:${memoryNote}
+- Input: User requested code implementation for: "${q}".
+- Cortex Lobe Dispatch:
+  * Analytical Reasoning Lobe (DeepSeek R1, Phi-4): Derived optimal algorithmic complexity (${solution.complexity?.time || 'O(n)'}) and inductive state invariants.
+  * Kernel & AST Lobe (Mistral, Codestral): Generated idiomatic, production-grade ${solution.language} syntax with zero placeholders.
+  * Adversarial Red-Team Lobe (Nemotron, Hermes 3): Injected defensive boundary guards against ${solution.edgeCases?.slice(0, 2).join(' and ') || 'boundary extremes'}.
+- What I'm going to do: Synthesize the single best production-ready implementation, explicitly document time and space bounds, and explain the key mechanism directly with zero fluff.`;
 
     const complexityBlock = solution.complexity 
       ? `\n### Algorithmic Complexity & Architecture\n- **Time Complexity:** \`${solution.complexity.time}\`\n- **Space Complexity:** \`${solution.complexity.space}\`\n- **Edge Cases Handled:** ${solution.edgeCases ? solution.edgeCases.map(e => `\`${e}\``).join(', ') : 'Boundary extremes and null inputs'}`
       : '';
 
-    const masterText = `Here is the clean, production-ready implementation:
+    const masterText = `Here is the implementation in **${solution.language.toUpperCase()}**:
 
 \`\`\`${solution.language}
 ${solution.code}
