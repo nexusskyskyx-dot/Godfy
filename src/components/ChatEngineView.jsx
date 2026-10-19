@@ -52,6 +52,8 @@ export default function ChatEngineView({
   const [copiedImageUrl, setCopiedImageUrl] = useState(null);
   const [activeCouncilModel, setActiveCouncilModel] = useState({});
   const [copiedCodeId, setCopiedCodeId] = useState(null);
+  const [codeInspectorModal, setCodeInspectorModal] = useState(null);
+  const [copiedInspectorCode, setCopiedInspectorCode] = useState(false);
   const [previewModalArtifact, setPreviewModalArtifact] = useState(null);
   const [previewViewport, setPreviewViewport] = useState('desktop');
   const [previewKey, setPreviewKey] = useState(0);
@@ -74,6 +76,23 @@ export default function ChatEngineView({
     navigator.clipboard.writeText(code);
     setCopiedCodeId(id);
     setTimeout(() => setCopiedCodeId(null), 2000);
+  };
+
+  const handleDownloadCode = (code, filename = 'source_code.txt') => {
+    if (!code) return;
+    try {
+      const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to download code file', e);
+    }
   };
 
   const handleCopyImageUrl = (url) => {
@@ -107,6 +126,11 @@ export default function ChatEngineView({
 
   const starterCards = [
     {
+      title: 'Implement an LRU Cache in Python',
+      desc: 'Zero placeholders: clean O(1) double-linked list + hash map with test assertions.',
+      icon: '⚡'
+    },
+    {
       title: 'Make a landing page',
       desc: 'Calls his friends for layout, style, and copy, then synthesizes a live previewable page.',
       icon: '🚀'
@@ -115,11 +139,6 @@ export default function ChatEngineView({
       title: 'Show images of James Webb Telescope',
       desc: 'Live visual search for high-resolution deep space photography and verified captures.',
       icon: '🌌'
-    },
-    {
-      title: 'Search photos of Tokyo at night',
-      desc: 'Retrieves high-resolution cityscapes, architecture, and night street photography.',
-      icon: '📸'
     },
     {
       title: 'What is the best AI model in 2026?',
@@ -443,33 +462,92 @@ export default function ChatEngineView({
                   />
                 )}
 
-                {/* Live Sandbox Button if landing page/UI artifact exists */}
+                {/* Code & Landing Page Artifact Card */}
                 {!isUser && msg.codeArtifact && (
-                  <div className="mt-4 p-3 rounded-xl bg-slate-950 text-white flex items-center justify-between border border-cream-300">
-                    <div className="flex items-center space-x-2 text-xs font-mono">
-                      <Code className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>{msg.codeLanguage === 'html' ? 'Landing Page Ready' : 'Code Synthesized'}</span>
-                    </div>
+                  <div className="mt-4 rounded-xl bg-slate-950 text-white border border-slate-800 shadow-md overflow-hidden">
+                    {/* Header bar */}
+                    <div className="p-3 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2 text-xs font-mono">
+                        <div className="p-1 rounded-md bg-cyan-950/80 border border-cyan-800/60 text-cyan-400">
+                          <Code className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-semibold text-slate-200">
+                          {msg.codeFileName || (msg.codeLanguage === 'html' ? 'landing_page.html' : `solution.${msg.codeLanguage || 'js'}`)}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-cyan-300 border border-slate-700 font-semibold uppercase">
+                          {msg.codeLanguage || 'CODE'}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center space-x-2">
-                      {msg.codeLanguage === 'html' && (
-                        <button
-                          onClick={() => setPreviewModalArtifact(msg.codeArtifact)}
-                          className="px-3 py-1 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center space-x-1 transition shadow-sm"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Live Preview Sandbox</span>
-                        </button>
+                      {/* Complexity badges if present */}
+                      {msg.codeComplexity && (
+                        <div className="hidden sm:flex items-center space-x-1.5 text-[11px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-cyan-300">
+                            ⏱️ {msg.codeComplexity.time}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-slate-800/90 border border-slate-700 text-slate-300">
+                            💾 {msg.codeComplexity.space}
+                          </span>
+                        </div>
                       )}
 
-                      <button
-                        onClick={() => handleCopy(msg.codeArtifact, msgId)}
-                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs flex items-center space-x-1 transition"
-                      >
-                        {copiedCodeId === msgId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedCodeId === msgId ? 'Copied' : 'Copy'}</span>
-                      </button>
+                      {/* Actions */}
+                      <div className="flex items-center space-x-1.5">
+                        {msg.codeLanguage === 'html' && (
+                          <button
+                            onClick={() => setPreviewModalArtifact(msg.codeArtifact)}
+                            className="px-2.5 py-1 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center space-x-1 transition shadow-sm active:scale-95"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Preview</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => setCodeInspectorModal({
+                            code: msg.codeArtifact,
+                            language: msg.codeLanguage,
+                            fileName: msg.codeFileName || `solution.${msg.codeLanguage || 'js'}`,
+                            complexity: msg.codeComplexity,
+                            edgeCases: msg.codeEdgeCases
+                          })}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center space-x-1 transition active:scale-95 border border-slate-700"
+                          title="Inspect code, line numbers & assertions"
+                        >
+                          <ZoomIn className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Inspect</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDownloadCode(msg.codeArtifact, msg.codeFileName || (msg.codeLanguage === 'html' ? 'landing_page.html' : `solution.${msg.codeLanguage || 'js'}`))}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center space-x-1 transition active:scale-95 border border-slate-700"
+                          title="Download file"
+                        >
+                          <Download className="w-3.5 h-3.5 text-slate-300" />
+                          <span className="hidden sm:inline">Save</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleCopy(msg.codeArtifact, msgId)}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs flex items-center space-x-1 transition active:scale-95 border border-slate-700"
+                        >
+                          {copiedCodeId === msgId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
+                          <span>{copiedCodeId === msgId ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Edge case chips if available */}
+                    {msg.codeEdgeCases && msg.codeEdgeCases.length > 0 && (
+                      <div className="px-3 py-1.5 bg-slate-950 text-[10px] text-slate-400 font-mono flex items-center space-x-2 border-t border-slate-900 overflow-x-auto">
+                        <span className="text-slate-500 font-semibold uppercase tracking-wider flex-shrink-0">Guards:</span>
+                        {msg.codeEdgeCases.map((ec, i) => (
+                          <span key={i} className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300 flex-shrink-0">
+                            ✓ {ec}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -847,6 +925,104 @@ export default function ChatEngineView({
                   <span>Open Original</span>
                   <ExternalLink className="w-3.5 h-3.5 text-cyan-300" />
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Code Inspector & Assertions Modal */}
+      {codeInspectorModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+          onClick={() => setCodeInspectorModal(null)}
+        >
+          <div 
+            className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-3 border-b border-slate-800 bg-[#0F172A] flex items-center justify-between">
+              <div className="flex items-center space-x-2.5 truncate">
+                <div className="p-1.5 rounded-lg bg-cyan-950/80 border border-cyan-800/60 text-cyan-400">
+                  <Code className="w-4 h-4" />
+                </div>
+                <div className="truncate">
+                  <div className="font-mono font-bold text-xs sm:text-sm text-slate-100 truncate">
+                    {codeInspectorModal.fileName || 'source_code'}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono">
+                    {codeInspectorModal.language?.toUpperCase() || 'CODE'} • {codeInspectorModal.code ? codeInspectorModal.code.split('\n').length : 0} lines
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleDownloadCode(codeInspectorModal.code, codeInspectorModal.fileName || 'code.txt')}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium flex items-center space-x-1.5 transition border border-slate-700 active:scale-95"
+                >
+                  <Download className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="hidden sm:inline">Download</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(codeInspectorModal.code);
+                    setCopiedInspectorCode(true);
+                    setTimeout(() => setCopiedInspectorCode(false), 2000);
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium flex items-center space-x-1.5 transition border border-slate-700 active:scale-95"
+                >
+                  {copiedInspectorCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
+                  <span>{copiedInspectorCode ? 'Copied' : 'Copy'}</span>
+                </button>
+
+                <button
+                  onClick={() => setCodeInspectorModal(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Complexity & Guard Info Bar */}
+            {(codeInspectorModal.complexity || (codeInspectorModal.edgeCases && codeInspectorModal.edgeCases.length > 0)) && (
+              <div className="px-4 py-2 bg-[#090D16] border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                {codeInspectorModal.complexity && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 text-[11px]">Complexity:</span>
+                    <span className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-300 text-[11px]">
+                      ⏱️ {codeInspectorModal.complexity.time}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[11px]">
+                      💾 {codeInspectorModal.complexity.space}
+                    </span>
+                  </div>
+                )}
+                {codeInspectorModal.edgeCases && (
+                  <div className="flex items-center space-x-1 text-[10px] text-slate-400">
+                    <span className="text-emerald-400 font-bold">✓ Tests & Guards:</span>
+                    <span className="text-slate-300">{codeInspectorModal.edgeCases.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Code Body with Line Numbers */}
+            <div className="flex-1 overflow-auto p-4 bg-[#06080F] font-mono text-xs sm:text-sm leading-relaxed">
+              <div className="flex select-text">
+                {/* Line numbers */}
+                <div className="select-none pr-4 text-right text-slate-600 font-mono text-xs border-r border-slate-800/80">
+                  {(codeInspectorModal.code || '').split('\n').map((_, idx) => (
+                    <div key={idx} className="leading-6">{idx + 1}</div>
+                  ))}
+                </div>
+                {/* Code content */}
+                <pre className="pl-4 text-slate-100 overflow-x-auto flex-1 font-mono text-xs leading-6">
+                  <code>{codeInspectorModal.code}</code>
+                </pre>
               </div>
             </div>
           </div>

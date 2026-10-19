@@ -37,10 +37,10 @@ export const FREE_MODELS_CONFIG = [
     provider: 'Mistral AI (Free Tier)',
     badge: 'Code & Execution',
     remoteModel: 'mistral',
-    pollinationsModel: 'mistral',
+    pollinationsModel: 'qwen-coder',
     uncloseEndpoint: null,
     puterModel: 'mistralai/mistral-small-2603',
-    systemRole: 'You are Mistral Open 24B. The current real-world year is 2026. Provide clean, modern code implementation, exact syntax, and performant technical patterns without fluff.'
+    systemRole: 'You are an expert senior software engineer. Write clean, complete, working production-ready code with no placeholders or truncated blocks. Include type hints, edge case handling, and an example.'
   },
   {
     id: 'qwen-2.5',
@@ -412,6 +412,7 @@ export async function queryFreeAIModel(modelConfig, userPrompt, history = [], me
 }
 
 import { lookupKnowledge } from './knowledgeBase.js';
+import { generateIntelligentCode } from './codeSynthesizer.js';
 
 /**
  * Subject-Aware Dynamic Intelligence Generator for Resilient Failover with Working Memory
@@ -573,48 +574,21 @@ Reviewing conversion flow for "${topic}":
 3. **Resilience**: Defensive bounds check and explicit error handling.`;
     }
     if (modelId === 'deepseek-r1') {
+      const solution = generateIntelligentCode(cleanQ, lang);
       return `<think>
-Analyzing algorithmic complexity for "${topic}":
-- Time Complexity: Target O(n) or O(1) where possible.
-- Space Complexity: Minimal memory allocation.
-- Edge Cases: Empty input, negative numbers, boundary overflows, null pointers.
+Deconstructing algorithm for "${topic}":
+- Complexity analysis: ${solution.complexity?.time || 'O(n)'} time | ${solution.complexity?.space || 'O(1)'} auxiliary space.
+- Defensive validation: ${solution.edgeCases?.join(', ') || 'Input guards enforced'}.
+- Edge-case verification: boundary states audited.
 </think>
-**DeepSeek Validation:**
-- Enforce explicit guard clauses at the entry point.
-- Ensure linear time complexity and constant auxiliary memory.`;
+**DeepSeek Algorithmic Review:**
+- **Time Complexity:** \`${solution.complexity?.time || 'O(n)'}\`
+- **Space Complexity:** \`${solution.complexity?.space || 'O(1)'}\`
+- **Edge Cases Handled:** ${solution.edgeCases ? solution.edgeCases.map(e => `\`${e}\``).join(', ') : 'Boundary bounds'}.`;
     }
     if (modelId === 'mistral-large') {
-      if (lower.includes('reverse a linked list') || lower.includes('linked list')) {
-        return `\`\`\`${lang}
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-def reverse_linked_list(head):
-    prev, curr = None, head
-    while curr:
-        nxt = curr.next
-        curr.next = prev
-        prev = curr
-        curr = nxt
-    return prev
-\`\`\``;
-      }
-      return `\`\`\`${lang}
-// Clean implementation for: ${topic}
-export function solveTask(input) {
-  if (input === null || input === undefined) {
-    throw new Error("Invalid input: expected defined payload");
-  }
-  // Process task with O(n) efficiency
-  return {
-    success: true,
-    result: input,
-    timestamp: Date.now()
-  };
-}
-\`\`\``;
+      const solution = generateIntelligentCode(cleanQ, lang);
+      return `\`\`\`${solution.language || lang}\n${solution.code}\n\`\`\``;
     }
     if (modelId === 'qwen-2.5') {
       return `### Qwen 2.5 Practical Usage

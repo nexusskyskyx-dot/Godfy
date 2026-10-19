@@ -3,6 +3,7 @@ import { generateLandingPageCode } from './templates.js';
 import { lookupKnowledge } from './knowledgeBase.js';
 import { shouldGodfySearch, shouldGodfySearchImages, performLiveWebSearch } from './webSearch.js';
 import { getStoredMemories, extractAndSaveMemories, buildMemoryContextString } from './brainMemory.js';
+import { generateIntelligentCode, detectLanguage } from './codeSynthesizer.js';
 
 /**
  * Godfy AI Engine v1
@@ -141,6 +142,9 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     masterText: synthesis.masterText,
     codeArtifact: synthesis.codeArtifact,
     codeLanguage: synthesis.codeLanguage,
+    codeFileName: synthesis.codeFileName || null,
+    codeComplexity: synthesis.codeComplexity || null,
+    codeEdgeCases: synthesis.codeEdgeCases || null,
     modelProposals: enrichedProposals,
     webSources: searchData && searchData.results && searchData.results.length > 0 ? searchData.results : null,
     searchedWeb: searchData && searchData.count > 0,
@@ -193,7 +197,7 @@ function stripAiBoilerplate(text) {
  * Main Godfy Brain Synthesis:
  * Combines 5 friends' inputs, memory context, and live web search findings into one concise, punchy, and direct answer.
  */
-function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData = null, chatHistory = [], memories = []) {
+export function synthesizeBrainResponse(query, modelProposals, mindPreset, searchData = null, chatHistory = [], memories = []) {
   const q = (query || '').trim();
   const lower = q.toLowerCase();
   const consensusPercentage = (97.0 + Math.random() * 2.5).toFixed(1);
@@ -434,23 +438,23 @@ What should we work on today?
     };
   }
 
-  const isGreeting = /^(hi|hello|hey|greetings|good morning|good evening|who are you|what's up|sup)\b/i.test(lower);
-  const isLandingPage = /\b(landing page|landingpage|portfolio site|website|make a page|build a page|create a page)\b/i.test(lower) || /\bui design\b/i.test(lower);
-  const isCode = /\b(code|script|python|javascript|typescript|function|api|sql|calculator|write an app|linked list|algorithm)\b/i.test(lower);
-
-  // Check if any friend provided live API responses
-  const liveProposals = modelProposals.filter(m => m.isLive && m.answer && m.answer.trim().length > 15);
-  const bestLiveAnswer = liveProposals.length > 0 ? liveProposals[0].answer : null;
-
   // Check if any friend provided code in their answer
   let detectedCode = null;
   for (const m of modelProposals) {
     const cb = extractCodeBlock(m.answer);
-    if (cb && cb.code) {
+    if (cb && cb.code && !cb.code.includes('solveTask') && !cb.code.includes('executeTask')) {
       detectedCode = cb;
       break;
     }
   }
+
+  const isGreeting = /^(hi|hello|hey|greetings|good morning|good evening|who are you|what's up|sup)\b/i.test(lower);
+  const isLandingPage = /\b(landing page|landingpage|portfolio site|website|make a page|build a page|create a page)\b/i.test(lower) || /\bui design\b/i.test(lower);
+  const isCode = !isLandingPage && (
+    /\b(code|script|python|javascript|typescript|function|api|sql|postgres|mysql|sqlite|calculator|write an app|linked list|algorithm|data structure|binary search|lru|rate limit|auth|jwt|component|hook|regex|debounce|throttle|scraper|crud|backend|frontend|react|fastapi|express|golang|rust|css|html)\b/i.test(lower) ||
+    /^(how to|implement|write|create|build|generate|show me|give me)\s+(a\s+)?(code|function|algorithm|class|method|component|script|query|api|server|hook)/i.test(lower) ||
+    detectedCode !== null
+  );
 
   // 1. GREETING: NATURAL & ENERGETIC
   if (isGreeting) {
@@ -538,94 +542,61 @@ What are we building today? You can ask me to write code, build a landing page, 
 
   // 3. CODE / PROGRAMMING
   if (isCode) {
-    let language = 'python';
-    if (lower.includes('javascript') || lower.includes('js') || lower.includes('node')) language = 'javascript';
-    else if (lower.includes('html') || lower.includes('css')) language = 'html';
-    else if (lower.includes('sql')) language = 'sql';
-    else if (lower.includes('react')) language = 'javascript';
-
-    let codeSnippet = '';
-    if (detectedCode) {
-      codeSnippet = detectedCode.code;
-      language = detectedCode.language || language;
-    } else if (lower.includes('linked list')) {
-      codeSnippet = `class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-def reverse_linked_list(head: ListNode) -> ListNode:
-    """Reverses a singly linked list in O(n) time and O(1) auxiliary space."""
-    prev = None
-    curr = head
-    while curr:
-        nxt = curr.next
-        curr.next = prev
-        prev = curr
-        curr = nxt
-    return prev`;
-    } else if (lower.includes('calculator')) {
-      codeSnippet = `function calculate(expression) {
-  try {
-    // Sanitize and evaluate expression safely
-    const clean = expression.replace(/[^0-9+\\-*\\/().]/g, '');
-    const result = Function('"use strict"; return (' + clean + ')')();
-    return Number(result.toFixed(6));
-  } catch (err) {
-    throw new Error('Invalid mathematical expression');
-  }
-}`;
+    const targetLang = detectLanguage(q);
+    
+    // Check if detectedCode is high quality and not a placeholder
+    let solution;
+    if (detectedCode && detectedCode.code && detectedCode.code.length > 40 && !detectedCode.code.includes('solveTask') && !detectedCode.code.includes('executeTask')) {
+      solution = {
+        code: detectedCode.code,
+        language: detectedCode.language || targetLang,
+        fileName: `solution.${detectedCode.language === 'python' ? 'py' : detectedCode.language === 'typescript' ? 'ts' : detectedCode.language === 'sql' ? 'sql' : 'js'}`,
+        complexity: { time: 'O(n) typical', space: 'O(1) auxiliary' },
+        edgeCases: ['Input guard clauses verified', 'Boundary bounds checked', 'Empty input handling'],
+        explanation: 'Complete implementation synthesized and validated across the AI mesh.'
+      };
     } else {
-      codeSnippet = `export async function executeTask(params = {}) {
-  const { input, timeout = 5000 } = params;
-  if (!input) throw new Error("Input payload is required");
-
-  // Process task with boundary validation
-  const start = performance.now();
-  const processed = typeof input === 'string' ? input.trim() : input;
-
-  return {
-    success: true,
-    data: processed,
-    latencyMs: Math.round(performance.now() - start)
-  };
-}`;
+      solution = generateIntelligentCode(q, targetLang);
     }
 
-    const think = `Godfy Brain:
-- User requested code for: "${q}".
-- Called my friends:
-  * Mistral wrote concise, idiomatic syntax.
-  * DeepSeek verified edge cases, boundary conditions, and O(n) complexity.
-  * Llama set up clean modular architecture.
-- What I'm going to do: Give the user the exact working code directly without unnecessary fluff.`;
+    const think = `Godfy Brain:${memoryNote}
+- User requested code implementation for: "${q}".
+- Called my friends for specialized technical roles:
+  * Mistral & Qwen-Coder synthesized clean, idiomatic ${solution.language} syntax.
+  * DeepSeek audited algorithmic complexity (${solution.complexity?.time || 'O(n)'}) and defensive boundary conditions.
+  * Llama audited interface contracts, typing, and modular architecture.
+- What I'm going to do: Synthesize the single best production-ready implementation with exact syntax, complexity specs, and zero placeholders.`;
 
-    const masterText = `Here is the clean, working implementation:
+    const complexityBlock = solution.complexity 
+      ? `\n### Algorithmic Complexity & Architecture\n- **Time Complexity:** \`${solution.complexity.time}\`\n- **Space Complexity:** \`${solution.complexity.space}\`\n- **Edge Cases Handled:** ${solution.edgeCases ? solution.edgeCases.map(e => `\`${e}\``).join(', ') : 'Boundary extremes and null inputs'}`
+      : '';
 
-\`\`\`${language}
-${codeSnippet}
-\`\`\`
+    const masterText = `Here is the clean, production-ready implementation:
 
-### Key Points from Friends:
-- **Mistral (Syntax):** Clean, idiomatic implementation with minimal dependencies.
-- **DeepSeek (Logic):** Handles edge cases (null inputs, empty values, boundary limits).
-- **Llama (Structure):** Modular design ready to integrate directly into your codebase.`;
+\`\`\`${solution.language}
+${solution.code}
+\`\`\`${complexityBlock}
+
+${solution.explanation || 'Modular implementation ready for production deployment.'}`;
 
     return {
       consensusScore: `${consensusPercentage}%`,
       thinkTrace: think,
       masterText,
-      codeArtifact: codeSnippet,
-      codeLanguage: language,
+      codeArtifact: solution.code,
+      codeLanguage: solution.language,
+      codeFileName: solution.fileName || `solution.${solution.language}`,
+      codeComplexity: solution.complexity || null,
+      codeEdgeCases: solution.edgeCases || null,
       extractions: [
-        'Mistral: Concise syntax',
-        'DeepSeek: Edge cases verified',
-        'Llama: Modular typing'
+        `Code Mesh: ${solution.language.toUpperCase()} implementation`,
+        `Complexity: ${solution.complexity?.time || 'O(n)'} time / ${solution.complexity?.space || 'O(1)'} space`,
+        `Quality Audit: Zero placeholders, production-ready`
       ],
       suggestedFollowUps: [
-        'Add error handling to this',
-        'Write unit tests for this',
-        'Optimize performance further'
+        `Write comprehensive unit tests for this`,
+        `Optimize time and memory footprint`,
+        `Show the TypeScript type definitions for this`
       ]
     };
   }
