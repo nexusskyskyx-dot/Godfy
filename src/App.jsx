@@ -228,6 +228,9 @@ export default function App() {
         onNewChat={handleNewChat}
         onDeleteSession={handleDeleteSession}
         onOpenSettings={() => setSettingsOpen(true)}
+        currentView={currentView}
+        onSelectView={setCurrentView}
+        hasProject={Boolean(currentProject)}
       />
 
       {/* Main Container */}

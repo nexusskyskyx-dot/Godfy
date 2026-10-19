@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  Folder, FolderOpen, File, FileCode, Plus, Edit2, Trash2, Check, X,
-  Play, Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
-  Monitor, Tablet, Smartphone, Sparkles, Brain, ArrowLeft, Maximize2,
-  FolderPlus, FilePlus, Layers, Save, Terminal
+  Folder, FolderOpen, FileCode, Plus, Edit2, Trash2, Check, X,
+  Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
+  Monitor, Tablet, Smartphone, Brain, ArrowLeft,
+  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight
 } from 'lucide-react';
 import { 
   addFileToProject, 
@@ -12,8 +12,7 @@ import {
   deleteProjectNode, 
   updateFileContent, 
   toggleFolderOpen,
-  buildProjectPreviewBundle,
-  getLanguageFromFilename
+  buildProjectPreviewBundle
 } from '../engine/projectEngine.js';
 
 export default function ProjectEditorView({
@@ -24,8 +23,13 @@ export default function ProjectEditorView({
 }) {
   const [activeFileId, setActiveFileId] = useState(project?.activeFileId || null);
   const [openTabIds, setOpenTabIds] = useState(project?.openTabIds || []);
-  const [viewMode, setViewMode] = useState('split'); // 'editor' | 'preview' | 'split'
-  const [viewport, setViewport] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
+  
+  // Desktop view mode: 'editor' | 'preview' | 'split'
+  const [viewMode, setViewMode] = useState('split');
+  // Mobile active tab: 'files' | 'editor' | 'preview'
+  const [mobileTab, setMobileTab] = useState('editor');
+  
+  const [viewport, setViewport] = useState('desktop'); // desktop viewport mode in split preview
   const [previewKey, setPreviewKey] = useState(0);
 
   // Rename states
@@ -98,7 +102,7 @@ export default function ProjectEditorView({
 
   const handleDelete = (e, nodeId) => {
     e.stopPropagation();
-    if (confirm('Delete this item from project?')) {
+    if (window.confirm('Delete this item from project?')) {
       const updated = deleteProjectNode(project, nodeId);
       onUpdateProject(updated);
       setOpenTabIds(prev => prev.filter(id => id !== nodeId));
@@ -123,6 +127,7 @@ export default function ProjectEditorView({
       if (newFile) {
         setActiveFileId(newFile.id);
         setOpenTabIds(prev => [...prev, newFile.id]);
+        setMobileTab('editor'); // automatically switch to editor on mobile
       }
     } else {
       updated = addFolderToProject(project, creatingParentId, creatingName.trim());
@@ -137,6 +142,8 @@ export default function ProjectEditorView({
     if (!openTabIds.includes(fileNode.id)) {
       setOpenTabIds(prev => [...prev, fileNode.id]);
     }
+    // Switch to editor tab on mobile so the user sees the opened file
+    setMobileTab('editor');
   };
 
   const handleCloseTab = (e, fileId) => {
@@ -178,13 +185,12 @@ export default function ProjectEditorView({
     const files = project?.nodes?.filter(n => n.type === 'file') || [];
     if (files.length === 0) return;
 
-    // Create a combined source file manifest
     const manifest = files.map(f => `=== FILE: ${f.path} ===\n\n${f.content}\n\n`).join('=' .repeat(50) + '\n\n');
     const blob = new Blob([manifest], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${project.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_full_project.txt`;
+    a.download = `${project.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_project_code.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -210,21 +216,20 @@ export default function ProjectEditorView({
   // Render tree node recursively
   const renderTree = (parentId = 'root', depth = 0) => {
     const children = project?.nodes?.filter(n => n.parentId === parentId) || [];
-    // Sort: folders first, then files
     const sorted = [...children].sort((a, b) => {
       if (a.type === b.type) return a.name.localeCompare(b.name);
       return a.type === 'folder' ? -1 : 1;
     });
 
     return (
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         {sorted.map(node => {
           const isFolder = node.type === 'folder';
           const isActive = node.id === activeFileId;
           const isEditing = node.id === editingNodeId;
 
           return (
-            <div key={node.id} style={{ paddingLeft: `${depth * 12}px` }}>
+            <div key={node.id} style={{ paddingLeft: `${depth * 10}px` }}>
               <div 
                 onClick={() => {
                   if (isFolder) {
@@ -233,28 +238,28 @@ export default function ProjectEditorView({
                     handleOpenFile(node);
                   }
                 }}
-                className={`group flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer select-none ${
+                className={`group flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-mono transition cursor-pointer select-none min-h-[40px] sm:min-h-0 ${
                   isActive 
                     ? 'bg-cyanlight-100 text-cyan-950 font-bold border border-cyanlight-200' 
-                    : 'text-slate-700 hover:bg-cream-100/80 hover:text-slate-950'
+                    : 'text-slate-700 hover:bg-cream-100/90 active:bg-cream-200/90 hover:text-slate-950'
                 }`}
               >
-                <div className="flex items-center space-x-1.5 truncate flex-1 min-w-0 pr-1">
+                <div className="flex items-center space-x-2 truncate flex-1 min-w-0 pr-1">
                   {isFolder ? (
                     <>
                       {node.isOpen ? (
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                        <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       ) : (
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       )}
                       {node.isOpen ? (
-                        <FolderOpen className="w-3.5 h-3.5 text-cyan-600 flex-shrink-0" />
+                        <FolderOpen className="w-4 h-4 text-cyan-600 flex-shrink-0" />
                       ) : (
-                        <Folder className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                        <Folder className="w-4 h-4 text-amber-600 flex-shrink-0" />
                       )}
                     </>
                   ) : (
-                    <FileCode className={`w-3.5 h-3.5 flex-shrink-0 ${
+                    <FileCode className={`w-4 h-4 flex-shrink-0 ${
                       node.name.endsWith('.html') ? 'text-orange-500' :
                       node.name.endsWith('.css') ? 'text-blue-500' :
                       node.name.endsWith('.js') ? 'text-amber-500' :
@@ -274,48 +279,48 @@ export default function ProjectEditorView({
                       onBlur={() => handleSaveRename(node.id)}
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
-                      className="bg-white border border-cyan-400 rounded px-1 text-xs text-slate-900 font-mono w-full focus:outline-none"
+                      className="bg-white border border-cyan-400 rounded px-1.5 py-0.5 text-xs text-slate-900 font-mono w-full focus:outline-none"
                     />
                   ) : (
-                    <span className="truncate">{node.name}</span>
+                    <span className="truncate text-xs sm:text-[11px]">{node.name}</span>
                   )}
                 </div>
 
-                {/* Node hover controls */}
+                {/* Node hover & mobile tap controls */}
                 {!isEditing && (
-                  <div className="opacity-0 group-hover:opacity-100 flex items-center space-x-1 flex-shrink-0">
+                  <div className="flex items-center space-x-1 flex-shrink-0 opacity-80 sm:opacity-0 group-hover:opacity-100">
                     {isFolder && (
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleStartCreate('file', node.id); }}
-                          className="p-1 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
                           title="Add file inside carpet"
                         >
-                          <FilePlus className="w-3 h-3" />
+                          <FilePlus className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleStartCreate('folder', node.id); }}
-                          className="p-1 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
                           title="Add sub-carpet"
                         >
-                          <FolderPlus className="w-3 h-3" />
+                          <FolderPlus className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                         </button>
                       </>
                     )}
                     <button
                       onClick={(e) => handleStartRename(e, node)}
-                      className="p-1 hover:bg-white rounded text-slate-500 hover:text-slate-900"
+                      className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-slate-900"
                       title="Rename"
                     >
-                      <Edit2 className="w-3 h-3" />
+                      <Edit2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                     </button>
                     {node.id !== 'root' && (
                       <button
                         onClick={(e) => handleDelete(e, node.id)}
-                        className="p-1 hover:bg-white rounded text-slate-400 hover:text-rose-600"
+                        className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-400 hover:text-rose-600"
                         title="Delete"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                       </button>
                     )}
                   </div>
@@ -332,105 +337,151 @@ export default function ProjectEditorView({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] bg-white overflow-hidden">
+    <div className="flex-1 flex flex-col h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] bg-white overflow-hidden w-full">
       {/* Top Studio Bar */}
-      <div className="h-14 border-b border-cream-200 px-4 flex items-center justify-between bg-cream-50/70">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={onBackToChat}
-            className="p-1.5 rounded-xl hover:bg-cream-100 text-slate-600 hover:text-slate-950 transition flex items-center space-x-1 text-xs font-semibold"
-            title="Back to Godfy Chat"
-          >
-            <ArrowLeft className="w-4 h-4 text-cyan-700" />
-            <span className="hidden sm:inline">Chat</span>
-          </button>
+      <header className="border-b border-cream-200 bg-cream-50/80 flex-shrink-0">
+        {/* Main Header Row */}
+        <div className="px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <button
+              onClick={onBackToChat}
+              className="p-1.5 rounded-xl hover:bg-cream-100 text-slate-600 hover:text-slate-950 transition flex items-center space-x-1 text-xs font-semibold flex-shrink-0"
+              title="Back to Godfy Chat"
+            >
+              <ArrowLeft className="w-4 h-4 text-cyan-700" />
+              <span className="hidden sm:inline">Chat</span>
+            </button>
 
-          <div className="h-5 w-px bg-cream-300"></div>
+            <div className="h-4 w-px bg-cream-300 hidden sm:block"></div>
 
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-lg bg-cyanlight-200 border border-cyanlight-300 flex items-center justify-center text-cyan-900">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="flex items-center space-x-2 min-w-0">
+              <div className="w-6 h-6 rounded-lg bg-cyanlight-200 border border-cyanlight-300 flex items-center justify-center text-cyan-900 flex-shrink-0">
+                <Layers className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xs font-black text-slate-900 truncate">
+                  {project?.name || 'Untitled Project'}
+                </h2>
+                <span className="text-[10px] font-mono text-slate-500 hidden sm:inline-block">
+                  {stats.fileCount} files • {stats.folderCount} carpets • {stats.totalLines} lines
+                </span>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xs font-black text-slate-900 truncate max-w-[160px] sm:max-w-xs">
-                {project?.name || 'Untitled Project'}
-              </h2>
-              <span className="text-[10px] font-mono text-slate-500">
-                {stats.fileCount} files • {stats.folderCount} carpets • {stats.totalLines} lines
-              </span>
+          </div>
+
+          {/* Desktop View Switcher & Export */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {/* Desktop-only view mode switcher */}
+            <div className="hidden md:inline-flex rounded-xl bg-cream-200/80 p-0.5 border border-cream-300 text-xs font-mono">
+              <button
+                onClick={() => setViewMode('editor')}
+                className={`px-2.5 py-1 rounded-lg transition ${
+                  viewMode === 'editor' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Code Only
+              </button>
+              <button
+                onClick={() => setViewMode('split')}
+                className={`px-2.5 py-1 rounded-lg transition ${
+                  viewMode === 'split' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Split View
+              </button>
+              <button
+                onClick={() => setViewMode('preview')}
+                className={`px-2.5 py-1 rounded-lg transition ${
+                  viewMode === 'preview' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Live Preview
+              </button>
             </div>
+
+            <button
+              onClick={handleDownloadWholeProject}
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
+              title="Download full project code manifest"
+            >
+              <Download className="w-3.5 h-3.5 text-cyan-300" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
           </div>
         </div>
 
-        {/* View mode switcher */}
-        <div className="flex items-center space-x-2">
-          <div className="inline-flex rounded-xl bg-cream-200/80 p-0.5 border border-cream-300 text-xs font-mono">
-            <button
-              onClick={() => setViewMode('editor')}
-              className={`px-2.5 py-1 rounded-lg transition ${
-                viewMode === 'editor' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Code Only
-            </button>
-            <button
-              onClick={() => setViewMode('split')}
-              className={`px-2.5 py-1 rounded-lg transition ${
-                viewMode === 'split' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Split View
-            </button>
-            <button
-              onClick={() => setViewMode('preview')}
-              className={`px-2.5 py-1 rounded-lg transition ${
-                viewMode === 'preview' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Live Preview
-            </button>
-          </div>
-
+        {/* Mobile View Tab Switcher (Visible on < md) */}
+        <div className="flex md:hidden border-t border-cream-200 bg-white px-2 py-1.5 gap-1 text-xs font-mono">
           <button
-            onClick={handleDownloadWholeProject}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-95"
-            title="Download full project code manifest"
+            onClick={() => setMobileTab('files')}
+            className={`flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center space-x-1.5 transition font-semibold ${
+              mobileTab === 'files'
+                ? 'bg-cyanlight-100 text-cyan-950 border border-cyanlight-300'
+                : 'text-slate-600 hover:bg-cream-50'
+            }`}
           >
-            <Download className="w-3.5 h-3.5 text-cyan-300" />
-            <span className="hidden md:inline">Export Project</span>
+            <FolderTree className="w-3.5 h-3.5 text-cyan-700" />
+            <span>Files ({stats.fileCount})</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('editor')}
+            className={`flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center space-x-1.5 transition font-semibold ${
+              mobileTab === 'editor'
+                ? 'bg-cyanlight-100 text-cyan-950 border border-cyanlight-300'
+                : 'text-slate-600 hover:bg-cream-50'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5 text-cyan-700" />
+            <span>Code</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('preview')}
+            className={`flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center space-x-1.5 transition font-semibold ${
+              mobileTab === 'preview'
+                ? 'bg-cyanlight-100 text-cyan-950 border border-cyanlight-300'
+                : 'text-slate-600 hover:bg-cream-50'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5 text-cyan-700" />
+            <span>Preview</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel: File & Carpet Tree Explorer */}
-        <aside className="w-60 sm:w-64 border-r border-cream-200 flex flex-col bg-[#FDFBF7] flex-shrink-0">
-          <div className="p-3 border-b border-cream-200 flex items-center justify-between text-xs font-mono">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* ========================================================= */}
+        {/* PANEL 1: File & Carpet Explorer                          */}
+        {/* Visible always on Desktop, and when mobileTab === 'files' */}
+        {/* ========================================================= */}
+        <aside className={`${
+          mobileTab === 'files' ? 'flex w-full' : 'hidden'
+        } md:flex md:w-60 lg:w-64 border-r border-cream-200 flex-col bg-[#FDFBF7] flex-shrink-0 overflow-hidden`}>
+          <div className="p-3 border-b border-cream-200 flex items-center justify-between text-xs font-mono bg-cream-50/50">
             <span className="font-bold uppercase tracking-wider text-slate-500 text-[10px]">
               Files & Carpets
             </span>
             <div className="flex items-center space-x-1">
               <button
                 onClick={() => handleStartCreate('file', 'root')}
-                className="p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
                 title="New File (Nuevo Archivo)"
               >
-                <FilePlus className="w-3.5 h-3.5" />
+                <FilePlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </button>
               <button
                 onClick={() => handleStartCreate('folder', 'root')}
-                className="p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
                 title="New Carpet / Folder (Nueva Carpeta)"
               >
-                <FolderPlus className="w-3.5 h-3.5" />
+                <FolderPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
           </div>
 
           {/* Creation input if active */}
           {creatingType && (
-            <div className="p-2 bg-cyanlight-50 border-b border-cyanlight-200 text-xs font-mono">
+            <div className="p-2.5 bg-cyanlight-50 border-b border-cyanlight-200 text-xs font-mono">
               <div className="text-[10px] text-cyan-900 font-bold mb-1">
                 New {creatingType === 'file' ? 'File' : 'Carpet / Folder'}:
               </div>
@@ -445,19 +496,19 @@ export default function ProjectEditorView({
                   }}
                   autoFocus
                   placeholder={creatingType === 'file' ? 'filename.js' : 'folder_name'}
-                  className="w-full bg-white border border-cyan-400 rounded px-1.5 py-1 text-xs font-mono focus:outline-none"
+                  className="w-full bg-white border border-cyan-400 rounded px-2 py-1 text-xs font-mono focus:outline-none"
                 />
                 <button
                   onClick={handleConfirmCreate}
-                  className="p-1 bg-cyan-400 text-slate-950 rounded hover:bg-cyan-300"
+                  className="p-1.5 bg-cyan-400 text-slate-950 rounded hover:bg-cyan-300"
                 >
-                  <Check className="w-3 h-3" />
+                  <Check className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setCreatingType(null)}
-                  className="p-1 bg-cream-200 text-slate-600 rounded hover:bg-cream-300"
+                  className="p-1.5 bg-cream-200 text-slate-600 rounded hover:bg-cream-300"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -467,127 +518,158 @@ export default function ProjectEditorView({
           <div className="flex-1 overflow-y-auto p-2">
             {renderTree('root', 0)}
           </div>
+
+          {/* Mobile Bottom Quick Switch */}
+          <div className="p-2 border-t border-cream-200 bg-white md:hidden">
+            <button
+              onClick={() => setMobileTab('editor')}
+              className="w-full py-2 px-3 rounded-xl bg-slate-900 text-white font-semibold text-xs flex items-center justify-center space-x-1.5"
+            >
+              <span>Open Code Editor</span>
+              <ArrowRight className="w-3.5 h-3.5 text-cyan-300" />
+            </button>
+          </div>
         </aside>
 
-        {/* Center: Code Editor Panel */}
-        {(viewMode === 'editor' || viewMode === 'split') && (
-          <div className={`flex flex-col bg-[#0F172A] min-w-0 ${viewMode === 'split' ? 'w-1/2 border-r border-slate-800' : 'flex-1'}`}>
-            {/* Editor Tabs Bar */}
-            <div className="h-10 bg-[#090D16] border-b border-slate-800 flex items-center px-2 overflow-x-auto space-x-1 flex-shrink-0">
-              {openTabIds.map(tabId => {
-                const file = project?.nodes?.find(n => n.id === tabId);
-                if (!file) return null;
-                const isTabActive = file.id === activeFileId;
+        {/* ========================================================= */}
+        {/* PANEL 2: Multi-Tab Code Editor                           */}
+        {/* Visible on Desktop (when viewMode is 'editor' or 'split') */}
+        {/* and on Mobile (when mobileTab === 'editor')              */}
+        {/* ========================================================= */}
+        <div className={`${
+          mobileTab === 'editor' ? 'flex w-full' : 'hidden'
+        } md:flex flex-col bg-[#0F172A] min-w-0 ${
+          viewMode === 'split' ? 'md:w-1/2 md:border-r md:border-slate-800' : 'md:flex-1'
+        } ${viewMode === 'preview' ? 'md:hidden' : ''}`}>
+          {/* Editor Tabs Bar */}
+          <div className="h-10 bg-[#090D16] border-b border-slate-800 flex items-center px-2 overflow-x-auto space-x-1 flex-shrink-0 scrollbar-none">
+            {openTabIds.map(tabId => {
+              const file = project?.nodes?.find(n => n.id === tabId);
+              if (!file) return null;
+              const isTabActive = file.id === activeFileId;
 
-                return (
-                  <div
-                    key={file.id}
-                    onClick={() => setActiveFileId(file.id)}
-                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg text-xs font-mono transition cursor-pointer select-none border-t-2 ${
-                      isTabActive
-                        ? 'bg-[#0F172A] border-cyan-400 text-cyan-300 font-semibold'
-                        : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                    }`}
+              return (
+                <div
+                  key={file.id}
+                  onClick={() => setActiveFileId(file.id)}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-t-lg text-xs font-mono transition cursor-pointer select-none border-t-2 flex-shrink-0 ${
+                    isTabActive
+                      ? 'bg-[#0F172A] border-cyan-400 text-cyan-300 font-semibold'
+                      : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  }`}
+                >
+                  <FileCode className="w-3.5 h-3.5" />
+                  <span className="truncate max-w-[120px]">{file.name}</span>
+                  <button
+                    onClick={(e) => handleCloseTab(e, file.id)}
+                    className="hover:text-rose-400 p-0.5 rounded"
                   >
-                    <FileCode className="w-3 h-3" />
-                    <span className="truncate max-w-[120px]">{file.name}</span>
-                    <button
-                      onClick={(e) => handleCloseTab(e, file.id)}
-                      className="hover:text-rose-400 p-0.5 rounded"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                );
-              })}
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Active file breadcrumb & actions */}
+          {activeFile && (
+            <div className="px-3 sm:px-4 py-1.5 bg-[#0A0E1A] border-b border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+              <span className="text-[11px] truncate max-w-[180px] sm:max-w-none">{activeFile.path}</span>
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                <span className="text-[10px] text-cyan-400 uppercase font-semibold">
+                  {activeFile.language}
+                </span>
+                <button
+                  onClick={handleCopyActiveCode}
+                  className="p-1 hover:text-white rounded text-slate-400"
+                  title="Copy File Code"
+                >
+                  {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={handleDownloadActiveFile}
+                  className="p-1 hover:text-white rounded text-slate-400"
+                  title="Download File"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Code Content Area */}
+          {activeFile ? (
+            <div className="flex-1 flex overflow-hidden relative">
+              {/* Line Numbers */}
+              <div className="w-9 sm:w-12 bg-[#090D16] text-slate-600 font-mono text-[11px] sm:text-xs text-right pr-2 sm:pr-3 pt-3 select-none overflow-hidden flex-shrink-0">
+                {activeFile.content.split('\n').map((_, idx) => (
+                  <div key={idx} className="leading-relaxed">{idx + 1}</div>
+                ))}
+              </div>
+
+              {/* Editable Codearea */}
+              <textarea
+                ref={editorTextareaRef}
+                value={activeFile.content}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                spellCheck="false"
+                className="flex-1 bg-[#0F172A] text-slate-100 font-mono text-xs sm:text-xs p-2.5 sm:p-3 leading-relaxed focus:outline-none resize-none overflow-auto"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-500 font-mono text-xs p-4 text-center">
+              <p>Select or create a file to start editing.</p>
+              <button
+                onClick={() => setMobileTab('files')}
+                className="mt-3 px-3 py-1.5 rounded-lg bg-slate-800 text-cyan-400 text-xs md:hidden"
+              >
+                Browse Files & Carpets
+              </button>
+            </div>
+          )}
+
+          {/* Bottom Mind AI Command Bar */}
+          <form onSubmit={handleAiExecute} className="p-2 sm:p-2.5 bg-[#090D16] border-t border-slate-800 flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+            <div className="p-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400 flex-shrink-0">
+              <Brain className="w-3.5 h-3.5" />
+            </div>
+            <input
+              type="text"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Ask Godfy to add file/carpet or write code..."
+              className="flex-1 bg-[#0F172A] border border-slate-700 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-400"
+            />
+            <button
+              type="submit"
+              disabled={!aiPrompt.trim() || isAiExecuting}
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs font-mono transition disabled:opacity-40 flex-shrink-0"
+            >
+              {isAiExecuting ? '...' : 'Apply'}
+            </button>
+          </form>
+        </div>
+
+        {/* ========================================================= */}
+        {/* PANEL 3: Live Interactive Preview                        */}
+        {/* Visible on Desktop (when viewMode is 'preview' | 'split') */}
+        {/* and on Mobile (when mobileTab === 'preview')             */}
+        {/* ========================================================= */}
+        <div className={`${
+          mobileTab === 'preview' ? 'flex w-full' : 'hidden'
+        } md:flex flex-col bg-slate-100 min-w-0 ${
+          viewMode === 'split' ? 'md:w-1/2' : 'md:flex-1'
+        } ${viewMode === 'editor' ? 'md:hidden' : ''}`}>
+          {/* Preview Toolbar */}
+          <div className="h-10 bg-white border-b border-cream-200 px-3 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center space-x-1.5 text-xs font-mono text-slate-500">
+              <Eye className="w-3.5 h-3.5 text-cyan-600" />
+              <span className="font-bold text-slate-800 text-[11px]">Live Preview</span>
             </div>
 
-            {/* Active file breadcrumb & actions */}
-            {activeFile && (
-              <div className="px-4 py-1.5 bg-[#0A0E1A] border-b border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-                <span className="text-[11px] truncate">{activeFile.path}</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-[10px] text-cyan-400 uppercase font-semibold">
-                    {activeFile.language}
-                  </span>
-                  <button
-                    onClick={handleCopyActiveCode}
-                    className="p-1 hover:text-white rounded text-slate-400"
-                    title="Copy File Code"
-                  >
-                    {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                  <button
-                    onClick={handleDownloadActiveFile}
-                    className="p-1 hover:text-white rounded text-slate-400"
-                    title="Download File"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Code Content Area */}
-            {activeFile ? (
-              <div className="flex-1 flex overflow-hidden relative">
-                {/* Line Numbers */}
-                <div className="w-12 bg-[#090D16] text-slate-600 font-mono text-xs text-right pr-3 pt-3 select-none overflow-hidden">
-                  {activeFile.content.split('\n').map((_, idx) => (
-                    <div key={idx} className="leading-relaxed">{idx + 1}</div>
-                  ))}
-                </div>
-
-                {/* Editable Codearea */}
-                <textarea
-                  ref={editorTextareaRef}
-                  value={activeFile.content}
-                  onChange={(e) => handleCodeChange(e.target.value)}
-                  spellCheck="false"
-                  className="flex-1 bg-[#0F172A] text-slate-100 font-mono text-xs p-3 leading-relaxed focus:outline-none resize-none overflow-auto"
-                />
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-500 font-mono text-xs">
-                Select or create a file to start editing.
-              </div>
-            )}
-
-            {/* Bottom Mind AI Command Bar */}
-            <form onSubmit={handleAiExecute} className="p-2.5 bg-[#090D16] border-t border-slate-800 flex items-center space-x-2">
-              <div className="p-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400">
-                <Brain className="w-3.5 h-3.5" />
-              </div>
-              <input
-                type="text"
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="Ask Godfy Mind to create new files, carpets, or refactor code..."
-                className="flex-1 bg-[#0F172A] border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-400"
-              />
-              <button
-                type="submit"
-                disabled={!aiPrompt.trim() || isAiExecuting}
-                className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs font-mono transition disabled:opacity-40"
-              >
-                {isAiExecuting ? 'Executing...' : 'Apply'}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Right: Live Preview Panel */}
-        {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`flex flex-col bg-slate-100 min-w-0 ${viewMode === 'split' ? 'w-1/2' : 'flex-1'}`}>
-            {/* Preview Toolbar */}
-            <div className="h-10 bg-white border-b border-cream-200 px-3 flex items-center justify-between">
-              <div className="flex items-center space-x-1 text-xs font-mono text-slate-500">
-                <Eye className="w-3.5 h-3.5 text-cyan-600" />
-                <span className="font-bold text-slate-800 text-[11px]">Interactive Preview</span>
-              </div>
-
-              {/* Viewport controls */}
-              <div className="flex items-center space-x-1">
+            {/* Viewport controls (Desktop viewports shown only on sm+) */}
+            <div className="flex items-center space-x-1">
+              <div className="hidden sm:flex items-center space-x-1">
                 <button
                   onClick={() => setViewport('desktop')}
                   className={`p-1 rounded ${viewport === 'desktop' ? 'bg-cream-100 text-cyan-800 font-bold' : 'text-slate-400'}`}
@@ -609,35 +691,36 @@ export default function ProjectEditorView({
                 >
                   <Smartphone className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  onClick={() => setPreviewKey(k => k + 1)}
-                  className="p-1 hover:bg-cream-100 rounded text-slate-500 transition ml-2"
-                  title="Reload Preview"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
               </div>
-            </div>
 
-            {/* Iframe Container */}
-            <div className="flex-1 bg-slate-200/80 p-2 sm:p-4 flex items-center justify-center overflow-auto">
-              <div 
-                className={`bg-white rounded-xl shadow-lg overflow-hidden border border-slate-300 transition-all duration-300 h-full ${
-                  viewport === 'desktop' ? 'w-full' :
-                  viewport === 'tablet' ? 'w-[768px] max-w-full' : 'w-[375px] max-w-full'
-                }`}
+              <button
+                onClick={() => setPreviewKey(k => k + 1)}
+                className="p-1 hover:bg-cream-100 rounded text-slate-500 transition ml-1"
+                title="Reload Preview"
               >
-                <iframe
-                  key={previewKey}
-                  srcDoc={previewHtml}
-                  title="Project Live Preview"
-                  sandbox="allow-scripts allow-modals allow-forms allow-same-origin"
-                  className="w-full h-full border-0"
-                />
-              </div>
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-        )}
+
+          {/* Iframe Container */}
+          <div className="flex-1 bg-slate-200/80 p-1 sm:p-4 flex items-center justify-center overflow-hidden">
+            <div 
+              className={`bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden border border-slate-300 transition-all duration-300 h-full w-full ${
+                viewport === 'tablet' ? 'sm:w-[768px] sm:max-w-full' :
+                viewport === 'mobile' ? 'sm:w-[375px] sm:max-w-full' : 'w-full'
+              }`}
+            >
+              <iframe
+                key={previewKey}
+                srcDoc={previewHtml}
+                title="Project Live Preview"
+                sandbox="allow-scripts allow-modals allow-forms allow-same-origin"
+                className="w-full h-full border-0"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

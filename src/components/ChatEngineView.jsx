@@ -149,7 +149,7 @@ export default function ChatEngineView({
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] max-w-4xl w-full mx-auto relative">
+    <div className="flex-1 flex flex-col h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] max-w-4xl w-full mx-auto relative">
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-5">
         

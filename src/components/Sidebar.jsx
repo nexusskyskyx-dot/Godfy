@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Plus, MessageSquare, Trash2, Sliders, ExternalLink, 
   Sparkles, CheckCircle2, ChevronRight, Zap, Brain, RotateCcw,
-  Globe, Image as ImageIcon, Cpu
+  Globe, Image as ImageIcon, Cpu, FolderTree
 } from 'lucide-react';
 import { FREE_AI_MODELS } from '../engine/models.js';
 import { getStoredMemories, clearAllMemories } from '../engine/brainMemory.js';
@@ -16,7 +16,10 @@ export default function Sidebar({
   onSelectSession,
   onNewChat,
   onDeleteSession,
-  onOpenSettings
+  onOpenSettings,
+  currentView = 'chat',
+  onSelectView,
+  hasProject = false
 }) {
   const [memories, setMemories] = useState([]);
   const [cognitiveProfile, setCognitiveProfile] = useState(() => getCognitiveProfile());
@@ -79,8 +82,8 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Action: New Chat */}
-        <div className="p-3.5 border-b border-cream-200">
+        {/* Action: New Chat & Navigation Switcher */}
+        <div className="p-3.5 border-b border-cream-200 space-y-2">
           <button
             onClick={() => {
               onNewChat();
@@ -91,6 +94,39 @@ export default function Sidebar({
             <Plus className="w-4 h-4 text-cyan-300" />
             <span>New Chat</span>
           </button>
+
+          <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <button
+              onClick={() => {
+                if (onSelectView) onSelectView('chat');
+                if (window.innerWidth < 1024) onClose();
+              }}
+              className={`py-1.5 px-2 rounded-lg font-semibold text-xs flex items-center justify-center space-x-1.5 transition ${
+                currentView === 'chat'
+                  ? 'bg-cyanlight-100 text-cyan-950 border border-cyanlight-300'
+                  : 'bg-cream-100 text-slate-700 hover:bg-cream-200'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-cyan-700" />
+              <span>Chat</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (onSelectView) onSelectView('editor');
+                if (window.innerWidth < 1024) onClose();
+              }}
+              className={`py-1.5 px-2 rounded-lg font-semibold text-xs flex items-center justify-center space-x-1.5 transition ${
+                currentView === 'editor'
+                  ? 'bg-cyanlight-100 text-cyan-950 border border-cyanlight-300'
+                  : 'bg-cream-100 text-slate-700 hover:bg-cream-200'
+              }`}
+            >
+              <FolderTree className="w-3.5 h-3.5 text-cyan-700" />
+              <span>Studio</span>
+              {hasProject && <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>}
+            </button>
+          </div>
         </div>
 
         {/* Chat Sessions List */}
