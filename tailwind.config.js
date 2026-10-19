@@ -6,40 +6,42 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        cream: {
-          50: '#FDFCF9',
-          100: '#FAF7EE', // Main White Cream
-          200: '#F3EDE0',
-          300: '#E9DFC9',
-          400: '#D5C4A1',
-          500: '#B8A078',
-        },
-        cyanlight: {
-          50: '#F0FDFA',
-          100: '#CCFBF1',
-          200: '#99F6E4',
-          300: '#5EEAD4',
-          400: '#2DD4BF',
-          500: '#14B8A6',
-          brand: '#A5F3FC', // 2nd Secondary Cyan light
-          soft: '#E0F7FA',
-          accent: '#0891B2',
+        // Tokyo Night Palette
+        tokyo: {
+          bg: '#1a1b26',         // Background default
+          darker: '#16161e',     // Darkest / sidebars / modals
+          card: '#1f2335',       // Panel / card background
+          cardHover: '#24283b',  // Hover surface
+          border: '#292e42',     // Subtle borders
+          borderLight: '#3b4261',// Active / focus borders
+          text: '#c0caf5',       // Primary text
+          muted: '#9aa5ce',      // Secondary text
+          dim: '#565f89',        // Dim / comments / disabled
+          cyan: '#7dcfff',       // Vibrant Cyan accent
+          blue: '#7aa2f7',       // Bright Blue accent
+          purple: '#bb9af7',     // Purple
+          green: '#9ece6a',      // Green / success
+          orange: '#ff9e64',     // Orange
+          red: '#f7768e',        // Red / error
+          yellow: '#e0af68',     // Yellow / warning
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-        display: ['Cal Sans', 'Cabinet Grotesk', 'Inter', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
       },
       boxShadow: {
-        'glow-cyan': '0 0 25px -5px rgba(34, 211, 238, 0.35)',
-        'soft-cream': '0 10px 30px -10px rgba(184, 160, 120, 0.12)',
-        'card-subtle': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.03)',
+        'glow-cyan': '0 0 20px -3px rgba(125, 207, 255, 0.25)',
+        'glow-blue': '0 0 25px -4px rgba(122, 162, 247, 0.3)',
+        'cursor-card': '0 4px 20px -2px rgba(10, 10, 16, 0.6), 0 0 0 1px rgba(41, 46, 66, 0.8)',
       },
       animation: {
+        'neural-pulse': 'neuralPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow': 'spin 12s linear infinite',
       }

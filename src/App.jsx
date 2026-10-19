@@ -221,7 +221,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-100 text-slate-800 antialiased selection:bg-cyanlight-200 selection:text-cyan-900 font-sans flex">
+    <div className="min-h-screen bg-[#1a1b26] text-[#c0caf5] antialiased selection:bg-[#7aa2f7]/30 selection:text-[#7dcfff] font-sans flex overflow-x-hidden">
       {/* Responsive Collapsible Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}

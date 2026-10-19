@@ -3,15 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --color-main: #FAF7EE;      /* White cream */
-  --color-secondary: #FFFFFF; /* White */
-  --color-cyanlight: #E0F7FA; /* Cyan light */
-  --color-cyan-glow: #22D3EE;
+  --tokyo-bg: #1a1b26;
+  --tokyo-darker: #16161e;
+  --tokyo-card: #1f2335;
+  --tokyo-border: #292e42;
+  --tokyo-cyan: #7dcfff;
+  --tokyo-blue: #7aa2f7;
+  --tokyo-text: #c0caf5;
 }
 
 html, body {
-  background-color: var(--color-main);
-  color: #0F172A;
+  background-color: #1a1b26;
+  color: #c0caf5;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -25,36 +28,28 @@ html, body {
   box-sizing: border-box;
 }
 
-code, pre {
+code, pre, .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }
 
+h1, h2, h3, h4, .font-display {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
 /* ==========================================================================
-   Godfy Thinking & Activity Animations
+   Cursor / Tokyo Night Keyframe Animations
    ========================================================================== */
 
 @keyframes neuralPulse {
   0%, 100% {
     transform: scale(1);
     opacity: 0.9;
-    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 0 0 rgba(125, 207, 255, 0.4);
   }
   50% {
-    transform: scale(1.08);
+    transform: scale(1.06);
     opacity: 1;
-    box-shadow: 0 0 20px 4px rgba(34, 211, 238, 0.5);
-  }
-}
-
-@keyframes brainWaves {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+    box-shadow: 0 0 22px 5px rgba(125, 207, 255, 0.55);
   }
 }
 
@@ -70,11 +65,8 @@ code, pre {
 @keyframes nodeEnter {
   0% {
     opacity: 0;
-    transform: translateY(-6px) scale(0.97);
-    background-color: rgba(224, 247, 250, 0.8);
-  }
-  60% {
-    background-color: rgba(153, 246, 228, 0.4);
+    transform: translateY(-4px) scale(0.98);
+    background-color: rgba(125, 207, 255, 0.15);
   }
   100% {
     opacity: 1;
@@ -85,7 +77,7 @@ code, pre {
 
 @keyframes nodeHighlight {
   0% {
-    background-color: rgba(34, 211, 238, 0.35);
+    background-color: rgba(122, 162, 247, 0.25);
   }
   100% {
     background-color: transparent;
@@ -109,22 +101,8 @@ code, pre {
   }
 }
 
-@keyframes pulseBorder {
-  0%, 100% {
-    border-color: rgba(34, 211, 238, 0.3);
-  }
-  50% {
-    border-color: rgba(34, 211, 238, 0.85);
-  }
-}
-
 .animate-neural-pulse {
   animation: neuralPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-brain-waves {
-  background-size: 200% 200%;
-  animation: brainWaves 4s ease infinite;
 }
 
 .animate-shimmer {
@@ -132,30 +110,26 @@ code, pre {
 }
 
 .animate-node-enter {
-  animation: nodeEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: nodeEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-node-highlight {
-  animation: nodeHighlight 0.8s ease-out forwards;
+  animation: nodeHighlight 0.7s ease-out forwards;
 }
 
 .animate-node-exit {
-  animation: nodeExit 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: nodeExit 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   pointer-events: none;
 }
 
-.animate-pulse-border {
-  animation: pulseBorder 2s ease-in-out infinite;
-}
-
 /* ==========================================================================
-   Godfy Rich Text & Markdown Styling System
+   Tokyo Night Rich Text & Markdown System
    ========================================================================== */
 
 .godfy-markdown {
   font-size: 0.935rem;
   line-height: 1.7;
-  color: #1E293B;
+  color: #c0caf5;
   word-break: break-word;
 }
 
@@ -163,39 +137,38 @@ code, pre {
 .godfy-markdown h1 {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #0F172A;
+  color: #f7768e;
   margin-top: 1.15rem;
   margin-bottom: 0.5rem;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   line-height: 1.3;
   padding-bottom: 0.35rem;
-  border-bottom: 2px solid #E0F7FA;
+  border-bottom: 1px solid #292e42;
 }
 
 .godfy-markdown h2 {
   font-size: 1.18rem;
   font-weight: 750;
-  color: #0F172A;
+  color: #7aa2f7;
   margin-top: 1rem;
   margin-bottom: 0.45rem;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   line-height: 1.35;
 }
 
 .godfy-markdown h3 {
   font-size: 1.02rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #7dcfff;
   margin-top: 0.85rem;
   margin-bottom: 0.35rem;
-  letter-spacing: -0.01em;
   line-height: 1.4;
 }
 
 .godfy-markdown h4 {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1E293B;
+  color: #bb9af7;
   margin-top: 0.75rem;
   margin-bottom: 0.25rem;
 }
@@ -204,7 +177,7 @@ code, pre {
 .godfy-markdown p {
   margin-bottom: 0.75rem;
   line-height: 1.7;
-  color: #334155;
+  color: #c0caf5;
 }
 
 .godfy-markdown p:last-child {
@@ -213,13 +186,13 @@ code, pre {
 
 .godfy-markdown strong,
 .godfy-markdown b {
-  color: #0F172A;
+  color: #ffffff;
   font-weight: 700;
 }
 
 .godfy-markdown em,
 .godfy-markdown i {
-  color: #475569;
+  color: #9aa5ce;
 }
 
 /* Unordered Lists */
@@ -234,7 +207,7 @@ code, pre {
   position: relative;
   padding-left: 1.35rem;
   line-height: 1.62;
-  color: #334155;
+  color: #c0caf5;
   margin-bottom: 0.4rem;
 }
 
@@ -242,7 +215,7 @@ code, pre {
   content: "•";
   position: absolute;
   left: 0.25rem;
-  color: #0891B2;
+  color: #7dcfff;
   font-weight: 900;
   font-size: 1.2em;
   line-height: 1.35;
@@ -258,58 +231,50 @@ code, pre {
 
 .godfy-markdown ol > li {
   line-height: 1.62;
-  color: #334155;
+  color: #c0caf5;
   margin-bottom: 0.4rem;
   padding-left: 0.25rem;
 }
 
 .godfy-markdown ol > li::marker {
-  color: #0891B2;
+  color: #7aa2f7;
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9em;
-}
-
-/* Nested lists */
-.godfy-markdown li > ul,
-.godfy-markdown li > ol {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
 }
 
 /* Inline Code */
 .godfy-markdown code:not(pre code) {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.835em;
-  background-color: #FAF7EE;
-  color: #0891B2;
+  background-color: #1f2335;
+  color: #7dcfff;
   padding: 0.15rem 0.45rem;
   border-radius: 0.375rem;
-  border: 1px solid #E9DFC9;
+  border: 1px solid #292e42;
   font-weight: 600;
-  letter-spacing: -0.01em;
   word-break: break-word;
 }
 
 /* Code Blocks */
 .godfy-markdown pre {
-  background-color: #090D16;
-  color: #F8FAFC;
-  border-radius: 0.875rem;
+  background-color: #16161e;
+  color: #c0caf5;
+  border-radius: 0.75rem;
   padding: 1rem;
   margin-top: 0.85rem;
   margin-bottom: 0.85rem;
   overflow-x: auto;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.825rem;
-  border: 1px solid #1E293B;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
+  border: 1px solid #292e42;
+  box-shadow: 0 4px 16px -2px rgba(10, 10, 16, 0.4);
   line-height: 1.6;
 }
 
 .godfy-markdown pre code {
   background-color: transparent !important;
-  color: #E2E8F0 !important;
+  color: #c0caf5 !important;
   padding: 0 !important;
   border: none !important;
   font-size: inherit !important;
@@ -320,22 +285,16 @@ code, pre {
 /* Blockquotes / Callout Highlights */
 .godfy-markdown blockquote {
   position: relative;
-  border-left: 3.5px solid #22D3EE;
-  background: linear-gradient(to right, rgba(224, 247, 250, 0.5), rgba(250, 247, 238, 0.35));
+  border-left: 3px solid #7aa2f7;
+  background: #1f2335;
   padding: 0.75rem 1rem;
-  border-radius: 0 0.65rem 0.65rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
   margin-top: 0.85rem;
   margin-bottom: 0.85rem;
-  color: #1E293B;
-  border-top: 1px solid rgba(224, 247, 250, 0.6);
-  border-right: 1px solid rgba(224, 247, 250, 0.6);
-  border-bottom: 1px solid rgba(224, 247, 250, 0.6);
-}
-
-.godfy-markdown blockquote p {
-  margin-bottom: 0;
-  font-size: 0.875rem;
-  line-height: 1.6;
+  color: #c0caf5;
+  border-top: 1px solid #292e42;
+  border-right: 1px solid #292e42;
+  border-bottom: 1px solid #292e42;
 }
 
 /* Tables */
@@ -343,28 +302,27 @@ code, pre {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border-radius: 0.65rem;
+  border-radius: 0.5rem;
   overflow: hidden;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #292e42;
   margin-top: 0.85rem;
   margin-bottom: 0.85rem;
   font-size: 0.835rem;
 }
 
 .godfy-markdown th {
-  background-color: #FAF7EE;
-  color: #0F172A;
+  background-color: #1f2335;
+  color: #7dcfff;
   font-weight: 700;
   text-align: left;
   padding: 0.65rem 0.9rem;
-  border-bottom: 1.5px solid #E2E8F0;
-  font-family: 'Inter', sans-serif;
+  border-bottom: 1px solid #292e42;
 }
 
 .godfy-markdown td {
   padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid #F1F5F9;
-  color: #334155;
+  border-bottom: 1px solid #24283b;
+  color: #c0caf5;
 }
 
 .godfy-markdown tr:last-child td {
@@ -372,12 +330,12 @@ code, pre {
 }
 
 .godfy-markdown tr:nth-child(even) {
-  background-color: rgba(250, 247, 238, 0.45);
+  background-color: rgba(31, 35, 53, 0.45);
 }
 
 /* Links */
 .godfy-markdown a {
-  color: #0891B2;
+  color: #7dcfff;
   text-decoration: underline;
   text-underline-offset: 2.5px;
   font-weight: 600;
@@ -385,17 +343,10 @@ code, pre {
 }
 
 .godfy-markdown a:hover {
-  color: #0E7490;
+  color: #7aa2f7;
 }
 
-/* Horizontal Rule */
-.godfy-markdown hr {
-  border: 0;
-  border-top: 1.5px solid #E9DFC9;
-  margin: 1.25rem 0;
-}
-
-/* Minimal Custom Scrollbar */
+/* Custom Scrollbar Tokyo Night */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -406,10 +357,10 @@ code, pre {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #292e42;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #3b4261;
 }

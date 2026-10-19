@@ -21,45 +21,45 @@ export default function SettingsModal({ isOpen, onClose, mindPreset, setMindPres
     setTimeout(() => {
       setSavedNotice(false);
       onClose();
-    }, 800);
+    }, 600);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl border border-cream-300 shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-node-enter">
+      <div className="bg-[#16161e] rounded-2xl border border-[#292e42] shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto text-[#c0caf5]">
         {/* Header */}
-        <div className="p-5 border-b border-cream-200 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Sliders className="w-5 h-5 text-cyan-600" />
-            <h3 className="text-lg font-bold text-slate-900">Godfy Engine v1 Settings</h3>
+        <div className="p-4 sm:p-5 border-b border-[#292e42] flex items-center justify-between bg-[#13131a]">
+          <div className="flex items-center space-x-2.5">
+            <Sliders className="w-5 h-5 text-[#7dcfff]" />
+            <h3 className="text-base sm:text-lg font-bold text-[#c0caf5] font-display">Godfy Engine v1 Settings</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-cream-100 transition"
+            className="p-1.5 rounded-lg text-[#565f89] hover:text-[#c0caf5] hover:bg-[#1f2335] transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 text-sm">
+        <div className="p-4 sm:p-6 space-y-5 text-xs sm:text-sm">
           {/* Provider Mode */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-[#565f89] mb-2">
               Synthesis Engine Mode
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setProvider('godfy-mind-core')}
                 className={`p-3 rounded-xl border text-left transition ${
                   provider === 'godfy-mind-core'
-                    ? 'bg-cyanlight-50 border-cyan-400 font-bold text-cyan-900'
-                    : 'bg-white border-cream-200 text-slate-700 hover:bg-cream-50'
+                    ? 'bg-[#1f2335] border-[#7aa2f7] text-[#7dcfff] font-medium'
+                    : 'bg-[#1a1b26] border-[#292e42] text-[#9aa5ce] hover:bg-[#1f2335]'
                 }`}
               >
-                <div className="text-xs">Autonomous Mind Core</div>
-                <div className="text-[10px] text-slate-500 font-normal mt-0.5">Built-in consensus algorithm (Fastest)</div>
+                <div className="text-xs font-bold text-[#c0caf5]">Autonomous Mind Core</div>
+                <div className="text-[10px] text-[#565f89] font-normal mt-0.5">Built-in consensus algorithm (Fastest)</div>
               </button>
 
               <button
@@ -67,58 +67,60 @@ export default function SettingsModal({ isOpen, onClose, mindPreset, setMindPres
                 onClick={() => setProvider('external-mesh')}
                 className={`p-3 rounded-xl border text-left transition ${
                   provider === 'external-mesh'
-                    ? 'bg-cyanlight-50 border-cyan-400 font-bold text-cyan-900'
-                    : 'bg-white border-cream-200 text-slate-700 hover:bg-cream-50'
+                    ? 'bg-[#1f2335] border-[#7aa2f7] text-[#7dcfff] font-medium'
+                    : 'bg-[#1a1b26] border-[#292e42] text-[#9aa5ce] hover:bg-[#1f2335]'
                 }`}
               >
-                <div className="text-xs">Custom API / Local Ollama</div>
-                <div className="text-[10px] text-slate-500 font-normal mt-0.5">Plug in external OpenRouter / Ollama</div>
+                <div className="text-xs font-bold text-[#c0caf5]">Custom API / Local Ollama</div>
+                <div className="text-[10px] text-[#565f89] font-normal mt-0.5">Plug in external OpenRouter / Ollama</div>
               </button>
             </div>
           </div>
 
           {/* Optional External API Key */}
           {provider === 'external-mesh' && (
-            <div className="p-4 rounded-xl bg-cream-50 border border-cream-200 space-y-3">
-              <label className="block text-xs font-semibold text-slate-700">
-                Optional OpenRouter / Ollama Endpoint:
+            <div className="p-3.5 rounded-xl bg-[#1a1b26] border border-[#292e42] space-y-2">
+              <label className="block text-xs font-mono text-[#9aa5ce]">
+                Optional Endpoint / API Key:
               </label>
               <input
                 type="password"
                 placeholder="sk-or-v1-..."
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-cream-300 text-xs font-mono focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 rounded-lg bg-[#16161e] border border-[#292e42] text-xs font-mono text-[#c0caf5] focus:outline-none focus:border-[#7aa2f7]"
               />
-              <p className="text-[11px] text-slate-500">
-                Leave blank to automatically use Godfy's built-in intelligent multi-model synthesis engine.
+              <p className="text-[10px] text-[#565f89] font-mono">
+                Leave blank to automatically use Godfy's built-in 5-model consensus engine.
               </p>
             </div>
           )}
 
           {/* Model Weights in Consensus */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-              AI Council Weights (Influence on Godfy Mind)
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-[#565f89] mb-2">
+              Frontier Model Consensus Calibration
             </label>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {FREE_AI_MODELS.map((model) => (
-                <div key={model.id} className="flex items-center justify-between">
-                  <div className="text-xs font-medium text-slate-800">
-                    {model.name} <span className="text-slate-400 font-normal">({model.badge})</span>
+                <div key={model.id} className="p-2.5 rounded-xl bg-[#1a1b26] border border-[#292e42] flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="font-semibold text-xs text-[#c0caf5] block truncate">{model.name}</span>
+                    <span className="text-[10px] text-[#565f89] font-mono">{model.provider}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-shrink-0">
                     <input
                       type="range"
                       min="50"
                       max="100"
                       value={modelWeights[model.id] || 85}
-                      onChange={(e) =>
-                        setModelWeights({ ...modelWeights, [model.id]: Number(e.target.value) })
-                      }
-                      className="w-24 accent-cyan-500"
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        setModelWeights(prev => ({ ...prev, [model.id]: val }));
+                      }}
+                      className="w-20 sm:w-28 accent-[#7aa2f7] cursor-pointer"
                     />
-                    <span className="text-xs font-mono w-8 text-right text-slate-600">
+                    <span className="text-xs font-mono text-[#7dcfff] w-8 text-right">
                       {modelWeights[model.id] || 85}%
                     </span>
                   </div>
@@ -126,36 +128,18 @@ export default function SettingsModal({ isOpen, onClose, mindPreset, setMindPres
               ))}
             </div>
           </div>
-
-          {/* Color Palettes Confirmed */}
-          <div className="p-3.5 rounded-xl bg-cream-100 border border-cream-200">
-            <div className="text-xs font-bold text-slate-900 mb-1">Color Palette Configured:</div>
-            <div className="text-[11px] text-slate-600 font-mono space-y-0.5">
-              <div>Main: White Cream (<code>#FAF7EE</code>)</div>
-              <div>Secondary: White (<code>#FFFFFF</code>)</div>
-              <div>2nd Secondary: Cyan Light (<code>#E0F7FA</code>)</div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-cream-50 border-t border-cream-200 flex items-center justify-between">
-          <span className="text-xs text-slate-500 font-mono">Updates Cycle: v1</span>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-700 hover:bg-cream-100 text-xs font-semibold transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center space-x-1.5 transition"
-            >
-              {savedNotice ? <Check className="w-4 h-4 text-emerald-400" /> : null}
-              <span>{savedNotice ? 'Saved!' : 'Save & Close'}</span>
-            </button>
-          </div>
+        <div className="p-4 border-t border-[#292e42] bg-[#13131a] flex items-center justify-between">
+          <span className="text-[11px] text-[#565f89] font-mono">Tokyo Night Theme</span>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 rounded-xl bg-[#7aa2f7] hover:bg-[#89b4fa] text-[#16161e] font-semibold text-xs flex items-center space-x-1.5 transition active:scale-95"
+          >
+            {savedNotice ? <Check className="w-4 h-4" /> : null}
+            <span>{savedNotice ? 'Saved!' : 'Save & Close'}</span>
+          </button>
         </div>
       </div>
     </div>
