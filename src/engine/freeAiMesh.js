@@ -59,8 +59,8 @@ export const FREE_MODELS_CONFIG = [
     name: 'Gemma 2 27B',
     provider: 'Google (Open Free)',
     badge: 'Refinement & Audit',
-    remoteModel: 'searchgpt',
-    pollinationsModel: 'searchgpt',
+    remoteModel: 'gemini',
+    pollinationsModel: 'openai-fast',
     uncloseEndpoint: null,
     puterModel: 'google/gemma-2-27b-it',
     systemRole: 'You are Gemma 2 by Google. Provide concise quality audits, accessibility standards, fact validation, and crisp conclusions.'
@@ -85,7 +85,12 @@ export function cleanResponseText(raw) {
   if (cleaned.startsWith('```markdown') && cleaned.endsWith('```')) {
     cleaned = cleaned.slice(11, -3).trim();
   }
-  return cleaned;
+  // Strip robotic search or canned intros
+  cleaned = cleaned.replace(/^(based on my analysis and (?:live )?web search results,?\s*(?:i'd recommend|i recommend)?)\s*:?\s*/i, '');
+  cleaned = cleaned.replace(/^(based on (?:live )?web search results,?\s*)/i, '');
+  cleaned = cleaned.replace(/^(based on my analysis,?\s*)/i, '');
+  cleaned = cleaned.replace(/^(according to (?:live )?web search results,?\s*)/i, '');
+  return cleaned.trim();
 }
 
 /**

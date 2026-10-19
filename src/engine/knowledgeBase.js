@@ -161,13 +161,23 @@ export const TOPIC_KNOWLEDGE = {
   },
   'ai in 2026': {
     title: 'Artificial Intelligence Landscape in 2026',
-    summary: 'In 2026, the artificial intelligence landscape is defined by autonomous agentic architectures, open-weight reasoning models (DeepSeek-R1, Llama 3.3, Qwen 2.5), widespread local edge inference, and multi-model consensus engines.',
+    summary: 'In 2026, the artificial intelligence landscape is defined by autonomous agentic architectures, open-weight reasoning breakthroughs (DeepSeek-R1, Qwen 2.5), hybrid reasoning frontier models (Claude 3.7 Sonnet, OpenAI o3), and multi-model consensus engines.',
     keyPoints: [
-      '**Open-Weight Reasoning Revolution:** Models like DeepSeek R1 and Llama 3.3 match or exceed previous proprietary frontier benchmarks at a fraction of the inference cost, enabling free and open deployments.',
-      '**Agent Mode & Autonomous Workflows:** AI has transitioned from simple conversational chatbots into multi-step autonomous execution engines capable of browsing the live web, writing code, and self-debugging.',
-      '**Consensus & Verification Architecture:** Modern systems (like Godfy) broadcast queries to multiple specialized open models in parallel, eliminating single-model hallucinations through cross-model adjudication.'
+      '**Open-Weight Reasoning Revolution:** DeepSeek-R1 transformed the ecosystem by matching frontier proprietary reasoning benchmarks with open weights, setting a new standard for transparent and low-cost reasoning.',
+      '**Frontier Hybrid Thinking & Coding:** Claude 3.7 Sonnet and OpenAI o3/o3-mini lead in multi-step engineering, tool use, and long-horizon autonomous tasks.',
+      '**Consensus Architectures (like Godfy):** Instead of relying on any single model with potential blindspots or cutoff limitations, systems orchestrate specialized open models in parallel to achieve higher accuracy and cross-verification.'
     ],
-    analogy: 'AI transitioned from an encyclopedic question-answer bot into an orchestrated council of specialized autonomous agents.'
+    analogy: 'AI transitioned from an isolated single-model chatbot into an orchestrated council of specialized autonomous agents.'
+  },
+  'best ai model': {
+    title: 'Top AI Models by Use Case (2026)',
+    summary: 'In 2026, no single model dominates every domain. Selection depends on the specific workload: reasoning, coding, conversational nuance, or open deployment.',
+    keyPoints: [
+      '**Deep Reasoning & Logic:** DeepSeek-R1 (open-weight) and OpenAI o3 lead in autonomous mathematical and algorithmic reasoning.',
+      '**Full-Stack Coding & Agent Execution:** Claude 3.7 Sonnet and Claude 3.5 Sonnet remain the gold standard for software engineering and complex tool workflows.',
+      '**Open-Weight Production:** DeepSeek-R1 (for reasoning), Qwen 2.5 72B (for conversational nuance and international languages), and Llama 3.3 70B (for reliable architectural scaffolding).'
+    ],
+    analogy: 'Choosing an AI model in 2026 is like drafting a sports team: you pair DeepSeek for rigorous logic, Claude for coding execution, and Llama/Qwen for structured systems.'
   }
 };
 
@@ -177,6 +187,11 @@ export const TOPIC_KNOWLEDGE = {
 export function lookupKnowledge(query) {
   if (!query) return null;
   const lower = query.toLowerCase();
+
+  // Match AI model recommendation or landscape inquiries
+  if (/\b(best ai|best model|recommend a model|which model|which ai|what model|top model|recommend an ai|ai models?)\b/i.test(lower)) {
+    return TOPIC_KNOWLEDGE['best ai model'];
+  }
 
   // Special match for current 2026 AI landscape
   if ((lower.includes('ai') || lower.includes('artificial intelligence')) && (lower.includes('2026') || lower.includes('news') || lower.includes('latest'))) {
