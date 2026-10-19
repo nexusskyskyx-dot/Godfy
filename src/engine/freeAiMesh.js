@@ -740,7 +740,7 @@ Reviewing conversion flow for "${topic}":
     if (modelId === 'qwen-2.5') {
       return `### Qwen 2.5 Copywriting Hook
 **Headline**: "Elevate ${topic} with Autonomous Multi-AI Consensus."
-**Subhead**: "Ten independent open models collaborate in parallel to deliver the highest quality solution in seconds."
+**Subhead**: "16 frontier neurons across 4 cognitive lobes collaborate in parallel to deliver the highest quality solution in seconds."
 **Call to Action**: "Get Started Instantly — Free & Open."`;
     }
     if (modelId === 'hermes-3') {

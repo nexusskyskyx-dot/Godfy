@@ -205,7 +205,8 @@ export function generateDeepCognitiveTrace({
   modelProposals = [],
   memories = [],
   searchData = null,
-  durationMs = 380
+  durationMs = 380,
+  whatImGoingToDo = null
 }) {
   const q = query.trim();
   const activated = toolDecisions.activatedTools || [];
@@ -225,7 +226,8 @@ export function generateDeepCognitiveTrace({
     totResult,
     modelProposals,
     durationMs,
-    iqScore: intent.complexity >= 4 ? 195 : 185
+    iqScore: intent.complexity >= 4 ? 195 : 185,
+    whatImGoingToDo
   });
 
   return {

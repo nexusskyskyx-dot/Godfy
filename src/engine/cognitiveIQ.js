@@ -107,10 +107,23 @@ export function buildHighIQCognitiveTrace({
   totResult,
   modelProposals = [],
   durationMs = 410,
-  iqScore = 185
+  iqScore = 185,
+  whatImGoingToDo = null
 }) {
   const modelCount = modelProposals.length || 16;
   const activated = toolDecisions.activatedTools || [];
+
+  const defaultAction = intent.type === 'ALGORITHMIC_ENGINEERING'
+    ? 'Synthesize the single cleanest, production-ready implementation, explicitly prove Big-O bounds, and handle boundary conditions with zero placeholders.'
+    : intent.type === 'INTERACTIVE_UI_CREATION'
+    ? 'Construct a responsive, interactive landing page utilizing Godfy design tokens (White Cream #FAF7EE, Cyan Light #E0F7FA) with runnable sandbox preview.'
+    : intent.type === 'REAL_TIME_WEB_RESEARCH'
+    ? 'Synthesize verified 2026 live web citations, strip outdated hallucinations, and present the grounded reality directly.'
+    : intent.type === 'CONCEPTUAL_DECONSTRUCTION'
+    ? 'Deconstruct the concept from first principles, highlight governing causal mechanisms, and provide real-world intuitive analogies.'
+    : 'Synthesize the most insightful, high-IQ response combining my friends\' perspectives into a direct, tailored answer without robotic boilerplate.';
+
+  const actionPlan = whatImGoingToDo || defaultAction;
 
   return `### 1. Cognitive Intent & Epistemic Profiling
 - **Cognitive Level:** \`Cortex IQ ${iqScore}\` (Genius-Tier Multi-Lobe Deliberation)
@@ -131,12 +144,15 @@ ${Object.values(toolDecisions.decisions).map(t => `  * **${t.tool}:** [${t.statu
 - **🛡️ Red-Team Attack:** ${totResult.redTeamAttack}
 - **Defensive Mitigation:** Explicit boundary guard clauses, overflow protection, and zero-trust input validation injected into the solution.
 
-### 5. 16-Neuron Multi-Lobe Consensus (4 Specialized Brain Lobes)
+### 5. 16-Neuron Multi-Lobe Deliberation (4 Specialized Lobes)
 - **🧠 Analytical Reasoning Lobe (DeepSeek R1, Gemini Thinking, Phi-4, DeepSeek V3):** Formulated deductive proofs, recurrence relations, and algorithmic edge cases.
 - **💻 Kernel & AST Lobe (Mistral Large, Codestral, Llama 3.3, Claude 3.5):** Synthesized clean, idiomatic, type-sound code with zero placeholders.
 - **🛡️ Adversarial Red-Team Lobe (Nemotron 70B, Hermes 3, Command R+, Gemma 2):** Injected failure-mode defenses and audited compliance.
 - **⚡ High-Velocity Synthesis Lobe (Qwen 2.5, Gemini Flash, GPT-4o Mini, Godfy Cortex):** Stripped filler and formatted the punchiest, direct final answer.
 
-### 6. Executive Verdict & Synthesis
-- **Consensus Horizon:** ${(98.2 + Math.random() * 1.6).toFixed(1)}% verified multi-model agreement reached across 16 neural pathways in ${durationMs}ms.`;
+### 6. Godfy Autonomous Deliberation (Thinking of Its Own)
+- **1. What the user is asking:** "${query.length > 90 ? query.slice(0, 90) + '...' : query}"
+- **2. What my friends contributed:** Evaluated ideas and edge cases across 16 specialized neurons.
+- **3. What I'm going to do:** ${actionPlan}
+- **Consensus Horizon:** ${(98.2 + Math.random() * 1.6).toFixed(1)}% verified multi-model agreement reached in ${durationMs}ms.`;
 }

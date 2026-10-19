@@ -178,6 +178,101 @@ export const TOPIC_KNOWLEDGE = {
       '**Open-Weight Production:** DeepSeek-R1 (for reasoning), Qwen 2.5 72B (for conversational nuance and international languages), and Llama 3.3 70B (for reliable architectural scaffolding).'
     ],
     analogy: 'Choosing an AI model in 2026 is like drafting a sports team: you pair DeepSeek for rigorous logic, Claude for coding execution, and Llama/Qwen for structured systems.'
+  },
+
+  // Historical Pioneers & Figures
+  'turing': {
+    title: 'Alan Turing',
+    summary: 'Alan Turing (1912–1954) was a British mathematician, logician, and cryptanalyst widely recognized as the father of modern theoretical computer science and artificial intelligence.',
+    keyPoints: [
+      '**Universal Turing Machine (1936):** Formulated the mathematical blueprint of modern general-purpose computing and proved the undecidability of the Halting Problem.',
+      '**Enigma Decryption & Bletchley Park:** Designed the electromechanical "Bombe" machine that broke Nazi naval Enigma ciphers, fundamentally shortening World War II and saving millions of lives.',
+      '**The Turing Test & AI (1950):** Published "Computing Machinery and Intelligence", introducing the imitation game (Turing Test) as a foundational metric for machine cognition.',
+      '**ACE (Automatic Computing Engine):** Designed one of the very first stored-program computers.'
+    ],
+    analogy: 'Before Turing, calculating machines were built for single tasks like calculating artillery tables; Turing realized that one machine could simulate any other machine using stored symbolic instructions.'
+  },
+  'alan turing': {
+    title: 'Alan Turing',
+    summary: 'Alan Turing (1912–1954) was a British mathematician, logician, and cryptanalyst widely recognized as the father of modern theoretical computer science and artificial intelligence.',
+    keyPoints: [
+      '**Universal Turing Machine (1936):** Formulated the mathematical blueprint of modern general-purpose computing and proved the undecidability of the Halting Problem.',
+      '**Enigma Decryption & Bletchley Park:** Designed the electromechanical "Bombe" machine that broke Nazi naval Enigma ciphers, fundamentally shortening World War II and saving millions of lives.',
+      '**The Turing Test & AI (1950):** Published "Computing Machinery and Intelligence", introducing the imitation game (Turing Test) as a foundational metric for machine cognition.',
+      '**ACE (Automatic Computing Engine):** Designed one of the very first stored-program computers.'
+    ],
+    analogy: 'Turing realized that software and hardware could be unified: a universal machine executing symbolic programs could simulate any mechanical thought process.'
+  },
+  'lovelace': {
+    title: 'Ada Lovelace',
+    summary: 'Ada Lovelace (1815–1852) was an English mathematician and writer universally regarded as the world\'s first computer programmer.',
+    keyPoints: [
+      '**First Computer Algorithm (1843):** Translated Luigi Menabrea\'s memoir on Babbage\'s Analytical Engine, appending "Note G"—the first complete algorithm intended for machine execution (computing Bernoulli numbers).',
+      '**Poetical Science & Generalized Computing:** Foresee that computing engines could manipulate symbols, music, and art beyond pure numerical arithmetic.'
+    ]
+  },
+  'tesla': {
+    title: 'Nikola Tesla',
+    summary: 'Nikola Tesla (1856–1943) was a Serbian-American inventor, electrical engineer, and futurist who developed the alternating current (AC) electricity supply system that powers the modern world.',
+    keyPoints: [
+      '**AC Induction Motor & Polyphase Power:** Patented the polyphase AC electrical distribution system and the brushless AC induction motor, winning the "War of the Currents" against Edison\'s DC.',
+      '**Tesla Coil & Resonant Circuits:** Pioneered high-voltage, high-frequency electrical transmission, paving the way for wireless radio communication and X-ray technology.',
+      '**Remote Control & Robotics:** Demonstrated the first radio-controlled teleautomaton boat in 1898.'
+    ]
+  },
+  'von neumann': {
+    title: 'John von Neumann',
+    summary: 'John von Neumann (1903–1957) was a Hungarian-American mathematician and physicist whose contributions spanned computer architecture, quantum mechanics, game theory, and nuclear physics.',
+    keyPoints: [
+      '**Von Neumann Architecture:** Formalized the CPU, Arithmetic Logic Unit (ALU), Registers, Memory, and Input/Output bus, which remains the blueprint of nearly all computers today.',
+      '**Game Theory:** Proved the minimax theorem and established modern mathematical game theory with Oskar Morgenstern.',
+      '**Cellular Automata:** Created the first mathematical proof of self-replicating machines.'
+    ]
+  },
+  'shannon': {
+    title: 'Claude Shannon',
+    summary: 'Claude Shannon (1916–2001) was an American mathematician and electrical engineer known as the "Father of Information Theory".',
+    keyPoints: [
+      '**A Mathematical Theory of Communication (1948):** Defined the fundamental unit of information (the bit), channel capacity, and Shannon entropy ($H(X) = -\\sum p(x) \\log_2 p(x)$).',
+      '**Digital Circuit Design (1937):** Proved in his master\'s thesis that electrical switches (Boolean algebra) could solve any logical or numerical calculation, inventing modern digital computing hardware.'
+    ]
+  },
+  'torvalds': {
+    title: 'Linus Torvalds',
+    summary: 'Linus Torvalds is a Finnish-American software engineer who created the Linux operating system kernel (1991) and the Git distributed version control system (2005).',
+    keyPoints: [
+      '**Linux Kernel:** Powers the vast majority of cloud servers, Android smartphones, supercomputers, and modern internet infrastructure.',
+      '**Git:** Revolutionized global software collaboration by creating a lightning-fast, cryptographically verified DAG-based version control system.'
+    ]
+  },
+
+  // Systems & Architecture
+  'kubernetes': {
+    title: 'Kubernetes (K8s)',
+    summary: 'Kubernetes is an open-source container orchestration engine originally developed by Google for automating the deployment, scaling, self-healing, and networking of containerized workloads.',
+    keyPoints: [
+      '**Control Plane & Worker Nodes:** API server, etcd (distributed key-value state), kube-scheduler, and controller-manager coordinate pods running on kubelet worker nodes.',
+      '**Declarative Infrastructure:** Define target state in YAML manifests; K8s continuously reconciles the actual cluster state to match desired state.',
+      '**Core Primitives:** Pods (smallest deployable unit), Services (stable networking endpoint/load balancing), Deployments (declarative rolling upgrades), and Ingress.'
+    ]
+  },
+  'tcp': {
+    title: 'TCP/IP & 3-Way Handshake',
+    summary: 'Transmission Control Protocol (TCP) is a connection-oriented, reliable transport layer protocol that provides ordered, error-checked delivery of a stream of octets between networked applications.',
+    keyPoints: [
+      '**3-Way Handshake (Connection Establishment):** Client sends SYN (synchronize with initial seq number $x$); Server responds with SYN-ACK ($y$, ack $x+1$); Client responds with ACK ($y+1$). Connection state transitions to ESTABLISHED.',
+      '**Reliability & Congestion Control:** Implements sequence numbering, acknowledgment packets, sliding window flow control, and adaptive congestion avoidance (Slow Start, Congestion Avoidance via AIMD).',
+      '**Teardown (4-Way Handshake):** FIN from sender, ACK from receiver; FIN from receiver, ACK from sender, followed by TIME_WAIT state.'
+    ]
+  },
+  'jwt': {
+    title: 'JSON Web Tokens (JWT)',
+    summary: 'JSON Web Token (RFC 7519) is a compact, URL-safe means of representing claims securely between two parties, commonly used for stateless stateless authentication and authorization.',
+    keyPoints: [
+      '**Three Components:** Separated by periods: `Header.Payload.Signature`. Header defines signing algorithm (e.g. HS256, RS256); Payload contains claims (`sub`, `exp`, `role`); Signature verifies integrity.',
+      '**Statelessness:** Servers verify token validity using a secret or public key without querying a session database on every request.',
+      '**Security Best Practices:** Store in HTTP-only, secure cookies to prevent XSS attacks; keep token expiration windows short and use refresh tokens.'
+    ]
   }
 };
 
