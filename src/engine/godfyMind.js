@@ -53,7 +53,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   // Godfy Autonomous Tool Execution (Tools belong to Godfy, executed autonomously)
   const bashMatch = query.match(/^(?:run\s+bash|exec(?:ute)?\s+(?:bash|command|sh)|bash:?|\$)\s+(.+)/i);
   if (bashMatch && bashMatch[1]) {
-    if (onStreamStep) onStreamStep({ step: 'executing', message: 'Editing...' });
+    if (onStreamStep) onStreamStep({ step: 'bash', message: 'Running bash...' });
     const cmd = bashMatch[1].trim();
     const bashRes = await executeBashCommand(cmd);
     const durationMs = Math.round(performance.now() - cognitiveStartTime);
@@ -79,8 +79,13 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   const isDebugRequest = /(?:debug|detect\s+bugs?|find\s+errors?|check\s+errors?|ast\s+doctor)/i.test(query);
   const codeInQuery = extractCodeBlock(query);
   if (isDebugRequest && codeInQuery) {
-    if (onStreamStep) onStreamStep({ step: 'debugging', message: 'Editing...' });
+    if (onStreamStep) onStreamStep({ step: 'debugging', message: 'Debugging code...' });
     const bugs = detectCodeErrorsAndBugs(codeInQuery.code, codeInQuery.language);
+    
+    if (bugs.bugs.length > 0 && onStreamStep) {
+      onStreamStep({ step: 'patching', message: 'Patching bug...' });
+    }
+
     let fixedCode = codeInQuery.code;
     bugs.bugs.forEach(b => {
       if (b.suggestedPatch) {
@@ -117,7 +122,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
 
   const isRunRequest = /(?:run\s+code|execute\s+code|test\s+code|eval\s+code)/i.test(query);
   if (isRunRequest && codeInQuery) {
-    if (onStreamStep) onStreamStep({ step: 'running', message: 'Thinking...' });
+    if (onStreamStep) onStreamStep({ step: 'running', message: 'Running code...' });
     const runRes = await runCodeSandbox(codeInQuery.code, codeInQuery.language);
     const durationMs = Math.round(performance.now() - cognitiveStartTime);
     return {
@@ -139,14 +144,27 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     };
   }
 
-  const isEditing = /(\b(edit|modify|update|change|refactor|fix|patch|rewrite)\b)/i.test(query);
+  const isPatching = /(\b(patch|fix line|replace line|fix bug|repair)\b)/i.test(query);
+  const isEditing = /(\b(edit|modify|update|change|refactor|rewrite)\b)/i.test(query);
   const isRemoving = /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(query);
+  const isCreatingFolder = /(\b(carpet|folder|carpeta)\b)/i.test(query);
   const isCreating = /(\b(create|make|build|generate|new project|new file)\b)/i.test(query);
-  const defaultAction = isEditing ? 'Editing...' : isRemoving ? 'Removing...' : isCreating ? 'Creating...' : 'Thinking...';
+  const isDebugging = /(\b(debug|ast|diagnos|error)\b)/i.test(query);
+  const isRunningCode = /(\b(run code|execute code|eval)\b)/i.test(query);
+
+  const defaultAction = 
+    isPatching ? 'Patching bug...' :
+    isEditing ? 'Editing file...' :
+    isRemoving ? 'Deleting file...' :
+    isDebugging ? 'Debugging code...' :
+    isRunningCode ? 'Running code...' :
+    isCreatingFolder ? 'Creating folder...' :
+    isCreating ? 'Creating file...' :
+    'Thinking...';
 
   if (onStreamStep) {
     onStreamStep({ 
-      step: isEditing ? 'editing' : isRemoving ? 'removing' : isCreating ? 'creating' : 'thinking', 
+      step: isPatching ? 'patching' : isEditing ? 'editing' : isRemoving ? 'removing' : isCreating ? 'creating' : 'thinking', 
       message: defaultAction 
     });
   }
@@ -162,7 +180,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     if (onStreamStep) {
       onStreamStep({ 
         step: 'search', 
-        message: 'Searching...'
+        message: 'Searching web...'
       });
     }
     try {

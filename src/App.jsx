@@ -114,10 +114,16 @@ export default function App() {
 
     setIsProcessing(true);
     const initialAction = 
-      /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(userText) ? 'Removing...' :
-      /(\b(edit|modify|update|change|refactor|fix|patch)\b)/i.test(userText) ? 'Editing...' :
-      /(\b(create|make|build|generate|new project|new file)\b)/i.test(userText) ? 'Creating...' :
-      /(\b(search|find|lookup|images|photos)\b)/i.test(userText) || searchMode === 'images' ? 'Searching...' :
+      /(\b(bash|sh|terminal|exec)\b)/i.test(userText) ? 'Running bash...' :
+      /(\b(patch|fix bug|repair)\b)/i.test(userText) ? 'Patching bug...' :
+      /(\b(debug|ast|diagnos|error)\b)/i.test(userText) ? 'Debugging code...' :
+      /(\b(run code|execute code|eval)\b)/i.test(userText) ? 'Running code...' :
+      /(\b(preview|render)\b)/i.test(userText) ? 'Running preview...' :
+      /(\b(edit|modify|update|change|refactor)\b)/i.test(userText) ? 'Editing file...' :
+      /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(userText) ? 'Deleting file...' :
+      /(\b(carpet|folder|carpeta)\b)/i.test(userText) ? 'Creating folder...' :
+      /(\b(create|make|build|generate|new project|new file)\b)/i.test(userText) ? 'Creating file...' :
+      /(\b(search|find|lookup|images|photos)\b)/i.test(userText) || searchMode === 'images' ? 'Searching web...' :
       'Thinking...';
     setStreamMessage(initialAction);
 

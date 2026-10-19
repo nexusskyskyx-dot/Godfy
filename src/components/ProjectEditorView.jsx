@@ -3,7 +3,8 @@ import {
   Folder, FolderOpen, FileCode, Edit2, Trash2, Check, X,
   Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
   Monitor, Tablet, Smartphone, Brain, ArrowLeft,
-  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight, Loader2
+  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight, Loader2,
+  Terminal, Wrench, Bug
 } from 'lucide-react';
 import { 
   addFileToProject, 
@@ -14,6 +15,29 @@ import {
   toggleFolderOpen,
   buildProjectPreviewBundle
 } from '../engine/projectEngine.js';
+
+function getStudioStatus(actionMessage) {
+  const msg = (actionMessage || '').toLowerCase();
+  if (msg.includes('bash') || msg.includes('command') || msg.includes('terminal')) {
+    return { icon: <Terminal className="w-3.5 h-3.5 text-[#7dcfff] animate-pulse" />, color: 'bg-[#7dcfff]' };
+  }
+  if (msg.includes('patch')) {
+    return { icon: <Wrench className="w-3.5 h-3.5 text-[#7aa2f7] animate-bounce" />, color: 'bg-[#7aa2f7]' };
+  }
+  if (msg.includes('debug') || msg.includes('bug') || msg.includes('error')) {
+    return { icon: <Bug className="w-3.5 h-3.5 text-[#f7768e] animate-pulse" />, color: 'bg-[#f7768e]' };
+  }
+  if (msg.includes('delet') || msg.includes('remov')) {
+    return { icon: <Trash2 className="w-3.5 h-3.5 text-[#f7768e] animate-pulse" />, color: 'bg-[#f7768e]' };
+  }
+  if (msg.includes('carpet') || msg.includes('folder')) {
+    return { icon: <FolderPlus className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />, color: 'bg-[#9ece6a]' };
+  }
+  if (msg.includes('creat') || msg.includes('build')) {
+    return { icon: <FilePlus className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />, color: 'bg-[#9ece6a]' };
+  }
+  return { icon: <Loader2 className="w-3.5 h-3.5 text-[#e0af68] animate-spin" />, color: 'bg-[#e0af68]' };
+}
 
 export default function ProjectEditorView({
   project,
@@ -220,9 +244,13 @@ export default function ProjectEditorView({
     setIsAiExecuting(true);
 
     const actionLabel = 
-      /(\b(delete|remove|rm|drop|erase)\b)/i.test(aiPrompt) ? 'Removing...' :
-      /(\b(edit|modify|update|change|refactor|fix|patch)\b)/i.test(aiPrompt) ? 'Editing...' :
-      /(\b(create|add|new|make)\b)/i.test(aiPrompt) ? 'Creating...' :
+      /(\b(bash|sh|terminal|exec)\b)/i.test(aiPrompt) ? 'Running bash...' :
+      /(\b(patch|fix bug|repair)\b)/i.test(aiPrompt) ? 'Patching bug...' :
+      /(\b(delete|remove|rm|drop|erase)\b)/i.test(aiPrompt) ? 'Deleting file...' :
+      /(\b(debug|ast|diagnos|error)\b)/i.test(aiPrompt) ? 'Debugging code...' :
+      /(\b(carpet|folder|carpeta)\b)/i.test(aiPrompt) ? 'Creating folder...' :
+      /(\b(create|add|new|make)\b)/i.test(aiPrompt) ? 'Creating file...' :
+      /(\b(edit|modify|update|change|refactor)\b)/i.test(aiPrompt) ? 'Editing file...' :
       'Thinking...';
     
     setAiActionMessage(actionLabel);
@@ -449,15 +477,21 @@ export default function ProjectEditorView({
         </div>
 
         {/* Simple Cursor-Style Activity Status */}
-        {isAiExecuting && (
-          <div className="px-3 py-1.5 bg-[#16161e] text-xs font-mono flex items-center space-x-2 border-t border-[#292e42]">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7aa2f7] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7aa2f7]"></span>
-            </span>
-            <span className="text-[#c0caf5] font-medium">{aiActionMessage || 'Editing...'}</span>
-          </div>
-        )}
+        {isAiExecuting && (() => {
+          const s = getStudioStatus(aiActionMessage);
+          return (
+            <div className="px-3 py-1.5 bg-[#16161e] text-xs font-mono flex items-center space-x-2 border-t border-[#292e42] animate-node-enter">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${s.color} opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${s.color}`}></span>
+              </span>
+              <div className="flex items-center space-x-1.5">
+                {s.icon}
+                <span className="text-[#c0caf5] font-medium">{aiActionMessage || 'Editing file...'}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Mobile View Tab Switcher */}
         <div className="flex md:hidden border-t border-[#292e42] bg-[#16161e] px-2 py-1.5 gap-1 text-xs font-mono">

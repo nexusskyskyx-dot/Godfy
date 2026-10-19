@@ -3,7 +3,8 @@ import {
   Send, Sparkles, Brain, Eye, Copy, Check, ChevronDown, ChevronUp, 
   Code, Download, ExternalLink, X, Monitor, Tablet, Smartphone,
   Layers, ArrowRight, Zap, Globe, Image as ImageIcon,
-  ZoomIn, FolderTree, FileCode, Sliders, Loader2, Edit3, Trash2, Plus
+  ZoomIn, FolderTree, FileCode, Sliders, Loader2, Edit3, Trash2, Plus,
+  Terminal, Wrench, Bug, Play, FolderPlus
 } from 'lucide-react';
 import { marked } from 'marked';
 import { MIND_PRESETS } from '../engine/models.js';
@@ -15,39 +16,106 @@ marked.setOptions({
 
 function getSimpleStatus(streamMessage) {
   const msg = (streamMessage || '').toLowerCase();
-  
-  if (msg.includes('edit') || msg.includes('modify') || msg.includes('update') || msg.includes('patch')) {
+
+  // 1. Running bash...
+  if (msg.includes('bash') || msg.includes('command') || msg.includes('terminal') || msg.includes('cli')) {
+    return {
+      type: 'bash',
+      label: 'Running bash...',
+      icon: <Terminal className="w-3.5 h-3.5 text-[#7dcfff] animate-pulse" />,
+      dotColor: 'bg-[#7dcfff]'
+    };
+  }
+
+  // 2. Patching bug...
+  if (msg.includes('patch') || msg.includes('fix bug') || msg.includes('repair')) {
+    return {
+      type: 'patching',
+      label: 'Patching bug...',
+      icon: <Wrench className="w-3.5 h-3.5 text-[#7aa2f7] animate-bounce" />,
+      dotColor: 'bg-[#7aa2f7]'
+    };
+  }
+
+  // 3. Debugging code...
+  if (msg.includes('debug') || msg.includes('ast') || msg.includes('diagnos') || msg.includes('error')) {
+    return {
+      type: 'debugging',
+      label: 'Debugging code...',
+      icon: <Bug className="w-3.5 h-3.5 text-[#f7768e] animate-pulse" />,
+      dotColor: 'bg-[#f7768e]'
+    };
+  }
+
+  // 4. Running code...
+  if (msg.includes('run code') || msg.includes('running code') || msg.includes('sandbox') || msg.includes('eval')) {
+    return {
+      type: 'running_code',
+      label: 'Running code...',
+      icon: <Play className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />,
+      dotColor: 'bg-[#9ece6a]'
+    };
+  }
+
+  // 5. Running preview...
+  if (msg.includes('preview') || msg.includes('render')) {
+    return {
+      type: 'preview',
+      label: 'Running preview...',
+      icon: <Eye className="w-3.5 h-3.5 text-[#7dcfff] animate-pulse" />,
+      dotColor: 'bg-[#7dcfff]'
+    };
+  }
+
+  // 6. Editing file...
+  if (msg.includes('edit') || msg.includes('modify') || msg.includes('update') || msg.includes('refactor') || msg.includes('change')) {
     return {
       type: 'editing',
-      label: 'Editing...',
+      label: 'Editing file...',
       icon: <Edit3 className="w-3.5 h-3.5 text-[#e0af68] animate-bounce" />,
       dotColor: 'bg-[#e0af68]'
     };
   }
-  if (msg.includes('remov') || msg.includes('delet') || msg.includes('clean') || msg.includes('drop')) {
+
+  // 7. Deleting file...
+  if (msg.includes('remov') || msg.includes('delet') || msg.includes('clean') || msg.includes('drop') || msg.includes('erase')) {
     return {
       type: 'removing',
-      label: 'Removing...',
+      label: 'Deleting file...',
       icon: <Trash2 className="w-3.5 h-3.5 text-[#f7768e] animate-pulse" />,
       dotColor: 'bg-[#f7768e]'
     };
   }
+
+  // 8. Creating folder... / Creating file...
+  if (msg.includes('carpet') || msg.includes('folder')) {
+    return {
+      type: 'creating_folder',
+      label: 'Creating folder...',
+      icon: <FolderPlus className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />,
+      dotColor: 'bg-[#9ece6a]'
+    };
+  }
   if (msg.includes('creat') || msg.includes('build') || msg.includes('generat')) {
     return {
-      type: 'creating',
-      label: 'Creating...',
+      type: 'creating_file',
+      label: 'Creating file...',
       icon: <Plus className="w-3.5 h-3.5 text-[#9ece6a] animate-pulse" />,
       dotColor: 'bg-[#9ece6a]'
     };
   }
+
+  // 9. Searching web...
   if (msg.includes('search') || msg.includes('crawl') || msg.includes('web') || msg.includes('image')) {
     return {
       type: 'searching',
-      label: 'Searching...',
+      label: 'Searching web...',
       icon: <Globe className="w-3.5 h-3.5 text-[#7dcfff] animate-spin" />,
       dotColor: 'bg-[#7dcfff]'
     };
   }
+
+  // 10. Synthesizing...
   if (msg.includes('synth')) {
     return {
       type: 'synthesizing',
