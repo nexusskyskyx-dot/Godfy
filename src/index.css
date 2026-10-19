@@ -6,14 +6,23 @@
   --color-main: #FAF7EE;      /* White cream */
   --color-secondary: #FFFFFF; /* White */
   --color-cyanlight: #E0F7FA; /* Cyan light */
+  --color-cyan-glow: #22D3EE;
 }
 
-body {
+html, body {
   background-color: var(--color-main);
-  color: #1E293B;
+  color: #0F172A;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 code, pre {
@@ -21,13 +30,133 @@ code, pre {
 }
 
 /* ==========================================================================
+   Godfy Thinking & Activity Animations
+   ========================================================================== */
+
+@keyframes neuralPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+    box-shadow: 0 0 20px 4px rgba(34, 211, 238, 0.5);
+  }
+}
+
+@keyframes brainWaves {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes nodeEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+    background-color: rgba(224, 247, 250, 0.8);
+  }
+  60% {
+    background-color: rgba(153, 246, 228, 0.4);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background-color: transparent;
+  }
+}
+
+@keyframes nodeHighlight {
+  0% {
+    background-color: rgba(34, 211, 238, 0.35);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes nodeExit {
+  0% {
+    opacity: 1;
+    max-height: 48px;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    transform: scale(0.95);
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+@keyframes pulseBorder {
+  0%, 100% {
+    border-color: rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    border-color: rgba(34, 211, 238, 0.85);
+  }
+}
+
+.animate-neural-pulse {
+  animation: neuralPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-brain-waves {
+  background-size: 200% 200%;
+  animation: brainWaves 4s ease infinite;
+}
+
+.animate-shimmer {
+  animation: shimmerSweep 1.8s infinite;
+}
+
+.animate-node-enter {
+  animation: nodeEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-node-highlight {
+  animation: nodeHighlight 0.8s ease-out forwards;
+}
+
+.animate-node-exit {
+  animation: nodeExit 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+.animate-pulse-border {
+  animation: pulseBorder 2s ease-in-out infinite;
+}
+
+/* ==========================================================================
    Godfy Rich Text & Markdown Styling System
    ========================================================================== */
 
 .godfy-markdown {
-  font-size: 0.925rem;
-  line-height: 1.68;
-  color: #334155;
+  font-size: 0.935rem;
+  line-height: 1.7;
+  color: #1E293B;
+  word-break: break-word;
 }
 
 /* Headings */
@@ -74,7 +203,7 @@ code, pre {
 /* Paragraphs & Text */
 .godfy-markdown p {
   margin-bottom: 0.75rem;
-  line-height: 1.68;
+  line-height: 1.7;
   color: #334155;
 }
 
@@ -167,7 +296,7 @@ code, pre {
   background-color: #090D16;
   color: #F8FAFC;
   border-radius: 0.875rem;
-  padding: 1.15rem;
+  padding: 1rem;
   margin-top: 0.85rem;
   margin-bottom: 0.85rem;
   overflow-x: auto;
@@ -201,7 +330,6 @@ code, pre {
   border-top: 1px solid rgba(224, 247, 250, 0.6);
   border-right: 1px solid rgba(224, 247, 250, 0.6);
   border-bottom: 1px solid rgba(224, 247, 250, 0.6);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .godfy-markdown blockquote p {
@@ -221,7 +349,6 @@ code, pre {
   margin-top: 0.85rem;
   margin-bottom: 0.85rem;
   font-size: 0.835rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .godfy-markdown th {
@@ -232,14 +359,12 @@ code, pre {
   padding: 0.65rem 0.9rem;
   border-bottom: 1.5px solid #E2E8F0;
   font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
 }
 
 .godfy-markdown td {
   padding: 0.6rem 0.9rem;
   border-bottom: 1px solid #F1F5F9;
   color: #334155;
-  line-height: 1.5;
 }
 
 .godfy-markdown tr:last-child td {
@@ -248,10 +373,6 @@ code, pre {
 
 .godfy-markdown tr:nth-child(even) {
   background-color: rgba(250, 247, 238, 0.45);
-}
-
-.godfy-markdown tr:hover {
-  background-color: rgba(224, 247, 250, 0.3);
 }
 
 /* Links */
@@ -265,7 +386,6 @@ code, pre {
 
 .godfy-markdown a:hover {
   color: #0E7490;
-  text-decoration-color: #0E7490;
 }
 
 /* Horizontal Rule */
@@ -275,10 +395,10 @@ code, pre {
   margin: 1.25rem 0;
 }
 
-/* Custom scrollbar */
+/* Minimal Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {

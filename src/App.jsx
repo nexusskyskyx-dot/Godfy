@@ -160,10 +160,17 @@ export default function App() {
     const addFileMatch = prompt.match(/(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?file\s+(?:called|named)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const addFolderMatch = prompt.match(/(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?(?:carpet|folder|carpeta|dir)\s+(?:called|named)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const renameMatch = prompt.match(/rename\s+([a-zA-Z0-9_\-\.\/]+)\s+to\s+([a-zA-Z0-9_\-\.\/]+)/i);
+    const deleteMatch = prompt.match(/(?:delete|remove|rm)\s+(?:file|folder|carpet|carpeta)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
 
     let updated = { ...proj };
 
-    if (addFolderMatch) {
+    if (deleteMatch) {
+      const targetName = deleteMatch[1].trim();
+      const target = updated.nodes.find(n => n.name === targetName || n.path === targetName || n.path === `/${targetName}`);
+      if (target && target.id !== 'root') {
+        updated = deleteProjectNode(updated, target.id);
+      }
+    } else if (addFolderMatch) {
       const folderName = addFolderMatch[1].trim();
       updated = addFolderToProject(updated, 'root', folderName);
     } else if (addFileMatch) {
@@ -174,7 +181,7 @@ export default function App() {
     } else if (renameMatch) {
       const oldName = renameMatch[1].trim();
       const newName = renameMatch[2].trim();
-      const target = updated.nodes.find(n => n.name === oldName || n.path === oldName);
+      const target = updated.nodes.find(n => n.name === oldName || n.path === oldName || n.path === `/${oldName}`);
       if (target) {
         updated = renameProjectNode(updated, target.id, newName);
       }

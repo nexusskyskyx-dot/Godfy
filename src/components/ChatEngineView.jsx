@@ -756,21 +756,49 @@ export default function ChatEngineView({
           );
         })}
 
-        {/* Live Autonomous Cognitive Pipeline Bar */}
+        {/* Live Autonomous Cognitive Pipeline Bar (Clean & Animated) */}
         {isProcessing && (
-          <div className="flex items-center space-x-3 p-3.5 rounded-2xl bg-white border border-cyanlight-300 shadow-md animate-pulse max-w-lg">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-cyan-300 flex-shrink-0 shadow-xs">
-              <Brain className="w-4 h-4 animate-spin-slow text-cyan-400" />
-            </div>
-            <div className="overflow-hidden flex-1">
-              <div className="flex items-center space-x-1.5 text-[10px] font-mono text-cyan-800 font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
-                <span>Autonomous Cognitive Engine Live</span>
+          <div className="flex flex-col space-y-2 p-3.5 sm:p-4 rounded-2xl bg-white border border-cyan-300 shadow-[0_4px_20px_rgba(34,211,238,0.12)] max-w-lg overflow-hidden relative animate-node-enter">
+            <div className="flex items-center space-x-3 relative z-10">
+              <div className="relative flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-cyan-300 shadow-sm animate-neural-pulse">
+                  <Brain className="w-5 h-5 text-cyan-400" />
+                </div>
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                </span>
               </div>
-              <div className="text-xs font-mono text-slate-800 font-semibold truncate mt-0.5">
-                {streamMessage || 'Cognitive pipeline deliberating across 10 neural pathways...'}
+              <div className="overflow-hidden flex-1 min-w-0">
+                <div className="flex items-center space-x-1.5 text-[10px] font-mono text-cyan-800 font-bold uppercase tracking-wider">
+                  <span>Godfy Brain Cortex</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-cyan-600">Tree-of-Thought</span>
+                </div>
+                <div className="text-xs font-mono text-slate-800 font-semibold truncate mt-0.5">
+                  {streamMessage || 'Arbitrating 5 free AI friends & formulating plan...'}
+                </div>
               </div>
             </div>
+
+            {/* Neural progress indicators */}
+            <div className="grid grid-cols-3 gap-1.5 pt-1 relative z-10 text-[10px] font-mono">
+              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-cyanlight-50 border border-cyanlight-200 text-cyan-900 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                <span className="truncate">1. Calls Friends</span>
+              </div>
+              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-cyanlight-50 border border-cyanlight-200 text-cyan-900 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                <span className="truncate">2. Deliberates</span>
+              </div>
+              <div className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-cyanlight-50 border border-cyanlight-200 text-cyan-900 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                <span className="truncate">3. Synthesizes</span>
+              </div>
+            </div>
+
+            {/* Shimmer sweep effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-100/30 to-transparent animate-shimmer pointer-events-none"></div>
           </div>
         )}
 
@@ -778,15 +806,15 @@ export default function ChatEngineView({
       </div>
 
       {/* Bottom Sticky Input Form */}
-      <div className="p-3 bg-white/95 backdrop-blur-md border-t border-cream-200">
+      <div className="p-2.5 sm:p-3 bg-white/95 backdrop-blur-md border-t border-cream-200">
         <form onSubmit={handleSubmit} className="relative">
           {/* Web & Image Search Control Bar */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono mb-1.5 px-1 flex-wrap gap-y-1">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono mb-1.5 px-1 flex-wrap gap-1">
             <div className="flex items-center space-x-1.5 flex-wrap gap-1">
               <button
                 type="button"
                 onClick={() => setForceWebSearch(v => !v)}
-                className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono transition border ${
+                className={`inline-flex items-center space-x-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-mono transition border ${
                   forceWebSearch 
                     ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-sm' 
                     : 'bg-white hover:bg-cream-100 text-slate-700 border-cream-300'
@@ -794,13 +822,14 @@ export default function ChatEngineView({
                 title="Godfy decides autonomously when to search, or toggle ON to force live web search for every query"
               >
                 <Globe className={`w-3 h-3 ${forceWebSearch ? 'text-slate-950 animate-pulse' : 'text-cyan-600'}`} />
-                <span>{forceWebSearch ? 'Live Web: FORCED ON' : 'Live Web: Auto (Brain Decides)'}</span>
+                <span className="hidden sm:inline">{forceWebSearch ? 'Live Web: ON' : 'Live Web: Auto'}</span>
+                <span className="sm:hidden">{forceWebSearch ? 'Web: ON' : 'Web: Auto'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setForceImageSearch(v => !v)}
-                className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono transition border ${
+                className={`inline-flex items-center space-x-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-mono transition border ${
                   forceImageSearch 
                     ? 'bg-cyan-600 text-white border-cyan-500 font-bold shadow-sm' 
                     : 'bg-white hover:bg-cream-100 text-slate-700 border-cream-300'
@@ -808,34 +837,34 @@ export default function ChatEngineView({
                 title="Force Godfy to search and return verified images & photography"
               >
                 <ImageIcon className={`w-3 h-3 ${forceImageSearch ? 'text-white animate-pulse' : 'text-cyan-600'}`} />
-                <span>{forceImageSearch ? 'Images: FORCED ON' : 'Images: Auto (Brain Decides)'}</span>
+                <span className="hidden sm:inline">{forceImageSearch ? 'Images: ON' : 'Images: Auto'}</span>
+                <span className="sm:hidden">{forceImageSearch ? 'Images: ON' : 'Images: Auto'}</span>
               </button>
             </div>
 
             <div className="hidden sm:flex items-center space-x-2 text-[10px] text-slate-400">
               <span className="flex items-center space-x-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Web & Visual Media Engine Active</span>
+                <span>Active 16-Neuron Engine</span>
               </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 p-1.5 rounded-2xl bg-cream-50 border-2 border-cream-200/90 focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyanlight-100/50 transition">
-            
+          <div className="flex items-center space-x-2 p-1.5 rounded-2xl bg-cream-50 border-2 border-cream-200/90 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyanlight-200 transition">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Ask Godfy anything (e.g. 'Make a landing page')..."
               disabled={isProcessing}
-              className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none font-medium"
+              className="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none font-medium min-w-0"
             />
 
             <select
               value={mindPreset}
               onChange={(e) => setMindPreset(e.target.value)}
               disabled={isProcessing}
-              className="hidden sm:inline-block bg-white text-slate-700 text-xs font-semibold py-1.5 px-2 rounded-xl border border-cream-300 focus:outline-none cursor-pointer"
+              className="hidden sm:inline-block bg-white text-slate-700 text-xs font-semibold py-1.5 px-2 rounded-xl border border-cream-300 focus:outline-none cursor-pointer flex-shrink-0"
             >
               {MIND_PRESETS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -847,9 +876,9 @@ export default function ChatEngineView({
             <button
               type="submit"
               disabled={isProcessing || !inputText.trim()}
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-semibold text-xs flex items-center space-x-1 shadow-sm transition active:scale-[0.98] flex-shrink-0"
+              className="px-3 sm:px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-sm transition active:scale-[0.98] flex-shrink-0"
             >
-              <span>{isProcessing ? 'Thinking...' : 'Send'}</span>
+              <span className="hidden xs:inline">{isProcessing ? 'Thinking...' : 'Send'}</span>
               <Send className="w-3.5 h-3.5 text-cyan-300" />
             </button>
           </div>

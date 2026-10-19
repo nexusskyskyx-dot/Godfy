@@ -3,7 +3,7 @@ import {
   Folder, FolderOpen, FileCode, Plus, Edit2, Trash2, Check, X,
   Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
   Monitor, Tablet, Smartphone, Brain, ArrowLeft,
-  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight
+  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight, Sparkles, Loader2
 } from 'lucide-react';
 import { 
   addFileToProject, 
@@ -29,14 +29,19 @@ export default function ProjectEditorView({
   // Mobile active tab: 'files' | 'editor' | 'preview'
   const [mobileTab, setMobileTab] = useState('editor');
   
-  const [viewport, setViewport] = useState('desktop'); // desktop viewport mode in split preview
+  const [viewport, setViewport] = useState('desktop');
   const [previewKey, setPreviewKey] = useState(0);
 
-  // Rename states
+  // Animated node states (for add/rename/delete animations)
+  const [animatingAddId, setAnimatingAddId] = useState(null);
+  const [animatingRenameId, setAnimatingRenameId] = useState(null);
+  const [deletingNodeId, setDeletingNodeId] = useState(null);
+
+  // Inline rename states
   const [editingNodeId, setEditingNodeId] = useState(null);
   const [editingName, setEditingName] = useState('');
 
-  // Add new file / folder modals or inline inputs
+  // Add new file / folder states
   const [creatingType, setCreatingType] = useState(null); // 'file' | 'folder' | null
   const [creatingParentId, setCreatingParentId] = useState('root');
   const [creatingName, setCreatingName] = useState('');
@@ -44,6 +49,7 @@ export default function ProjectEditorView({
   // Editor prompt bar state
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiExecuting, setIsAiExecuting] = useState(false);
+  const [aiActionMessage, setAiActionMessage] = useState('');
   const [copiedFile, setCopiedFile] = useState(false);
 
   const editorTextareaRef = useRef(null);
@@ -98,21 +104,28 @@ export default function ProjectEditorView({
     onUpdateProject(updated);
     setEditingNodeId(null);
     setEditingName('');
+    
+    // Trigger rename animation highlight
+    setAnimatingRenameId(nodeId);
+    setTimeout(() => setAnimatingRenameId(null), 1000);
   };
 
   const handleDelete = (e, nodeId) => {
     e.stopPropagation();
-    if (window.confirm('Delete this item from project?')) {
+    // Trigger smooth exit animation before removing from state
+    setDeletingNodeId(nodeId);
+    setTimeout(() => {
       const updated = deleteProjectNode(project, nodeId);
       onUpdateProject(updated);
       setOpenTabIds(prev => prev.filter(id => id !== nodeId));
-    }
+      setDeletingNodeId(null);
+    }, 280);
   };
 
   const handleStartCreate = (type, parentId = 'root') => {
     setCreatingType(type);
     setCreatingParentId(parentId);
-    setCreatingName(type === 'file' ? 'new_file.js' : 'new_carpet');
+    setCreatingName(type === 'file' ? 'component.js' : 'new_carpet');
   };
 
   const handleConfirmCreate = () => {
@@ -122,15 +135,22 @@ export default function ProjectEditorView({
     }
     let updated;
     if (creatingType === 'file') {
-      updated = addFileToProject(project, creatingParentId, creatingName.trim(), '// Start coding here\n');
+      updated = addFileToProject(project, creatingParentId, creatingName.trim(), '// Module created by Godfy Mind\n');
       const newFile = updated.nodes.find(n => n.name === creatingName.trim() && n.parentId === creatingParentId);
       if (newFile) {
         setActiveFileId(newFile.id);
         setOpenTabIds(prev => [...prev, newFile.id]);
-        setMobileTab('editor'); // automatically switch to editor on mobile
+        setMobileTab('editor');
+        setAnimatingAddId(newFile.id);
+        setTimeout(() => setAnimatingAddId(null), 1200);
       }
     } else {
       updated = addFolderToProject(project, creatingParentId, creatingName.trim());
+      const newFolder = updated.nodes.find(n => n.name === creatingName.trim() && n.parentId === creatingParentId);
+      if (newFolder) {
+        setAnimatingAddId(newFolder.id);
+        setTimeout(() => setAnimatingAddId(null), 1200);
+      }
     }
     onUpdateProject(updated);
     setCreatingType(null);
@@ -142,7 +162,6 @@ export default function ProjectEditorView({
     if (!openTabIds.includes(fileNode.id)) {
       setOpenTabIds(prev => [...prev, fileNode.id]);
     }
-    // Switch to editor tab on mobile so the user sees the opened file
     setMobileTab('editor');
   };
 
@@ -201,6 +220,7 @@ export default function ProjectEditorView({
     e.preventDefault();
     if (!aiPrompt.trim() || isAiExecuting) return;
     setIsAiExecuting(true);
+    setAiActionMessage(`Godfy Mind deliberating: "${aiPrompt.trim().slice(0, 35)}..."`);
     try {
       if (onAskMindToModify) {
         await onAskMindToModify(aiPrompt.trim(), project);
@@ -209,11 +229,14 @@ export default function ProjectEditorView({
     } catch (err) {
       console.error(err);
     } finally {
-      setIsAiExecuting(false);
+      setTimeout(() => {
+        setIsAiExecuting(false);
+        setAiActionMessage('');
+      }, 500);
     }
   };
 
-  // Render tree node recursively
+  // Render tree node recursively with animations
   const renderTree = (parentId = 'root', depth = 0) => {
     const children = project?.nodes?.filter(n => n.parentId === parentId) || [];
     const sorted = [...children].sort((a, b) => {
@@ -227,9 +250,20 @@ export default function ProjectEditorView({
           const isFolder = node.type === 'folder';
           const isActive = node.id === activeFileId;
           const isEditing = node.id === editingNodeId;
+          const isNewlyAdded = node.id === animatingAddId;
+          const isRecentlyRenamed = node.id === animatingRenameId;
+          const isDeleting = node.id === deletingNodeId;
 
           return (
-            <div key={node.id} style={{ paddingLeft: `${depth * 10}px` }}>
+            <div 
+              key={node.id} 
+              style={{ paddingLeft: `${depth * 10}px` }}
+              className={`transition-all duration-300 ${
+                isDeleting ? 'animate-node-exit' : 
+                isNewlyAdded ? 'animate-node-enter' : 
+                isRecentlyRenamed ? 'animate-node-highlight' : ''
+              }`}
+            >
               <div 
                 onClick={() => {
                   if (isFolder) {
@@ -238,10 +272,10 @@ export default function ProjectEditorView({
                     handleOpenFile(node);
                   }
                 }}
-                className={`group flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-mono transition cursor-pointer select-none min-h-[40px] sm:min-h-0 ${
+                className={`group flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-mono transition cursor-pointer select-none min-h-[40px] sm:min-h-0 border ${
                   isActive 
-                    ? 'bg-cyanlight-100 text-cyan-950 font-bold border border-cyanlight-200' 
-                    : 'text-slate-700 hover:bg-cream-100/90 active:bg-cream-200/90 hover:text-slate-950'
+                    ? 'bg-cyanlight-100/90 text-cyan-950 font-bold border-cyan-300 shadow-xs' 
+                    : 'border-transparent text-slate-700 hover:bg-cream-100/90 active:bg-cream-200/90 hover:text-slate-950'
                 }`}
               >
                 <div className="flex items-center space-x-2 truncate flex-1 min-w-0 pr-1">
@@ -288,19 +322,19 @@ export default function ProjectEditorView({
 
                 {/* Node hover & mobile tap controls */}
                 {!isEditing && (
-                  <div className="flex items-center space-x-1 flex-shrink-0 opacity-80 sm:opacity-0 group-hover:opacity-100">
+                  <div className="flex items-center space-x-1 flex-shrink-0 opacity-80 sm:opacity-0 group-hover:opacity-100 transition">
                     {isFolder && (
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleStartCreate('file', node.id); }}
-                          className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          className="p-1 sm:p-0.5 hover:bg-white rounded-lg text-slate-500 hover:text-cyan-800 transition"
                           title="Add file inside carpet"
                         >
                           <FilePlus className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleStartCreate('folder', node.id); }}
-                          className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-cyan-800"
+                          className="p-1 sm:p-0.5 hover:bg-white rounded-lg text-slate-500 hover:text-cyan-800 transition"
                           title="Add sub-carpet"
                         >
                           <FolderPlus className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
@@ -309,7 +343,7 @@ export default function ProjectEditorView({
                     )}
                     <button
                       onClick={(e) => handleStartRename(e, node)}
-                      className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-500 hover:text-slate-900"
+                      className="p-1 sm:p-0.5 hover:bg-white rounded-lg text-slate-500 hover:text-slate-900 transition"
                       title="Rename"
                     >
                       <Edit2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
@@ -317,7 +351,7 @@ export default function ProjectEditorView({
                     {node.id !== 'root' && (
                       <button
                         onClick={(e) => handleDelete(e, node.id)}
-                        className="p-1 sm:p-0.5 hover:bg-white rounded text-slate-400 hover:text-rose-600"
+                        className="p-1 sm:p-0.5 hover:bg-white rounded-lg text-slate-400 hover:text-rose-600 transition"
                         title="Delete"
                       >
                         <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
@@ -410,6 +444,21 @@ export default function ProjectEditorView({
           </div>
         </div>
 
+        {/* Animated Mind Activity Banner when Godfy is modifying files */}
+        {isAiExecuting && (
+          <div className="px-3 py-1.5 bg-gradient-to-r from-slate-950 via-cyan-950 to-slate-950 text-cyan-300 text-xs font-mono flex items-center justify-between border-t border-cyan-800/60 overflow-hidden relative">
+            <div className="flex items-center space-x-2 relative z-10">
+              <Brain className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
+              <span className="font-semibold text-[11px] truncate">{aiActionMessage || 'Godfy Mind is editing project hierarchy...'}</span>
+            </div>
+            <div className="flex items-center space-x-1 relative z-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              <span className="text-[10px] text-cyan-400 uppercase tracking-wider font-bold">Synthesizing</span>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent animate-shimmer"></div>
+          </div>
+        )}
+
         {/* Mobile View Tab Switcher (Visible on < md) */}
         <div className="flex md:hidden border-t border-cream-200 bg-white px-2 py-1.5 gap-1 text-xs font-mono">
           <button
@@ -452,7 +501,6 @@ export default function ProjectEditorView({
       <div className="flex-1 flex overflow-hidden relative">
         {/* ========================================================= */}
         {/* PANEL 1: File & Carpet Explorer                          */}
-        {/* Visible always on Desktop, and when mobileTab === 'files' */}
         {/* ========================================================= */}
         <aside className={`${
           mobileTab === 'files' ? 'flex w-full' : 'hidden'
@@ -464,14 +512,14 @@ export default function ProjectEditorView({
             <div className="flex items-center space-x-1">
               <button
                 onClick={() => handleStartCreate('file', 'root')}
-                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded-lg text-slate-600 hover:text-cyan-800 transition"
                 title="New File (Nuevo Archivo)"
               >
                 <FilePlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </button>
               <button
                 onClick={() => handleStartCreate('folder', 'root')}
-                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded text-slate-600 hover:text-cyan-800 transition"
+                className="p-1.5 sm:p-1 hover:bg-cream-100 rounded-lg text-slate-600 hover:text-cyan-800 transition"
                 title="New Carpet / Folder (Nueva Carpeta)"
               >
                 <FolderPlus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
@@ -481,7 +529,7 @@ export default function ProjectEditorView({
 
           {/* Creation input if active */}
           {creatingType && (
-            <div className="p-2.5 bg-cyanlight-50 border-b border-cyanlight-200 text-xs font-mono">
+            <div className="p-2.5 bg-cyanlight-50 border-b border-cyanlight-200 text-xs font-mono animate-node-enter">
               <div className="text-[10px] text-cyan-900 font-bold mb-1">
                 New {creatingType === 'file' ? 'File' : 'Carpet / Folder'}:
               </div>
@@ -496,17 +544,17 @@ export default function ProjectEditorView({
                   }}
                   autoFocus
                   placeholder={creatingType === 'file' ? 'filename.js' : 'folder_name'}
-                  className="w-full bg-white border border-cyan-400 rounded px-2 py-1 text-xs font-mono focus:outline-none"
+                  className="w-full bg-white border border-cyan-400 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none"
                 />
                 <button
                   onClick={handleConfirmCreate}
-                  className="p-1.5 bg-cyan-400 text-slate-950 rounded hover:bg-cyan-300"
+                  className="p-1.5 bg-cyan-400 text-slate-950 rounded-lg hover:bg-cyan-300 transition"
                 >
                   <Check className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setCreatingType(null)}
-                  className="p-1.5 bg-cream-200 text-slate-600 rounded hover:bg-cream-300"
+                  className="p-1.5 bg-cream-200 text-slate-600 rounded-lg hover:bg-cream-300 transition"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -523,7 +571,7 @@ export default function ProjectEditorView({
           <div className="p-2 border-t border-cream-200 bg-white md:hidden">
             <button
               onClick={() => setMobileTab('editor')}
-              className="w-full py-2 px-3 rounded-xl bg-slate-900 text-white font-semibold text-xs flex items-center justify-center space-x-1.5"
+              className="w-full py-2 px-3 rounded-xl bg-slate-900 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 transition active:scale-95"
             >
               <span>Open Code Editor</span>
               <ArrowRight className="w-3.5 h-3.5 text-cyan-300" />
@@ -533,8 +581,6 @@ export default function ProjectEditorView({
 
         {/* ========================================================= */}
         {/* PANEL 2: Multi-Tab Code Editor                           */}
-        {/* Visible on Desktop (when viewMode is 'editor' or 'split') */}
-        {/* and on Mobile (when mobileTab === 'editor')              */}
         {/* ========================================================= */}
         <div className={`${
           mobileTab === 'editor' ? 'flex w-full' : 'hidden'
@@ -562,7 +608,7 @@ export default function ProjectEditorView({
                   <span className="truncate max-w-[120px]">{file.name}</span>
                   <button
                     onClick={(e) => handleCloseTab(e, file.id)}
-                    className="hover:text-rose-400 p-0.5 rounded"
+                    className="hover:text-rose-400 p-0.5 rounded transition"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -581,14 +627,14 @@ export default function ProjectEditorView({
                 </span>
                 <button
                   onClick={handleCopyActiveCode}
-                  className="p-1 hover:text-white rounded text-slate-400"
+                  className="p-1 hover:text-white rounded text-slate-400 transition"
                   title="Copy File Code"
                 >
                   {copiedFile ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
                 <button
                   onClick={handleDownloadActiveFile}
-                  className="p-1 hover:text-white rounded text-slate-400"
+                  className="p-1 hover:text-white rounded text-slate-400 transition"
                   title="Download File"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -631,7 +677,7 @@ export default function ProjectEditorView({
           {/* Bottom Mind AI Command Bar */}
           <form onSubmit={handleAiExecute} className="p-2 sm:p-2.5 bg-[#090D16] border-t border-slate-800 flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <div className="p-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400 flex-shrink-0">
-              <Brain className="w-3.5 h-3.5" />
+              <Brain className={`w-3.5 h-3.5 ${isAiExecuting ? 'animate-spin-slow' : ''}`} />
             </div>
             <input
               type="text"
@@ -645,15 +691,13 @@ export default function ProjectEditorView({
               disabled={!aiPrompt.trim() || isAiExecuting}
               className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs font-mono transition disabled:opacity-40 flex-shrink-0"
             >
-              {isAiExecuting ? '...' : 'Apply'}
+              {isAiExecuting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Apply'}
             </button>
           </form>
         </div>
 
         {/* ========================================================= */}
         {/* PANEL 3: Live Interactive Preview                        */}
-        {/* Visible on Desktop (when viewMode is 'preview' | 'split') */}
-        {/* and on Mobile (when mobileTab === 'preview')             */}
         {/* ========================================================= */}
         <div className={`${
           mobileTab === 'preview' ? 'flex w-full' : 'hidden'
