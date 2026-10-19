@@ -1,12 +1,26 @@
 // Template engines and intelligent dynamic generators for Godfy Engine v1
 
-export function generateLandingPageCode({ title = "Next-Gen AI Platform", tagline = "Harness the power of multi-model consensus intelligence.", cta = "Deploy Engine v1" }) {
+export function generateLandingPageCode({ 
+  title = "Next-Gen AI Platform", 
+  tagline = "Harness the power of multi-model consensus intelligence.", 
+  cta = "Deploy Engine v1",
+  theme = "default",
+  includeTestimonials = false,
+  includePricing = true
+} = {}) {
+  const isCoffee = theme === 'coffee';
+  const displayTitle = isCoffee ? "Artisan Roast & Co." : title;
+  const displayTagline = isCoffee 
+    ? "Ethically sourced beans, precision roasted with multi-origin consensus." 
+    : tagline;
+  const displayCta = isCoffee ? "Order Fresh Roast" : cta;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} | Synthesized by Godfy v1</title>
+  <title>${displayTitle} | Synthesized by Godfy v1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,29 +59,29 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
           </div>
         </div>
         <div class="flex items-baseline space-x-1.5">
-          <span class="text-xl font-extrabold tracking-tight text-slate-900">Godfy</span>
+          <span class="text-xl font-extrabold tracking-tight text-slate-900">${isCoffee ? 'Godfy Coffee' : 'Godfy'}</span>
           <span class="text-xs px-2 py-0.5 rounded-full bg-cyanlight-100 text-cyan-800 font-semibold border border-cyanlight-200">v1</span>
         </div>
       </div>
 
       <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
-        <a href="#features" class="hover:text-cyan-700 transition">Engine Architecture</a>
-        <a href="#consensus" class="hover:text-cyan-700 transition">Mind Consensus</a>
-        <a href="#benchmarks" class="hover:text-cyan-700 transition">Benchmarks</a>
-        <a href="#pricing" class="hover:text-cyan-700 transition">Free AI Mesh</a>
+        <a href="#features" class="hover:text-cyan-700 transition">${isCoffee ? 'Blends' : 'Engine Architecture'}</a>
+        <a href="#consensus" class="hover:text-cyan-700 transition">${isCoffee ? 'Roast Consensus' : 'Mind Consensus'}</a>
+        ${includeTestimonials ? '<a href="#testimonials" class="hover:text-cyan-700 transition">Testimonials</a>' : ''}
+        ${includePricing ? '<a href="#pricing" class="hover:text-cyan-700 transition">Pricing</a>' : ''}
       </nav>
 
       <div class="flex items-center space-x-4">
-        <button class="hidden sm:inline-flex text-sm font-medium text-slate-700 hover:text-slate-900 px-4 py-2">Documentation</button>
+        <button class="hidden sm:inline-flex text-sm font-medium text-slate-700 hover:text-slate-900 px-4 py-2">Docs</button>
         <button class="px-4 py-2 text-sm font-semibold text-slate-900 bg-white border border-slate-200 rounded-xl hover:border-cyanlight-400 hover:shadow-sm transition">
-          Launch Console
+          ${isCoffee ? 'Order Now' : 'Launch Console'}
         </button>
       </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="relative pt-20 pb-24 overflow-hidden">
+  <section class="relative pt-16 sm:pt-20 pb-20 sm:pb-24 overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:24px_24px] opacity-15"></div>
     
     <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
@@ -76,19 +90,17 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
         <span class="text-xs font-semibold text-slate-700 tracking-wide uppercase">Godfy Mind Autonomous Synthesis v1</span>
       </div>
 
-      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.1] mb-6">
-        Ask Once. <br class="hidden sm:inline" />
-        <span class="bg-gradient-to-r from-slate-900 via-cyan-800 to-cyan-500 bg-clip-text text-transparent">Every Free AI Synthesized</span>
-        Into Pure Mastery.
+      <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.15] mb-6">
+        ${isCoffee ? 'Crafted Beans. Every Origin Mastered.' : 'Ask Once. <br class="hidden sm:inline" /><span class="bg-gradient-to-r from-slate-900 via-cyan-800 to-cyan-500 bg-clip-text text-transparent">Every Free AI Synthesized</span> Into Pure Mastery.'}
       </h1>
 
-      <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 mb-10 leading-relaxed font-normal">
-        Godfy broadcasts your prompt to an ensemble of world-class open models, adjudicates contradictions, selects optimal reasoning paths, and yields one transcendent answer.
+      <p class="max-w-2xl mx-auto text-base sm:text-xl text-slate-600 mb-10 leading-relaxed font-normal">
+        ${displayTagline}
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-14">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-12">
         <button class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-900 text-white font-semibold text-base shadow-lg hover:bg-slate-800 hover:shadow-cyanlight-200/50 hover:shadow-xl transition transform active:scale-[0.98]">
-          ${cta}
+          ${displayCta}
         </button>
         <button class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white text-slate-800 font-semibold text-base border border-slate-200/90 hover:bg-cream-50 hover:border-cyanlight-400 transition">
           Watch Mind in Action
@@ -121,7 +133,7 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
             <div class="text-slate-600 text-xs">» Gemma 2: Accessibility review & WCAG contrast audit (260ms)</div>
           </div>
           <div class="text-emerald-700 font-semibold pt-1">
-            ✨ Godfy Mind Synthesis: Resolved 2 conflicts. Blended 5 models into single unified artifact. Done in 410ms.
+            ✨ Godfy Mind Synthesis: Resolved conflicts. Blended 5 models into single unified artifact. Done in 410ms.
           </div>
         </div>
       </div>
@@ -129,11 +141,11 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
   </section>
 
   <!-- Feature Grid -->
-  <section id="features" class="py-20 bg-white border-y border-cream-200">
+  <section id="features" class="py-16 sm:py-20 bg-white border-y border-cream-200">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center max-w-3xl mx-auto mb-16">
         <h2 class="text-xs uppercase tracking-widest font-bold text-cyan-700 mb-2">Architectural Superiority</h2>
-        <h3 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           Why Single-AI Engines Fall Short
         </h3>
         <p class="text-slate-600 mt-4 text-base">
@@ -178,29 +190,101 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
     </div>
   </section>
 
-  <!-- Live interactive action card -->
-  <section id="consensus" class="py-20 bg-cream-100">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="bg-gradient-to-r from-white via-white to-cyanlight-50 rounded-3xl p-8 sm:p-12 border border-cream-300 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8">
-        <div class="max-w-xl">
-          <span class="text-xs font-bold uppercase tracking-wider text-cyan-700 bg-cyanlight-100 px-3 py-1 rounded-full border border-cyanlight-200">Update Cycle: v1</span>
-          <h3 class="text-3xl font-extrabold text-slate-900 mt-4 mb-3">Ready to experience true autonomous consensus?</h3>
-          <p class="text-slate-600 text-base">Enter any prompt in Godfy and watch 5 distinct models harmonize into one superior creation in real time.</p>
+  ${includeTestimonials ? `
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="py-16 sm:py-20 bg-cream-50 border-b border-cream-200">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-bold uppercase tracking-widest text-cyan-700">Customer Proof</span>
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-2">Loved by Builders Everywhere</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-white border border-cream-200 shadow-sm">
+          <p class="text-slate-600 text-sm mb-4">"Godfy replaced 4 different AI subscriptions with one unified consensus mind. Unbelievable accuracy."</p>
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-cyanlight-200 flex items-center justify-center font-bold text-cyan-900 text-xs">EL</div>
+            <div>
+              <div class="text-sm font-bold text-slate-900">Elena Rostova</div>
+              <div class="text-xs text-slate-500">CTO @ HyperScale</div>
+            </div>
+          </div>
         </div>
-        <div class="flex-shrink-0">
-          <button onclick="alert('Godfy Engine v1 is running active in this session!')" class="px-8 py-4 rounded-xl bg-slate-900 text-white font-bold text-base shadow-lg hover:bg-slate-800 transition">
-            Explore Engine v1
-          </button>
+        <div class="p-6 rounded-2xl bg-white border border-cream-200 shadow-sm">
+          <p class="text-slate-600 text-sm mb-4">"The landing pages Godfy synthesizes are ready to ship straight to Vercel without tweaking a line of code."</p>
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-cyanlight-200 flex items-center justify-center font-bold text-cyan-900 text-xs">MK</div>
+            <div>
+              <div class="text-sm font-bold text-slate-900">Marcus Kim</div>
+              <div class="text-xs text-slate-500">Founder @ DevFlow</div>
+            </div>
+          </div>
+        </div>
+        <div class="p-6 rounded-2xl bg-white border border-cream-200 shadow-sm">
+          <p class="text-slate-600 text-sm mb-4">"Having its own mind means it actually rejects hallucinated suggestions from weaker models. Pure genius."</p>
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-cyanlight-200 flex items-center justify-center font-bold text-cyan-900 text-xs">SR</div>
+            <div>
+              <div class="text-sm font-bold text-slate-900">Sophia Ruiz</div>
+              <div class="text-xs text-slate-500">Design Lead @ StudioX</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </section>` : ''}
+
+  ${includePricing ? `
+  <!-- Pricing Section -->
+  <section id="pricing" class="py-16 sm:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-bold uppercase tracking-widest text-cyan-700">Open Access</span>
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-2">Transparent, Open Power</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="p-6 rounded-2xl bg-cream-50 border border-cream-200 text-left">
+          <h4 class="font-bold text-lg text-slate-900 mb-1">Starter Mind</h4>
+          <p class="text-xs text-slate-500 mb-4">For individuals & rapid prototyping</p>
+          <div class="text-3xl font-extrabold text-slate-900 mb-4">$0 <span class="text-xs font-normal text-slate-500">/ forever free</span></div>
+          <ul class="text-xs text-slate-600 space-y-2 mb-6">
+            <li>✓ 5 Free Models Consensus</li>
+            <li>✓ Unlimited Landing Pages</li>
+            <li>✓ Instant Vercel Deploy Ready</li>
+          </ul>
+          <button class="w-full py-2 rounded-xl bg-white border border-slate-300 font-semibold text-xs hover:border-cyan-400">Get Started</button>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900 text-white border-2 border-cyan-400 shadow-xl text-left relative">
+          <span class="absolute -top-3 right-4 bg-cyan-400 text-slate-950 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Most Popular</span>
+          <h4 class="font-bold text-lg text-white mb-1">Engine Pro v1</h4>
+          <p class="text-xs text-slate-400 mb-4">For growth teams and agencies</p>
+          <div class="text-3xl font-extrabold text-white mb-4">$29 <span class="text-xs font-normal text-slate-400">/ month</span></div>
+          <ul class="text-xs text-slate-300 space-y-2 mb-6">
+            <li>✓ Prioritized Latency (<300ms)</li>
+            <li>✓ Custom Model Weights & Fine-tuning</li>
+            <li>✓ Autonomous Code Refactoring</li>
+          </ul>
+          <button class="w-full py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300">Launch Pro</button>
+        </div>
+        <div class="p-6 rounded-2xl bg-cream-50 border border-cream-200 text-left">
+          <h4 class="font-bold text-lg text-slate-900 mb-1">Sovereign Cluster</h4>
+          <p class="text-xs text-slate-500 mb-4">Dedicated enterprise nodes</p>
+          <div class="text-3xl font-extrabold text-slate-900 mb-4">Custom</div>
+          <ul class="text-xs text-slate-600 space-y-2 mb-6">
+            <li>✓ On-Premises Open Weights</li>
+            <li>✓ Custom SLA & Zero Retention</li>
+            <li>✓ 24/7 Cognitive Mesh Support</li>
+          </ul>
+          <button class="w-full py-2 rounded-xl bg-white border border-slate-300 font-semibold text-xs hover:border-cyan-400">Contact Team</button>
+        </div>
+      </div>
+    </div>
+  </section>` : ''}
 
   <!-- Footer -->
   <footer class="bg-white border-t border-cream-200 py-12 text-center text-sm text-slate-500">
     <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center space-x-2">
-        <span class="font-extrabold text-slate-900">Godfy</span>
+        <span class="font-extrabold text-slate-900">${isCoffee ? 'Godfy Coffee' : 'Godfy'}</span>
         <span>• Autonomous AI Engine</span>
         <span class="px-2 py-0.5 rounded bg-cream-100 text-slate-700 text-xs font-mono font-medium">v1</span>
       </div>
@@ -216,3 +300,4 @@ export function generateLandingPageCode({ title = "Next-Gen AI Platform", taglin
 </body>
 </html>`;
 }
+

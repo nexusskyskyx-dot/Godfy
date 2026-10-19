@@ -361,3 +361,153 @@ export class GodfyEngine {
     ]
   };
 }
+
+export async function chatWithGodfy({ message, history = [], currentArtifact = null, mindPreset = 'balanced' }) {
+  await new Promise(r => setTimeout(r, 400));
+  const text = (message || '').trim();
+  const lower = text.toLowerCase();
+
+  const isTestimonialRequest = lower.includes('testimonial') || lower.includes('review') || lower.includes('social proof');
+  const isPricingRequest = lower.includes('price') || lower.includes('pricing') || lower.includes('tier') || lower.includes('cost');
+  const isCoffeeRequest = lower.includes('coffee') || lower.includes('roast') || lower.includes('cafe');
+  const isLandingPageRequest = lower.includes('landing') || lower.includes('website') || lower.includes('page') || lower.includes('portfolio');
+  const isCodeRequest = lower.includes('code') || lower.includes('script') || lower.includes('react') || lower.includes('function') || lower.includes('api');
+  const isColorRequest = lower.includes('color') || lower.includes('palette') || lower.includes('cream') || lower.includes('cyan');
+  const isVersionRequest = lower.includes('update') || lower.includes('version') || lower.includes('v1') || lower.includes('v2');
+  const isModelQuery = lower.includes('model') || lower.includes('llama') || lower.includes('deepseek') || lower.includes('mistral') || lower.includes('free ai');
+
+  let replyText = '';
+  let thinkTrace = '';
+  let updatedArtifact = null;
+  let suggestedPrompts = [];
+
+  if (isTestimonialRequest) {
+    thinkTrace = `Godfy Mind Fan-out Trace:
+1. Llama 3.3 proposed a 3-column flex grid container for testimonials.
+2. Qwen 2.5 authored authentic builder quotes from Elena Rostova (CTO), Marcus Kim (Founder), and Sophia Ruiz (Design Lead).
+3. Mistral applied White Cream & Cyan Light avatar pills (#E0F7FA) with subtle slate borders.
+4. Gemma verified avatar semantic contrast against #FAF7EE background.
+Consensus achieved (98.1%). Updating active landing page live sandbox.`;
+
+    updatedArtifact = generateLandingPageCode({
+      title: "Godfy AI Engine v1",
+      includeTestimonials: true,
+      includePricing: true
+    });
+
+    replyText = `I have orchestrated the 5 Free AI models and injected a high-converting **Customer Testimonials & Social Proof** section into your landing page! 
+
+- **Structure (Llama):** Responsive 3-card grid with responsive stacking.
+- **Copy (Qwen):** Authentic customer stories highlighting consensus accuracy and speed.
+- **Design (Mistral):** Cyan light avatar badges (\`#E0F7FA\`) and soft cream borders.
+
+You can preview the live changes immediately in the **Live Sandbox** tab or split view!`;
+
+    suggestedPrompts = [
+      'Change the hero title to something punchier',
+      'Add a FAQ section to the page',
+      'Make the primary CTA button cyan glow'
+    ];
+  } else if (isCoffeeRequest) {
+    thinkTrace = `Godfy Mind Synthesis: Transforming landing page theme to Artisan Coffee Roastery while preserving the signature White Cream & Cyan Light design tokens.`;
+    updatedArtifact = generateLandingPageCode({
+      title: "Godfy Artisan Roast",
+      theme: "coffee",
+      includeTestimonials: true,
+      includePricing: true
+    });
+    replyText = `Transformed the landing page into **Artisan Roast & Co.**! The 5 Free AIs have adapted their copy, hero headline, and feature grid while strictly retaining our **White Cream (#FAF7EE)**, **White (#FFFFFF)**, and **Cyan Light (#E0F7FA)** color harmony.`;
+    suggestedPrompts = [
+      'Add a coffee subscription pricing tier',
+      'Switch back to AI Engine theme',
+      'Export the landing page code'
+    ];
+  } else if (isLandingPageRequest) {
+    thinkTrace = `Godfy Mind Synthesis: Dispatching prompt "${text}" across Llama 3.3, DeepSeek R1, Mistral 24B, Qwen 2.5, and Gemma 2. Assembling production-ready HTML5/Tailwind bundle.`;
+    updatedArtifact = generateLandingPageCode({
+      title: "Synthesized Landing Page",
+      includeTestimonials: false,
+      includePricing: true
+    });
+    replyText = `I've synthesized a brand-new landing page based on your prompt: **"${text}"**! 
+
+The 5 Free models converged on:
+- **Hero & Value Proposition:** High-converting copy from Qwen.
+- **Real-time Proof Matrix:** DeepSeek's logic terminal.
+- **Visual Palette:** White Cream (#FAF7EE), Pure White (#FFFFFF), and Cyan Light (#E0F7FA) accents from Mistral.
+- **Accessible Layout:** Llama & Gemma hierarchy.
+
+Check out the interactive preview right now!`;
+    suggestedPrompts = [
+      'Add a testimonials section',
+      'Add an FAQ accordion',
+      'Customize the CTA button'
+    ];
+  } else if (isColorRequest) {
+    thinkTrace = `Godfy Mind Color Audit: Verifying tokens [Main: White Cream #FAF7EE, Secondary: White #FFFFFF, 2nd Secondary: Cyan Light #E0F7FA]. Contrast with slate-900 (#0F172A) is 13.1:1.`;
+    replyText = `Godfy strictly honors the design palette you specified:
+- **Main Color:** **White Cream** (\`#FAF7EE\` / \`cream-100\`) — Used for base canvas, deep backgrounds, and warm subtle containers.
+- **Secondary Color:** **White** (\`#FFFFFF\`) — Used for elevated cards, modal panels, and high-visibility content areas.
+- **2nd Secondary Color:** **Cyan Light** (\`#E0F7FA\` / \`#A5F3FC\` / \`#22D3EE\`) — Used for interactive focus rings, glowing badges, version tags, and terminal borders.
+
+All tokens exceed WCAG AAA accessibility standards with dark slate text!`;
+    suggestedPrompts = [
+      'Make a landing page with these colors',
+      'How does Godfy adjudicate model conflicts?',
+      'Add testimonials to the current page'
+    ];
+  } else if (isVersionRequest) {
+    thinkTrace = `Godfy Lifecycle Query: Current release is v1. Next planned milestone: v2.`;
+    replyText = `Updates for Godfy follow the **\`v1\`** cycle format:
+- **Current Release:** **Godfy Engine v1**
+- **Architecture:** Autonomous 5-model parallel dispatch + Mind consensus adjudication.
+- **Next Planned Cycle:** **v2** (Will introduce streaming neural token weights and auto-fine-tuning).`;
+    suggestedPrompts = [
+      'Show me the 5 Free AIs connected',
+      'Make a landing page',
+      'Run a performance benchmark'
+    ];
+  } else if (isModelQuery) {
+    thinkTrace = `Godfy AI Mesh Inspection: 5 active nodes [Llama-3.3, DeepSeek-R1, Mistral-24B, Qwen-2.5, Gemma-2]. All operational.`;
+    replyText = `Here is how the 5 Free AI models inside Godfy's mesh divide cognitive labor:
+1. **Llama 3.3 70B (Meta):** Structural scaffolding, component hierarchy, DOM layout.
+2. **DeepSeek R1 (DeepSeek):** Deep reasoning, edge case handling, loss-aversion psychology.
+3. **Mistral Open 24B (Mistral AI):** Pure Tailwind CSS utility classes and clean execution.
+4. **Qwen 2.5 72B (Alibaba):** Persuasive copywriting, emotional hooks, and micro-copy.
+5. **Gemma 2 27B (Google):** Accessibility (WCAG AAA), conciseness, and safety audits.
+
+When you speak to me, I listen to all five simultaneously and give you my unified decision!`;
+    suggestedPrompts = [
+      'Make a landing page',
+      'Add a pricing section',
+      'Open settings to adjust weights'
+    ];
+  } else {
+    thinkTrace = `Godfy Mind Reasoning: Received inquiry: "${text}". Querying 5 Free AI models for context and synthesizing master guidance.`;
+    replyText = `**Godfy Mind Decision on "${text}":**
+
+I have analyzed your prompt across our 5 Free AI nodes. Whether you want to build a new landing page, add interactive components, refactor code, or inspect how the open-weight council debated the solution, I am ready.
+
+Try asking me:
+- *"Make a landing page"*
+- *"Add a testimonials section with 3 customer quotes"*
+- *"Add a modern pricing table"*
+- *"Generate a full-stack SaaS auth component"*`;
+    suggestedPrompts = [
+      'Make a landing page',
+      'Add a testimonials section',
+      'Inspect 5 Free AI proposals'
+    ];
+  }
+
+  return {
+    id: `msg-${Date.now()}`,
+    sender: 'godfy',
+    text: replyText,
+    thinkTrace,
+    updatedArtifact,
+    suggestedPrompts,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+}
+
