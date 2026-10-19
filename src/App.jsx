@@ -134,12 +134,13 @@ export default function App() {
         mindPreset,
         forceSearch,
         searchMode,
+        activeProject: currentProject,
         onStreamStep: ({ message }) => {
           setStreamMessage(message);
         }
       });
 
-      // If response generated a multi-file project, update active project state
+      // If response generated or modified a multi-file project, update active project state
       if (godfyResponse.projectData) {
         setCurrentProject(godfyResponse.projectData);
       }
@@ -172,15 +173,27 @@ export default function App() {
   };
 
   const handleAskMindToModifyProject = async (prompt, proj) => {
+    const isClearAll = /(?:clear|empty|clean|purge|wipe|remove\s+all|delete\s+all|remove\s+files\s+and\s+folders|delete\s+files\s+and\s+folders|remove\s+everything|delete\s+everything|remove\s+files|delete\s+files)/i.test(prompt) || prompt.toLowerCase().includes('from studio');
     const addFileMatch = prompt.match(/(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?file\s+(?:called|named)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const addFolderMatch = prompt.match(/(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?(?:carpet|folder|carpeta|dir)\s+(?:called|named)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const renameMatch = prompt.match(/rename\s+([a-zA-Z0-9_\-\.\/]+)\s+to\s+([a-zA-Z0-9_\-\.\/]+)/i);
-    const deleteMatch = prompt.match(/(?:delete|remove|rm)\s+(?:file|folder|carpet|carpeta)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
+    const deleteMatch = prompt.match(/(?:delete|remove|rm|drop|erase)\s+(?:file|folder|carpet|carpeta)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
     const patchLineMatch = prompt.match(/(?:patch|fix|replace)\s+(?:line\s+(\d+)|#(\d+))\s*(?:in|of)?\s*([a-zA-Z0-9_\-\.\/]+)?\s*(?:with|to|as)?\s*(.*)/i);
 
     let updated = { ...proj };
 
-    if (patchLineMatch) {
+    if (isClearAll) {
+      // Clear all files and folders (carpets) from Studio
+      updated = {
+        ...proj,
+        name: 'Empty Workspace',
+        nodes: [
+          { id: 'root', name: 'root', type: 'folder', isOpen: true, parentId: null, path: '/' }
+        ],
+        activeFileId: null,
+        openTabIds: []
+      };
+    } else if (patchLineMatch) {
       // Surgical Line Patching instead of whole file generation!
       const lineNum = parseInt(patchLineMatch[1] || patchLineMatch[2], 10);
       const specifiedFile = patchLineMatch[3]?.trim();
@@ -198,7 +211,12 @@ export default function App() {
       }
     } else if (deleteMatch) {
       const targetName = deleteMatch[1].trim();
-      const target = updated.nodes.find(n => n.name === targetName || n.path === targetName || n.path === `/${targetName}`);
+      const target = updated.nodes.find(n => 
+        n.name.toLowerCase() === targetName.toLowerCase() || 
+        n.path.toLowerCase() === targetName.toLowerCase() || 
+        n.path.toLowerCase() === `/${targetName.toLowerCase()}` ||
+        n.name.toLowerCase().startsWith(targetName.toLowerCase())
+      );
       if (target && target.id !== 'root') {
         updated = deleteProjectNode(updated, target.id);
       }
@@ -217,8 +235,8 @@ export default function App() {
       if (target) {
         updated = renameProjectNode(updated, target.id, newName);
       }
-    } else {
-      // Generate a new dynamic multi-file project for the requested theme
+    } else if (!/(\b(delete|remove|rm|drop|erase|clear|clean|purge|wipe)\b)/i.test(prompt)) {
+      // Only generate new project when user explicitly wants to build/create
       const newGen = generateDynamicMultiFileProject(prompt);
       updated = newGen;
     }

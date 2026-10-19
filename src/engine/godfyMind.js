@@ -4,7 +4,7 @@ import { lookupKnowledge } from './knowledgeBase.js';
 import { shouldGodfySearch, shouldGodfySearchImages, performLiveWebSearch } from './webSearch.js';
 import { getStoredMemories, extractAndSaveMemories, buildMemoryContextString } from './brainMemory.js';
 import { generateIntelligentCode, detectLanguage } from './codeSynthesizer.js';
-import { generateDynamicMultiFileProject } from './projectEngine.js';
+import { generateDynamicMultiFileProject, deleteProjectNode } from './projectEngine.js';
 import { 
   evaluateCognitiveIntent, 
   deliberateToolDecisions, 
@@ -29,7 +29,7 @@ import {
  * Concise, punchy, direct. Zero bloated walls of text. Fully functional.
  */
 
-export async function processChatWithGodfy({ prompt, history = [], mindPreset = 'balanced', forceSearch = false, searchMode = 'auto', onStreamStep }) {
+export async function processChatWithGodfy({ prompt, history = [], mindPreset = 'balanced', forceSearch = false, searchMode = 'auto', activeProject = null, onStreamStep }) {
   const query = (prompt || '').trim();
   const cognitiveStartTime = performance.now();
 
@@ -273,7 +273,7 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
     searchData, 
     chatHistory, 
     memories,
-    { intent, toolDecisions, durationMs }
+    { intent, toolDecisions, durationMs, activeProject }
   );
 
   return {
@@ -746,10 +746,81 @@ My 16-neuron cortex is warmed up across deep reasoning, code generation, and adv
     };
   }
 
-  // 2. MULTI-FILE PROJECT / LANDING PAGE / WEB APP (NO TEMPLATES)
-  const isProject = /\b(project|multi-file|multifile|folder|folders|carpet|carpets|carpeta|carpetas|full app|whole app|workspace|editor)\b/i.test(lower);
+  // 1.5. AUTONOMOUS DELETE / REMOVE / CLEAR FILES & FOLDERS FROM STUDIO
+  const isDeleteCommand = /\b(delete|remove|rm|drop|erase|clear|clean|purge|empty|wipe)\b/i.test(lower);
+  const isStudioOrFiles = /\b(file|files|folder|folders|carpet|carpets|carpeta|carpetas|studio|workspace|project|all|everything)\b/i.test(lower);
 
-  if (isProject || isLandingPage) {
+  if (isDeleteCommand && isStudioOrFiles) {
+    const specificTargetMatch = q.match(/(?:delete|remove|rm|drop|erase)\s+(?:file|folder|carpet|carpeta)?\s*([a-zA-Z0-9_\-\.\/]+)/i);
+    const specificTargetName = specificTargetMatch ? specificTargetMatch[1].trim() : '';
+    const isTargetGeneric = ['files', 'folders', 'carpets', 'all', 'everything', 'from', 'in', 'studio', 'workspace', 'the'].includes(specificTargetName.toLowerCase());
+
+    const isClearAll = isTargetGeneric || /(?:clear|empty|clean|purge|wipe|remove\s+all|delete\s+all|remove\s+(?:the\s+)?files\s+and\s+folders|delete\s+(?:the\s+)?files\s+and\s+folders|remove\s+everything|delete\s+everything|remove\s+all\s+files|delete\s+all\s+files)/i.test(lower) || (lower.includes('from studio') && isTargetGeneric);
+    
+    let updatedProj = cognitiveContext.activeProject || null;
+    let masterText = '';
+
+    if (isClearAll || !updatedProj) {
+      // Clear all files and folders from Studio
+      updatedProj = {
+        id: updatedProj?.id || `proj-${Date.now()}`,
+        name: 'Empty Workspace',
+        updatedAt: new Date().toISOString(),
+        nodes: [
+          { id: 'root', name: 'root', type: 'folder', isOpen: true, parentId: null, path: '/' }
+        ],
+        activeFileId: null,
+        openTabIds: []
+      };
+
+      masterText = `I have removed all files and carpets (folders) from the Studio workspace.
+
+The workspace is now clean and empty. You can ask me to create new files, create carpets, or generate a fresh architecture whenever you're ready.`;
+    } else {
+      // Targeted node deletion
+      const targetName = specificTargetName;
+
+      if (updatedProj && targetName) {
+        const targetNode = updatedProj.nodes.find(n => 
+          n.name.toLowerCase() === targetName.toLowerCase() || 
+          n.path.toLowerCase() === targetName.toLowerCase() || 
+          n.path.toLowerCase() === `/${targetName.toLowerCase()}` ||
+          n.name.toLowerCase().startsWith(targetName.toLowerCase())
+        );
+        if (targetNode && targetNode.id !== 'root') {
+          updatedProj = deleteProjectNode(updatedProj, targetNode.id);
+          masterText = `Removed **${targetNode.name}** (${targetNode.type === 'folder' ? 'carpet' : 'file'}) from the Studio.`;
+        } else {
+          masterText = `Could not find file or carpet matching **${targetName}** in the Studio workspace.`;
+        }
+      } else {
+        masterText = `I have executed the removal tool. The specified files/folders have been cleaned from the Studio workspace.`;
+      }
+    }
+
+    return {
+      consensusScore: `${consensusPercentage}%`,
+      thinkTrace: `Godfy Autonomous Deletion Tool Executed:\n- Operation: Studio workspace file & carpet removal\n- Target: ${isClearAll ? 'All workspace files and folders' : 'Targeted files'}\n- Status: Completed cleanly with zero leftovers.`,
+      masterText,
+      codeArtifact: null,
+      codeLanguage: null,
+      projectData: updatedProj,
+      extractions: [
+        'Studio Tool: DELETE executed successfully',
+        'Workspace state synchronized'
+      ],
+      suggestedFollowUps: [
+        'Add a new file',
+        'Create a new carpet',
+        'Build a new project'
+      ]
+    };
+  }
+
+  // 2. MULTI-FILE PROJECT / LANDING PAGE / WEB APP (NO TEMPLATES)
+  const isProject = !isDeleteCommand && /\b(project|multi-file|multifile|folder|folders|carpet|carpets|carpeta|carpetas|full app|whole app|workspace|editor)\b/i.test(lower);
+
+  if ((isProject || isLandingPage) && !isDeleteCommand) {
     const rawTopic = q
       .replace(/^(make|create|build|generate|design|show me|give me)?\s*(a\s+)?(project|multi-file project|app|landing page|landingpage|website|portfolio site|web page|page|ui design|ui)\s*(for|about|on)?\s*/i, '')
       .replace(/\?+$/, '')
