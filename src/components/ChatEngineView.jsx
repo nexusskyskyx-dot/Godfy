@@ -2,9 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Send, Sparkles, Brain, Bot, Eye, Copy, Check, ChevronDown, ChevronUp, 
   RotateCcw, Code, Download, ExternalLink, X, Monitor, Tablet, Smartphone,
-  Layers, ArrowRight, Zap, CheckCircle2
+  Layers, ArrowRight, Zap, CheckCircle2, Globe, ShieldCheck
 } from 'lucide-react';
+import { marked } from 'marked';
 import { MIND_PRESETS } from '../engine/models.js';
+
+// Configure marked options
+marked.setOptions({
+  gfm: true,
+  breaks: true
+});
 
 export default function ChatEngineView({
   messages,
@@ -46,7 +53,7 @@ export default function ChatEngineView({
   const starterCards = [
     {
       title: 'Make a landing page',
-      desc: 'Ask Godfy to call 5 Free AIs and synthesize a complete, runnable landing page.',
+      desc: 'Ask Godfy to broadcast to 5 Free AIs and synthesize a complete, live previewable landing page.',
       icon: '🚀'
     },
     {
@@ -172,8 +179,9 @@ export default function ChatEngineView({
                       <span>{msg.consensusScore ? `Consensus: ${msg.consensusScore}` : '5 Free AIs Combined'}</span>
                     </div>
 
-                    <div className="text-[11px] font-mono text-slate-500 hidden sm:block">
-                      Parallel Fan-Out Latency: ~380ms
+                    <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-500">
+                      <Globe className="w-3 h-3 text-cyan-600" />
+                      <span>5 Free AIs Polled Simultaneously</span>
                     </div>
                   </div>
                 )}
@@ -204,10 +212,17 @@ export default function ChatEngineView({
                   </div>
                 )}
 
-                {/* Master Response Text */}
-                <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed space-y-3 font-normal">
-                  {msg.masterText || msg.text}
-                </div>
+                {/* Master Response Text with Markdown */}
+                {isUser ? (
+                  <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-normal">
+                    {msg.text}
+                  </div>
+                ) : (
+                  <div 
+                    className="prose prose-sm max-w-none text-slate-800 text-xs sm:text-sm leading-relaxed space-y-2 prose-headings:font-bold prose-headings:text-slate-900 prose-p:leading-relaxed prose-strong:text-slate-950 prose-code:bg-cream-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-cyan-900"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(msg.masterText || msg.text || '') }}
+                  />
+                )}
 
                 {/* Interactive Code Artifact & Live Sandbox Button */}
                 {!isUser && msg.codeArtifact && (
@@ -250,7 +265,7 @@ export default function ChatEngineView({
                   <div className="mt-5 pt-4 border-t border-cream-200">
                     <button
                       onClick={() => setExpandedCouncils(p => ({ ...p, [msgId]: !p[msgId] }))}
-                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white hover:bg-cream-50 border border-cream-300 text-xs font-mono text-slate-800 transition"
+                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white hover:bg-cream-50 border border-cream-300 text-xs font-mono text-slate-800 transition shadow-sm"
                     >
                       <div className="flex items-center space-x-2">
                         <Bot className="w-4 h-4 text-cyan-600" />
@@ -278,7 +293,12 @@ export default function ChatEngineView({
                                     : 'bg-white/60 border-cream-200 text-slate-600 hover:bg-white'
                                 }`}
                               >
-                                <div className="text-[10px] text-cyan-700 font-mono font-bold truncate">{m.badge}</div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] text-cyan-700 font-mono font-bold truncate">{m.badge}</span>
+                                  {m.isLive ? (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Live Free API"></span>
+                                  ) : null}
+                                </div>
                                 <div className="truncate font-semibold">{m.modelName.split(' ')[0]}</div>
                               </button>
                             );
@@ -292,15 +312,24 @@ export default function ChatEngineView({
                           return (
                             <div className="p-3.5 rounded-lg bg-white border border-cream-200 text-xs space-y-2">
                               <div className="flex items-center justify-between pb-2 border-b border-cream-200">
-                                <div className="font-bold text-slate-900">{model.modelName}</div>
-                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cream-100 text-slate-700">
-                                  Role: {model.badge}
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-bold text-slate-900">{model.modelName}</span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cream-100 text-slate-700 font-mono">
+                                    {model.source} ({model.latency})
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-mono font-bold text-cyan-700">
+                                  {model.confidence}% Match
                                 </span>
                               </div>
+
                               <div className="text-cyan-900 font-mono text-[11px] bg-cyanlight-50 p-2 rounded border border-cyanlight-200">
                                 <strong>Extracted by Godfy:</strong> {model.keyExtracted}
                               </div>
-                              <div className="text-slate-700 font-mono whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed pt-1">
+
+                              <div 
+                                className="text-slate-700 font-mono text-xs whitespace-pre-wrap max-h-56 overflow-y-auto leading-relaxed pt-1"
+                              >
                                 {model.answer}
                               </div>
                             </div>
@@ -344,7 +373,7 @@ export default function ChatEngineView({
                 <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
               </div>
               <p className="text-xs font-mono text-cyan-800">
-                {streamMessage || 'Broadcasting to Llama 3.3, DeepSeek R1, Mistral, Qwen, Gemma...'}
+                {streamMessage || 'Calling Llama 3.3, DeepSeek R1, Mistral, Qwen, Gemma...'}
               </p>
             </div>
           </div>
