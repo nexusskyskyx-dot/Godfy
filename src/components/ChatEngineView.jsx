@@ -12,6 +12,27 @@ marked.setOptions({
   breaks: true
 });
 
+marked.use({
+  renderer: {
+    code({ text, lang }) {
+      const language = (lang || 'code').toLowerCase();
+      const displayLang = language.toUpperCase();
+      const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      return `<div class="code-block-wrapper my-3 rounded-xl overflow-hidden border border-slate-800 bg-[#090D16] shadow-sm">
+        <div class="flex items-center justify-between px-3.5 py-1.5 bg-[#0F172A] border-b border-slate-800 text-[11px] font-mono">
+          <span class="text-cyan-400 font-semibold tracking-wider">${displayLang}</span>
+          <span class="text-slate-400 text-[10px]">Godfy Code Synthesizer</span>
+        </div>
+        <pre class="p-3.5 text-xs text-slate-100 font-mono overflow-x-auto leading-relaxed"><code>${escaped}</code></pre>
+      </div>`;
+    }
+  }
+});
+
 export default function ChatEngineView({
   messages,
   onSendMessage,
@@ -208,21 +229,28 @@ export default function ChatEngineView({
                     </button>
 
                     {expandedThinks[msgId] && (
-                      <div className="mt-2 p-3 rounded-lg bg-cream-50 border border-cream-200 text-xs font-mono text-slate-700 whitespace-pre-wrap leading-relaxed">
-                        {msg.thinkTrace}
+                      <div className="mt-2 p-3.5 rounded-xl bg-cream-50 border border-cream-200 shadow-sm">
+                        <div className="flex items-center space-x-1.5 text-[10px] font-mono text-cyan-800 pb-2 mb-2 border-b border-cream-200 font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                          <span className="uppercase tracking-wider">Godfy Brain Thinking Trace</span>
+                        </div>
+                        <div 
+                          className="godfy-markdown text-xs text-slate-700 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: marked.parse(msg.thinkTrace || '') }}
+                        />
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Master Response Text with Markdown */}
+                {/* Master Response Text with Markdown & Rich Text Formatting */}
                 {isUser ? (
-                  <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">
+                  <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium">
                     {msg.text}
                   </div>
                 ) : (
                   <div 
-                    className="prose prose-sm max-w-none text-slate-800 text-xs sm:text-sm leading-relaxed space-y-2 prose-headings:font-bold prose-headings:text-slate-900 prose-p:leading-relaxed prose-strong:text-slate-950 prose-code:bg-cream-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-cyan-900"
+                    className="godfy-markdown max-w-none text-slate-800 text-xs sm:text-sm leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: marked.parse(msg.masterText || msg.text || '') }}
                   />
                 )}
@@ -310,10 +338,9 @@ export default function ChatEngineView({
                                 </span>
                               </div>
                               <div 
-                                className="text-slate-700 font-mono text-[11px] whitespace-pre-wrap max-h-44 overflow-y-auto leading-relaxed"
-                              >
-                                {model.answer}
-                              </div>
+                                className="godfy-markdown text-slate-700 text-xs max-h-56 overflow-y-auto leading-relaxed pr-1"
+                                dangerouslySetInnerHTML={{ __html: marked.parse(model.answer || '') }}
+                              />
                             </div>
                           );
                         })()}
