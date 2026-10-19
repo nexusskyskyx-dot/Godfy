@@ -1447,16 +1447,21 @@ console.log(TextTransformer.transform("Godfy Tokyo Night Cursor IDE"));`,
   }
 
   // Default: Robust Universal State Machine & Pipeline
+  // Sanitize class name and label
+  const rawClass = cleanTask.replace(/[^a-zA-Z0-9]/g, '');
+  const className = (rawClass.length > 0 && rawClass.length <= 32 ? rawClass : 'AppService');
+  const safeLabel = JSON.stringify(cleanTask.slice(0, 60));
+
   return {
     language: isTs ? 'typescript' : 'javascript',
     fileName: `service.${isTs ? 'ts' : 'js'}`,
-    title: `${cleanTask} Architecture`,
+    title: `${cleanTask.slice(0, 40)} Architecture`,
     complexity: { time: 'O(1) lookups, O(n) traversals', space: 'O(n) storage' },
     edgeCases: ['Concurrent state mutation guards', 'Null parameter exceptions', 'Data persistence checks'],
     code: `/**
- * Production Module for: ${cleanTask}
+ * Production Module for: ${cleanTask.slice(0, 60)}
  */
-export class ${cleanTask.replace(/[^a-zA-Z0-9]/g, '') || 'ModuleService'} {
+export class ${className} {
   constructor() {
     this.store = new Map();
     this.history = [];
@@ -1493,9 +1498,9 @@ export class ${cleanTask.replace(/[^a-zA-Z0-9]/g, '') || 'ModuleService'} {
 }
 
 // Runnable Assertion Test
-const service = new ${cleanTask.replace(/[^a-zA-Z0-9]/g, '') || 'ModuleService'}();
-const item = service.execute('rec_001', { label: '${cleanTask}' });
-console.log('Successfully initialized ${cleanTask}:', item);`,
+const service = new ${className}();
+const item = service.execute('rec_001', { label: ${safeLabel} });
+console.log('Successfully initialized ${className}:', item);`,
     explanation: `Modular service architecture with state encapsulation, audit history tracking, and input validation.`
   };
 }

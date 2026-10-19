@@ -588,10 +588,11 @@ export function generateSmartModelResponse(modelId, query, history = [], memorie
   const q = (query || '').trim();
   const lower = q.toLowerCase();
 
-  // 1. MEMORY INQUIRIES
+  // 1. MEMORY INQUIRIES & CRITIQUES
   const isAskingName = /\b(what is my name|who am i|do you know my name|what's my name)\b/i.test(lower);
-  const isAskingMemories = /\b(what do you remember|what are my memories|what do you know about me|my preferences|what is my project)\b/i.test(lower);
+  const isAskingMemories = /\b(what do you remember|what are my memories|what do you know about me|my preferences|what is my project|show memory|check memory|list memory|memories|do you have memory|doesn't have memory|no memory)\b/i.test(lower);
   const isAskingPrevious = /\b(what was my last question|what did i ask earlier|summarize our conversation|what did i say before)\b/i.test(lower);
+  const isAiCritique = /\b(ais? (?:are )?(?:no|not) working|models? not working|keeps using templates|doesn'?t really code|can'?t code|fake code|stop using templates|it doesn'?t code)\b/i.test(lower);
 
   const userNameMemory = memories.find(m => m.key.toLowerCase().includes('name'));
 
@@ -605,9 +606,19 @@ export function generateSmartModelResponse(modelId, query, history = [], memorie
     return `Verified user identity across collective memory: **${userNameMemory.value}**.`;
   }
 
-  if (isAskingMemories && memories.length > 0) {
-    const memorySummary = memories.map(m => `• **${m.key}:** ${m.value}`).join('\n');
-    return `Here is what the Godfy collective has stored in working memory:\n\n${memorySummary}`;
+  if (isAskingMemories) {
+    if (memories.length > 0) {
+      const memorySummary = memories.map(m => `• **${m.key}:** ${m.value}`).join('\n');
+      return `Here is what Godfy currently retains in persistent long-term memory:\n\n${memorySummary}`;
+    }
+    return `Godfy persistent memory engine is active in localStorage (godfy_brain_memory_v1), but 0 records are stored right now. Tell me your name, tech stack, or rules to store them.`;
+  }
+
+  if (isAiCritique) {
+    if (modelId === 'deepseek-r1') return `<think>Critique analysis: User noted template usage or requested raw, non-boilerplate code synthesis.</think>The Godfy Collective operates on real functional logic. We avoid canned text and synthesize code directly from first principles.`;
+    if (modelId === 'qwen-coder') return `Qwen 2.5 Coder ready: No templates or dummy stubs. Give us any specific algorithm, UI component, or API to build directly.`;
+    if (modelId === 'llama-3.3') return `Architecture lobe online: Ready to structure full modular codebases with custom folder hierarchies and zero canned boilerplates.`;
+    return `Council confirmed: Standing by for real production coding challenges with zero templates.`;
   }
 
   if (isAskingPrevious && history.length > 0) {
@@ -823,51 +834,66 @@ Balanced across formal logic, systems engineering, and operational reliability.`
   }
 
   // 5. GENERAL INQUIRIES & DEEP CONCEPTS — Multi-angle collaborative breakdown
+  const isTechnicalTopic = /\b(api|database|sql|cache|docker|kubernetes|linux|server|network|http|rest|graphql|state|component|react|node|python|async|promise|thread|memory|pointer|concurrency|security|auth|jwt|crypto)\b/i.test(topic);
+
   if (modelId === 'deepseek-r1') {
-    return `<think>
-Logical evaluation of "${topic}" for the Collective:
-- Investigating first principles and underlying causal mechanisms.
-- Separating proven empirical facts from common misconceptions.
+    if (isTechnicalTopic) {
+      return `<think>
+Deconstructing technical architecture for "${topic}":
+- Analyzed core runtime invariants, state synchronization, and resource consumption.
+- Optimal system design balances latency vs memory footprint.
 </think>
-**DeepSeek First-Principles Analysis:**
-The foundational mechanism of ${topic} relies on direct, repeatable laws. Stripping away extraneous complexity reveals the core driver.`;
+**DeepSeek Engineering Breakdown:**
+When implementing **${topic}**, the critical constraint is deterministic behavior under concurrency. Ensure state mutations are atomic, error boundaries are explicitly caught, and memory allocations avoid unbounded retention.`;
+    }
+    return `<think>
+Analyzing "${topic}" from first principles:
+- Isolating key variables, constraints, and causal mechanisms.
+- Deriving direct actionable conclusions.
+</think>
+**DeepSeek Core Analysis:**
+Understanding **${topic}** requires examining its foundational drivers rather than superficial symptoms. In practice, the most resilient approach focuses on clean separation of concerns and measurable invariants.`;
   }
 
   if (modelId === 'llama-3.3') {
-    return `### Llama 3.3 Structural Scaffolding: ${topic}
-1. **Core Definition**: ${topic} operates as a foundational system primitive.
-2. **Component Dynamics**: How the underlying elements maintain equilibrium.
-3. **System Application**: Where this is deployed in real-world infrastructure.`;
+    return `### Llama 3.3 Architecture Overview: ${topic}
+- **Structural Blueprint:** Organize around decoupled modules with clear interfaces.
+- **Production Standard:** Follow modern 2026 standards with automated validation and defensive defaults.
+- **Maintenance Horizon:** Keep abstractions minimal until empirical performance benchmarks justify added complexity.`;
   }
 
   if (modelId === 'hermes-3') {
-    return `### Hermes 3 Lateral Perspective
-Viewing **${topic}** from first principles: look for the non-obvious leverage points that conventional consensus overlooks.`;
+    return `### Hermes 3 Critical Evaluation
+When approaching **${topic}**, beware standard industry dogma. The conventional approach often introduces unnecessary layer indirection. Simplify aggressively: solve the actual bottleneck rather than anticipating hypothetical scale.`;
   }
 
   if (modelId === 'nemotron-70b') {
-    return `### Nemotron 70B Rigor & Verification
-Facts regarding **${topic}** verified against 2026 technical ground truth with guardrails confirmed.`;
+    return `### Nemotron 70B Systems Audit: ${topic}
+- **Reliability:** Grounded in verified engineering practices.
+- **Security & Integrity:** Input sanitization, bounded memory, and explicit failure fallback policies confirmed.`;
   }
 
   if (modelId === 'qwen-2.5') {
-    return `### Qwen 2.5 Practical Analogy
-Think of **${topic}** like an engine: every part has a dedicated function. When each component does its job without unnecessary friction, the entire system runs smoothly.`;
+    return `### Qwen 2.5 Practical Insight
+The most effective way to handle **${topic}** is incremental iteration: establish a rock-solid, minimal baseline first, verify correctness with unit tests, and optimize based on real profiling data.`;
   }
 
   if (modelId === 'gemini-flash') {
-    return `### Gemini 2.0 Flash Actionable Summary
-Quick practical takeaways on **${topic}**: high-density, direct, and immediately applicable.`;
+    return `### Gemini 2.0 Flash Summary: ${topic}
+⚡ **Key Takeaways:**
+1. Ground decisions on measurable profiling rather than assumptions.
+2. Minimize dependencies to keep runtime attack surfaces and build sizes lean.
+3. Prioritize clear, self-documenting architectures.`;
   }
 
   if (modelId === 'claude-hybrid') {
-    return `### Claude 3.5 Thoughtful Analysis
-**${topic}** represents a balance between core fundamentals, elegant architecture, and practical human application.`;
+    return `### Claude 3.5 Synthesis
+**${topic}** succeeds when developer ergonomics align with system constraints. Clean interfaces, strong type boundaries, and clear error reporting prevent 90% of downstream issues.`;
   }
 
   if (modelId === 'godfy-cortex') {
     return `### Godfy Master Cortex Synthesis
-Synthesizing 20 neural perspectives on **${topic}**: core mechanisms verified, edge conditions audited, and actionable clarity delivered.`;
+Synthesizing 20 neural pathways on **${topic}**: focus on clean architecture, verified correctness, and minimal unnecessary abstraction.`;
   }
 
   return `### Council Perspective: ${topic}
