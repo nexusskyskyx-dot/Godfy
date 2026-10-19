@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  Folder, FolderOpen, FileCode, Plus, Edit2, Trash2, Check, X,
+  Folder, FolderOpen, FileCode, Edit2, Trash2, Check, X,
   Eye, Code, Download, Copy, RefreshCw, ChevronRight, ChevronDown,
   Monitor, Tablet, Smartphone, Brain, ArrowLeft,
-  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight, Loader2,
-  Terminal, Sparkles, Bug, Wrench, Scissors, ShieldAlert, CheckCircle2,
-  AlertTriangle
+  FolderPlus, FilePlus, Layers, FolderTree, ArrowRight, Loader2
 } from 'lucide-react';
 import { 
   addFileToProject, 
@@ -16,7 +14,6 @@ import {
   toggleFolderOpen,
   buildProjectPreviewBundle
 } from '../engine/projectEngine.js';
-import { patchFileLines, detectCodeErrorsAndBugs } from '../engine/toolRunner.js';
 
 export default function ProjectEditorView({
   project,
@@ -48,17 +45,6 @@ export default function ProjectEditorView({
   const [creatingType, setCreatingType] = useState(null); // 'file' | 'folder' | null
   const [creatingParentId, setCreatingParentId] = useState('root');
   const [creatingName, setCreatingName] = useState('');
-
-  // Studio Tools State: PATCH, ADD CODE, DELETE CODE, DEBUG
-  const [isPatchModalOpen, setIsPatchModalOpen] = useState(false);
-  const [patchTargetLine, setPatchTargetLine] = useState(1);
-  const [patchNewCode, setPatchNewCode] = useState('');
-  const [lastPatchedLine, setLastPatchedLine] = useState(null);
-  const [patchNotification, setPatchNotification] = useState('');
-
-  const [isDebugOpen, setIsDebugOpen] = useState(false);
-  const [debugResults, setDebugResults] = useState(null);
-  const [isSnippetModalOpen, setIsSnippetModalOpen] = useState(false);
 
   // Editor prompt bar state
   const [aiPrompt, setAiPrompt] = useState('');
@@ -228,90 +214,6 @@ export default function ProjectEditorView({
     URL.revokeObjectURL(url);
   };
 
-  // =====================================================================
-  // STUDIO TOOLS: PATCH LINE, ADD CODE, DELETE CODE, DEBUG
-  // =====================================================================
-  const handleOpenPatchModal = (lineNum = 1) => {
-    if (!activeFile) return;
-    const lines = activeFile.content.split('\n');
-    const safeLine = Math.min(Math.max(1, lineNum), Math.max(1, lines.length));
-    const currentText = lines[safeLine - 1] || '';
-    setPatchTargetLine(safeLine);
-    setPatchNewCode(currentText);
-    setIsPatchModalOpen(true);
-  };
-
-  const handleApplySurgicalPatch = () => {
-    if (!activeFile) return;
-    const patchRes = patchFileLines(activeFile.content, {
-      line: patchTargetLine,
-      newContent: patchNewCode
-    });
-
-    if (patchRes.patched) {
-      const updated = updateFileContent(project, activeFile.id, patchRes.content);
-      onUpdateProject(updated);
-      setLastPatchedLine(patchTargetLine);
-      setPatchNotification(`Patched line ${patchTargetLine} surgically!`);
-      setTimeout(() => setPatchNotification(''), 3000);
-      setTimeout(() => setLastPatchedLine(null), 4000);
-      setIsPatchModalOpen(false);
-    }
-  };
-
-  const handleDeleteCurrentLine = () => {
-    if (!activeFile) return;
-    const lines = activeFile.content.split('\n');
-    if (lines.length <= 1) {
-      handleCodeChange('');
-      return;
-    }
-    const target = patchTargetLine || 1;
-    lines.splice(target - 1, 1);
-    handleCodeChange(lines.join('\n'));
-    setPatchNotification(`Deleted line ${target}`);
-    setTimeout(() => setPatchNotification(''), 2500);
-  };
-
-  const handleInjectSnippet = (snippetCode) => {
-    if (!activeFile) return;
-    const newContent = activeFile.content 
-      ? `${activeFile.content.trimEnd()}\n\n${snippetCode}\n` 
-      : `${snippetCode}\n`;
-    handleCodeChange(newContent);
-    setIsSnippetModalOpen(false);
-    setPatchNotification('Injected code snippet successfully!');
-    setTimeout(() => setPatchNotification(''), 2500);
-  };
-
-  const handleRunDebugger = () => {
-    if (!activeFile) return;
-    const results = detectCodeErrorsAndBugs(activeFile.content, activeFile.language);
-    setDebugResults(results);
-    setIsDebugOpen(true);
-  };
-
-  const handleApplyBugPatch = (bug) => {
-    if (!activeFile || !bug.suggestedPatch) return;
-    const patchRes = patchFileLines(activeFile.content, {
-      line: bug.line,
-      newContent: bug.suggestedPatch
-    });
-
-    if (patchRes.patched) {
-      const updated = updateFileContent(project, activeFile.id, patchRes.content);
-      onUpdateProject(updated);
-      setLastPatchedLine(bug.line);
-      setPatchNotification(`Fixed bug on line ${bug.line}!`);
-      setTimeout(() => setPatchNotification(''), 3000);
-      setTimeout(() => setLastPatchedLine(null), 4000);
-
-      // Re-run debugger to update remaining issues
-      const rechecked = detectCodeErrorsAndBugs(patchRes.content, activeFile.language);
-      setDebugResults(rechecked);
-    }
-  };
-
   const handleAiExecute = async (e) => {
     e.preventDefault();
     if (!aiPrompt.trim() || isAiExecuting) return;
@@ -475,14 +377,6 @@ export default function ProjectEditorView({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col bg-[#1a1b26] overflow-hidden w-full relative">
-      {/* Toast Notification */}
-      {patchNotification && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1f2335] border border-[#7aa2f7] text-[#7dcfff] px-3.5 py-1.5 rounded-xl text-xs font-mono shadow-2xl flex items-center space-x-2 animate-bounce">
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#9ece6a]" />
-          <span>{patchNotification}</span>
-        </div>
-      )}
-
       {/* Top Studio Bar */}
       <header className="border-b border-[#292e42] bg-[#16161e] flex-shrink-0">
         <div className="px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
@@ -723,60 +617,14 @@ export default function ProjectEditorView({
             })}
           </div>
 
-          {/* Active file Studio Tools Toolbar */}
+          {/* Active file breadcrumb & actions */}
           {activeFile && (
-            <div className="px-2.5 sm:px-3 py-1.5 bg-[#16161e]/80 border-b border-[#292e42] flex flex-wrap items-center justify-between gap-1.5 text-xs font-mono text-[#9aa5ce]">
-              <div className="flex items-center space-x-2 min-w-0">
-                <span className="text-[11px] truncate max-w-[140px] sm:max-w-none text-[#c0caf5]">
-                  {activeFile.path}
-                </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1f2335] text-[#7dcfff] uppercase font-bold border border-[#292e42]">
+            <div className="px-3 sm:px-4 py-1.5 bg-[#16161e]/60 border-b border-[#292e42] flex items-center justify-between text-xs font-mono text-[#9aa5ce]">
+              <span className="text-[11px] truncate max-w-[180px] sm:max-w-none text-[#c0caf5]">{activeFile.path}</span>
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                <span className="text-[10px] text-[#7dcfff] uppercase font-bold">
                   {activeFile.language}
                 </span>
-              </div>
-
-              {/* STUDIO TOOLS: PATCH, ADD CODE, DELETE CODE, DEBUG */}
-              <div className="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
-                {/* 🩹 PATCH LINE TOOL */}
-                <button
-                  onClick={() => handleOpenPatchModal(1)}
-                  className="px-2 py-1 rounded-lg bg-[#1f2335] hover:bg-[#7aa2f7]/20 border border-[#292e42] hover:border-[#7aa2f7] text-[#7aa2f7] text-[11px] font-semibold flex items-center space-x-1 transition active:scale-95"
-                  title="Surgically patch a specific line of code without regenerating the file"
-                >
-                  <Wrench className="w-3 h-3 text-[#7dcfff]" />
-                  <span>Patch Line</span>
-                </button>
-
-                {/* ➕ ADD CODE SNIPPET */}
-                <button
-                  onClick={() => setIsSnippetModalOpen(true)}
-                  className="px-2 py-1 rounded-lg bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] text-[#9ece6a] text-[11px] font-semibold flex items-center space-x-1 transition active:scale-95"
-                  title="Add code snippet (functions, hooks, utilities)"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Add Code</span>
-                </button>
-
-                {/* 🐞 DEBUG FILE */}
-                <button
-                  onClick={handleRunDebugger}
-                  className="px-2 py-1 rounded-lg bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] text-[#e0af68] text-[11px] font-semibold flex items-center space-x-1 transition active:scale-95"
-                  title="Debug file: scan for syntax errors, DOM bugs, and runtime traps"
-                >
-                  <Bug className="w-3 h-3" />
-                  <span>Debug</span>
-                </button>
-
-                {/* 🗑️ DELETE LINE / CODE */}
-                <button
-                  onClick={handleDeleteCurrentLine}
-                  className="p-1 hover:bg-[#1f2335] rounded text-[#565f89] hover:text-[#f7768e] transition"
-                  title="Delete current line"
-                >
-                  <Scissors className="w-3.5 h-3.5" />
-                </button>
-
-                {/* COPY */}
                 <button
                   onClick={handleCopyActiveCode}
                   className="p-1 hover:text-[#c0caf5] rounded text-[#565f89] transition"
@@ -784,8 +632,6 @@ export default function ProjectEditorView({
                 >
                   {copiedFile ? <Check className="w-3.5 h-3.5 text-[#9ece6a]" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
-
-                {/* DOWNLOAD */}
                 <button
                   onClick={handleDownloadActiveFile}
                   className="p-1 hover:text-[#c0caf5] rounded text-[#565f89] transition"
@@ -799,94 +645,22 @@ export default function ProjectEditorView({
 
           {/* Code Content Area */}
           {activeFile ? (
-            <div className="flex-1 flex flex-col overflow-hidden relative">
-              <div className="flex-1 flex overflow-hidden">
-                {/* Line Numbers with Click-to-Patch */}
-                <div className="w-10 sm:w-12 bg-[#16161e] text-[#565f89] font-mono text-[11px] sm:text-xs text-right pr-2 pt-3 select-none overflow-hidden flex-shrink-0 border-r border-[#292e42]/60">
-                  {activeFile.content.split('\n').map((_, idx) => {
-                    const lineNum = idx + 1;
-                    const isPatched = lastPatchedLine === lineNum;
-                    return (
-                      <div 
-                        key={idx} 
-                        onClick={() => handleOpenPatchModal(lineNum)}
-                        title={`Click to surgically patch line ${lineNum}`}
-                        className={`leading-relaxed cursor-pointer rounded px-1 transition ${
-                          isPatched 
-                            ? 'bg-[#9ece6a]/30 text-[#9ece6a] font-bold animate-pulse' 
-                            : 'hover:text-[#7dcfff] hover:bg-[#1f2335]'
-                        }`}
-                      >
-                        {lineNum}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Editable Codearea */}
-                <textarea
-                  ref={editorTextareaRef}
-                  value={activeFile.content}
-                  onChange={(e) => handleCodeChange(e.target.value)}
-                  spellCheck="false"
-                  className="flex-1 bg-[#1a1b26] text-[#c0caf5] font-mono text-xs p-2.5 sm:p-3 leading-relaxed focus:outline-none resize-none overflow-auto"
-                />
+            <div className="flex-1 flex overflow-hidden relative">
+              {/* Line Numbers Gutter */}
+              <div className="w-9 sm:w-11 bg-[#16161e] text-[#565f89] font-mono text-[11px] sm:text-xs text-right pr-2 sm:pr-3 pt-3 select-none overflow-hidden flex-shrink-0 border-r border-[#292e42]/60">
+                {activeFile.content.split('\n').map((_, idx) => (
+                  <div key={idx} className="leading-relaxed">{idx + 1}</div>
+                ))}
               </div>
 
-              {/* In-Editor Debug Drawer */}
-              {isDebugOpen && debugResults && (
-                <div className="border-t border-[#292e42] bg-[#16161e] p-3 max-h-48 overflow-y-auto text-xs font-mono">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Bug className="w-3.5 h-3.5 text-[#e0af68]" />
-                      <span className="font-bold text-[#c0caf5]">
-                        AST Code Doctor: {debugResults.hasErrors ? `${debugResults.bugCount} Bug(s) Detected` : 'Zero Bugs Detected! Clean AST'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setIsDebugOpen(false)}
-                      className="p-1 hover:bg-[#1f2335] rounded text-[#565f89] hover:text-[#c0caf5]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {debugResults.bugs.length === 0 ? (
-                    <div className="text-[#9ece6a] flex items-center space-x-1.5 py-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Code has no syntax bugs, unclosed brackets, or DOM safety issues.</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {debugResults.bugs.map((bug, bIdx) => (
-                        <div key={bIdx} className="p-2 rounded bg-[#1f2335] border border-[#f7768e]/40 flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <span className="px-1.5 py-0.2 rounded bg-[#f7768e]/20 text-[#f7768e] text-[10px] font-bold">
-                                Line {bug.line}
-                              </span>
-                              <span className="text-[#c0caf5] text-[11px] font-medium">{bug.message}</span>
-                            </div>
-                            {bug.suggestedPatch && (
-                              <div className="mt-1 text-[10px] text-[#7dcfff] truncate font-mono">
-                                Fix: <code>{bug.suggestedPatch}</code>
-                              </div>
-                            )}
-                          </div>
-                          {bug.suggestedPatch && (
-                            <button
-                              onClick={() => handleApplyBugPatch(bug)}
-                              className="px-2 py-1 rounded bg-[#7aa2f7] hover:bg-[#89b4fa] text-[#16161e] font-bold text-[10px] flex-shrink-0 transition active:scale-95"
-                            >
-                              Patch Bug
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Editable Codearea */}
+              <textarea
+                ref={editorTextareaRef}
+                value={activeFile.content}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                spellCheck="false"
+                className="flex-1 bg-[#1a1b26] text-[#c0caf5] font-mono text-xs sm:text-xs p-2.5 sm:p-3 leading-relaxed focus:outline-none resize-none overflow-auto"
+              />
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-[#565f89] font-mono text-xs p-4 text-center">
@@ -909,7 +683,7 @@ export default function ProjectEditorView({
               type="text"
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Ask Godfy Mind: 'patch line 12 with ...', 'create carpet components', 'delete file'..."
+              placeholder="Ask Godfy Mind: patch line 12 with ..., create carpet, delete file..."
               className="flex-1 bg-[#1f2335] border border-[#292e42] rounded-xl px-2.5 sm:px-3 py-1.5 text-xs text-[#c0caf5] placeholder-[#565f89] font-mono focus:outline-none focus:border-[#7aa2f7]"
             />
             <button
@@ -996,172 +770,6 @@ export default function ProjectEditorView({
           </div>
         </div>
       </div>
-
-      {/* ========================================================= */}
-      {/* MODAL 1: SURGICAL LINE PATCH TOOL                         */}
-      {/* ========================================================= */}
-      {isPatchModalOpen && activeFile && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-[#16161e] border border-[#292e42] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="p-3.5 bg-[#1f2335] border-b border-[#292e42] flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-mono text-[#c0caf5]">
-                <Wrench className="w-4 h-4 text-[#7dcfff]" />
-                <span className="font-bold">Surgical Code Patch Tool</span>
-                <span className="text-[10px] text-[#565f89]">({activeFile.name})</span>
-              </div>
-              <button
-                onClick={() => setIsPatchModalOpen(false)}
-                className="p-1 hover:bg-[#16161e] rounded text-[#565f89] hover:text-[#c0caf5]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-4 space-y-3 font-mono text-xs">
-              <div className="flex items-center space-x-2">
-                <label className="text-[#9aa5ce] text-[11px]">Target Line Number:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={activeFile.content.split('\n').length}
-                  value={patchTargetLine}
-                  onChange={(e) => {
-                    const lNum = parseInt(e.target.value, 10) || 1;
-                    setPatchTargetLine(lNum);
-                    const current = activeFile.content.split('\n')[lNum - 1] || '';
-                    setPatchNewCode(current);
-                  }}
-                  className="w-20 bg-[#1f2335] border border-[#292e42] rounded px-2 py-1 text-xs text-[#c0caf5] focus:outline-none focus:border-[#7aa2f7]"
-                />
-                <span className="text-[10px] text-[#565f89]">
-                  / {activeFile.content.split('\n').length} total lines
-                </span>
-              </div>
-
-              {/* Original Line Preview */}
-              <div>
-                <label className="text-[#565f89] text-[10px] uppercase font-bold block mb-1">
-                  Original Code on Line {patchTargetLine}:
-                </label>
-                <div className="bg-[#1a1b26] border border-[#f7768e]/30 rounded-lg p-2 text-xs text-[#f7768e] truncate line-through">
-                  {activeFile.content.split('\n')[patchTargetLine - 1] || '(Empty Line)'}
-                </div>
-              </div>
-
-              {/* Patched Line Replacement */}
-              <div>
-                <label className="text-[#7dcfff] text-[10px] uppercase font-bold block mb-1">
-                  New Patched Code (Surgically replaces only this line):
-                </label>
-                <textarea
-                  value={patchNewCode}
-                  onChange={(e) => setPatchNewCode(e.target.value)}
-                  rows="3"
-                  className="w-full bg-[#1a1b26] border border-[#7aa2f7] rounded-lg p-2 text-xs text-[#c0caf5] font-mono focus:outline-none focus:ring-1 focus:ring-[#7aa2f7]"
-                  placeholder="Enter replacement line or fixed expression..."
-                />
-              </div>
-
-              {/* Quick Preset Actions */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setPatchNewCode(`try { ${patchNewCode.trim()} } catch (err) { console.error(err); }`)}
-                  className="px-2 py-0.5 rounded bg-[#1f2335] text-[10px] text-[#9aa5ce] hover:text-[#7dcfff] border border-[#292e42]"
-                >
-                  + Try/Catch
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPatchNewCode(`if (typeof window !== 'undefined') { ${patchNewCode.trim()} }`)}
-                  className="px-2 py-0.5 rounded bg-[#1f2335] text-[10px] text-[#9aa5ce] hover:text-[#7dcfff] border border-[#292e42]"
-                >
-                  + Window Check
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPatchNewCode(`console.log('[DEBUG]', ${patchNewCode.trim() || 'true'});`)}
-                  className="px-2 py-0.5 rounded bg-[#1f2335] text-[10px] text-[#9aa5ce] hover:text-[#7dcfff] border border-[#292e42]"
-                >
-                  + Console Log
-                </button>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#1f2335] border-t border-[#292e42] flex items-center justify-end space-x-2">
-              <button
-                onClick={() => setIsPatchModalOpen(false)}
-                className="px-3 py-1.5 rounded-xl text-xs font-mono text-[#9aa5ce] hover:text-[#c0caf5] hover:bg-[#16161e]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApplySurgicalPatch}
-                className="px-4 py-1.5 rounded-xl bg-[#7aa2f7] hover:bg-[#89b4fa] text-[#16161e] font-bold text-xs font-mono transition active:scale-95 flex items-center space-x-1.5"
-              >
-                <Wrench className="w-3.5 h-3.5" />
-                <span>Apply Patch</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* MODAL 2: ADD CODE SNIPPET                                */}
-      {/* ========================================================= */}
-      {isSnippetModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-[#16161e] border border-[#292e42] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="p-3.5 bg-[#1f2335] border-b border-[#292e42] flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-mono text-[#c0caf5]">
-                <Plus className="w-4 h-4 text-[#9ece6a]" />
-                <span className="font-bold">Add Code Snippet</span>
-              </div>
-              <button
-                onClick={() => setIsSnippetModalOpen(false)}
-                className="p-1 hover:bg-[#16161e] rounded text-[#565f89] hover:text-[#c0caf5]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-3 space-y-2 font-mono text-xs max-h-80 overflow-y-auto">
-              <button
-                onClick={() => handleInjectSnippet(`// Modular Event Handler\nexport function setupEventListeners(element) {\n  if (!element) return;\n  element.addEventListener('click', (e) => {\n    console.log('[Tokyo Night Action]', e);\n  });\n}`)}
-                className="w-full text-left p-2.5 rounded-xl bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] hover:border-[#7aa2f7] transition"
-              >
-                <div className="text-xs font-bold text-[#7dcfff]">Modular Event Handler</div>
-                <div className="text-[10px] text-[#565f89]">Adds robust listener with element safety guard</div>
-              </button>
-
-              <button
-                onClick={() => handleInjectSnippet(`// Async Fetch Helper\nexport async function fetchJson(endpoint, options = {}) {\n  try {\n    const response = await fetch(endpoint, options);\n    if (!response.ok) throw new Error(\`HTTP \${response.status}\`);\n    return await response.json();\n  } catch (error) {\n    console.error('[Fetch Error]:', error);\n    return null;\n  }\n}`)}
-                className="w-full text-left p-2.5 rounded-xl bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] hover:border-[#7aa2f7] transition"
-              >
-                <div className="text-xs font-bold text-[#9ece6a]">Async Safe Fetch Helper</div>
-                <div className="text-[10px] text-[#565f89]">Resilient HTTP loader with error boundaries</div>
-              </button>
-
-              <button
-                onClick={() => handleInjectSnippet(`// Reactive State Store\nexport function createStore(initialState = {}) {\n  let state = { ...initialState };\n  const listeners = new Set();\n  return {\n    getState: () => state,\n    setState: (update) => {\n      state = typeof update === 'function' ? update(state) : { ...state, ...update };\n      listeners.forEach(fn => fn(state));\n    },\n    subscribe: (fn) => {\n      listeners.add(fn);\n      return () => listeners.delete(fn);\n    }\n  };\n}`)}
-                className="w-full text-left p-2.5 rounded-xl bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] hover:border-[#7aa2f7] transition"
-              >
-                <div className="text-xs font-bold text-[#bb9af7]">Reactive State Store</div>
-                <div className="text-[10px] text-[#565f89]">Lightweight pub-sub state management store</div>
-              </button>
-
-              <button
-                onClick={() => handleInjectSnippet(`/* Tokyo Night Card Styling */\n.tokyo-card {\n  background: #1f2335;\n  border: 1px solid #292e42;\n  border-radius: 0.75rem;\n  padding: 1rem;\n  color: #c0caf5;\n  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);\n}`)}
-                className="w-full text-left p-2.5 rounded-xl bg-[#1f2335] hover:bg-[#24283b] border border-[#292e42] hover:border-[#7aa2f7] transition"
-              >
-                <div className="text-xs font-bold text-[#e0af68]">Tokyo Night CSS Card</div>
-                <div className="text-[10px] text-[#565f89]">Theme-compliant card styles with 1px border</div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

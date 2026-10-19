@@ -11,6 +11,12 @@ import {
   generateDeepCognitiveTrace, 
   updateCognitiveProfile 
 } from './cognitiveEngine.js';
+import { 
+  executeBashCommand, 
+  runCodeSandbox, 
+  detectCodeErrorsAndBugs, 
+  patchFileLines 
+} from './toolRunner.js';
 
 /**
  * Godfy AI Engine v1
@@ -43,6 +49,95 @@ export async function processChatWithGodfy({ prompt, history = [], mindPreset = 
   // Cognitive Step 1: Autonomous Intent Profiling & Adaptive Learning
   const intent = evaluateCognitiveIntent(query, chatHistory, memories);
   updateCognitiveProfile(query, intent);
+
+  // Godfy Autonomous Tool Execution (Tools belong to Godfy, executed autonomously)
+  const bashMatch = query.match(/^(?:run\s+bash|exec(?:ute)?\s+(?:bash|command|sh)|bash:?|\$)\s+(.+)/i);
+  if (bashMatch && bashMatch[1]) {
+    if (onStreamStep) onStreamStep({ step: 'executing', message: 'Editing...' });
+    const cmd = bashMatch[1].trim();
+    const bashRes = await executeBashCommand(cmd);
+    const durationMs = Math.round(performance.now() - cognitiveStartTime);
+    return {
+      id: `msg-${Date.now()}`,
+      sender: 'godfy',
+      query,
+      version: 'v1',
+      iqScore: 190,
+      thinkTrace: `Executed CLI command \`${cmd}\` in Tokyo Night virtual sandbox.\nExit code: ${bashRes.exitCode}`,
+      cognitiveMeta: {
+        intentType: 'CLI_TOOL_EXECUTION',
+        complexity: 'O(1)',
+        activatedTools: ['Virtual Bash CLI'],
+        durationMs,
+        iqScore: 190
+      },
+      masterText: `Executed in Tokyo Night sandbox:\n\n\`\`\`bash\n$ ${cmd}\n${bashRes.output}\n\`\`\`\n\nCommand exited with status code \`${bashRes.exitCode}\`.`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  }
+
+  const isDebugRequest = /(?:debug|detect\s+bugs?|find\s+errors?|check\s+errors?|ast\s+doctor)/i.test(query);
+  const codeInQuery = extractCodeBlock(query);
+  if (isDebugRequest && codeInQuery) {
+    if (onStreamStep) onStreamStep({ step: 'debugging', message: 'Editing...' });
+    const bugs = detectCodeErrorsAndBugs(codeInQuery.code, codeInQuery.language);
+    let fixedCode = codeInQuery.code;
+    bugs.bugs.forEach(b => {
+      if (b.suggestedPatch) {
+        const p = patchFileLines(fixedCode, { line: b.line, newContent: b.suggestedPatch });
+        if (p.patched) fixedCode = p.content;
+      }
+    });
+
+    const durationMs = Math.round(performance.now() - cognitiveStartTime);
+    const bugDetails = bugs.bugs.length > 0
+      ? bugs.bugs.map(b => `• **Line ${b.line}** (${b.type}): ${b.message}\n  \`\`\`${codeInQuery.language}\n  - ${b.codeSnippet}\n  + ${b.suggestedPatch}\n  \`\`\``).join('\n\n')
+      : 'All AST invariants verified. Zero syntax errors or null reference traps detected.';
+
+    return {
+      id: `msg-${Date.now()}`,
+      sender: 'godfy',
+      query,
+      version: 'v1',
+      iqScore: 192,
+      thinkTrace: `Scanned code AST with Godfy Code Doctor. Detected ${bugs.bugCount} issue(s).`,
+      cognitiveMeta: {
+        intentType: 'CODE_DEBUG_AND_PATCH',
+        complexity: 'O(N)',
+        activatedTools: ['AST Doctor', 'Surgical Line Patcher'],
+        durationMs,
+        iqScore: 192
+      },
+      masterText: `### AST Doctor Analysis\n\n${bugDetails}${bugs.bugs.length > 0 ? `\n\n### Patched Code\n\`\`\`${codeInQuery.language}\n${fixedCode}\n\`\`\`` : ''}`,
+      codeArtifact: fixedCode,
+      codeLanguage: codeInQuery.language,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  }
+
+  const isRunRequest = /(?:run\s+code|execute\s+code|test\s+code|eval\s+code)/i.test(query);
+  if (isRunRequest && codeInQuery) {
+    if (onStreamStep) onStreamStep({ step: 'running', message: 'Thinking...' });
+    const runRes = await runCodeSandbox(codeInQuery.code, codeInQuery.language);
+    const durationMs = Math.round(performance.now() - cognitiveStartTime);
+    return {
+      id: `msg-${Date.now()}`,
+      sender: 'godfy',
+      query,
+      version: 'v1',
+      iqScore: 188,
+      thinkTrace: `Executed script in client sandbox in ${runRes.durationMs}ms. Captured stdout streams.`,
+      cognitiveMeta: {
+        intentType: 'CODE_SANDBOX_RUN',
+        complexity: 'O(1)',
+        activatedTools: ['Code Sandbox Runner'],
+        durationMs,
+        iqScore: 188
+      },
+      masterText: `Executed in safe runtime (${runRes.durationMs}ms):\n\n\`\`\`console\n${runRes.output}\n\`\`\`\n\nExecution finished with status: **${runRes.success ? 'Success' : 'Error'}**.`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  }
 
   const isEditing = /(\b(edit|modify|update|change|refactor|fix|patch|rewrite)\b)/i.test(query);
   const isRemoving = /(\b(delete|remove|rm|drop|erase|discard)\b)/i.test(query);

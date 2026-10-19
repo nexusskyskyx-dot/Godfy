@@ -3,19 +3,10 @@ import {
   Send, Sparkles, Brain, Eye, Copy, Check, ChevronDown, ChevronUp, 
   Code, Download, ExternalLink, X, Monitor, Tablet, Smartphone,
   Layers, ArrowRight, Zap, Globe, Image as ImageIcon,
-  ZoomIn, FolderTree, FileCode, Sliders, Loader2, Edit3, Trash2, Plus,
-  Terminal, Play, Bug, Wrench, RefreshCw, Scissors, CheckCircle2,
-  AlertTriangle, CornerDownLeft
+  ZoomIn, FolderTree, FileCode, Sliders, Loader2, Edit3, Trash2, Plus
 } from 'lucide-react';
 import { marked } from 'marked';
 import { MIND_PRESETS } from '../engine/models.js';
-import { 
-  executeBashCommand, 
-  runCodeSandbox, 
-  detectCodeErrorsAndBugs, 
-  patchFileLines 
-} from '../engine/toolRunner.js';
-import { updateFileContent } from '../engine/projectEngine.js';
 
 marked.setOptions({
   gfm: true,
@@ -112,56 +103,12 @@ export default function ChatEngineView({
   const [copiedCodeId, setCopiedCodeId] = useState(null);
   const [previewModalArtifact, setPreviewModalArtifact] = useState(null);
 
-  // =========================================================================
-  // CHAT TOOLS STATES: RUN BASH, RUN CODE, RUN PREVIEW, DEBUG, PATCH
-  // =========================================================================
-  // 1. Bash Terminal Drawer State
-  const [isBashOpen, setIsBashOpen] = useState(false);
-  const [bashCommand, setBashCommand] = useState('');
-  const [bashHistory, setBashHistory] = useState([
-    {
-      id: 'init-1',
-      cmd: 'node --version',
-      output: 'v20.18.0 (Tokyo Night Sandbox Runtime)',
-      time: '12:00:00',
-      success: true
-    },
-    {
-      id: 'init-2',
-      cmd: 'git status',
-      output: 'On branch arena/e39f59a7-godfy\nnothing to commit, working tree clean',
-      time: '12:00:01',
-      success: true
-    }
-  ]);
-
-  // 2. Interactive Code Runner State
-  const [codeRunOutput, setCodeRunOutput] = useState(null); // { [msgId]: { output, duration, success } }
-  const [isRunningCodeId, setIsRunningCodeId] = useState(null);
-
-  // 3. Debug State
-  const [debugReport, setDebugReport] = useState(null); // { [msgId]: debugResults }
-
-  // 4. In-Chat Patch Drawer State
-  const [isPatchDrawerOpen, setIsPatchDrawerOpen] = useState(false);
-  const [patchTargetFileId, setPatchTargetFileId] = useState(null);
-  const [patchLineNum, setPatchLineNum] = useState(1);
-  const [patchNewCode, setPatchNewCode] = useState('');
-  const [patchToast, setPatchToast] = useState('');
-
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const terminalEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isProcessing, streamMessage]);
-
-  useEffect(() => {
-    if (isBashOpen) {
-      terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [bashHistory, isBashOpen]);
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -182,109 +129,6 @@ export default function ChatEngineView({
     navigator.clipboard.writeText(code);
     setCopiedCodeId(id);
     setTimeout(() => setCopiedCodeId(null), 2000);
-  };
-
-  // =========================================================================
-  // TOOL 1: EXECUTE BASH COMMAND
-  // =========================================================================
-  const handleExecuteBash = async (cmdToRun) => {
-    const rawCmd = (cmdToRun || bashCommand).trim();
-    if (!rawCmd) return;
-    setBashCommand('');
-
-    const res = await executeBashCommand(rawCmd, currentProject);
-
-    setBashHistory(prev => [
-      ...prev,
-      {
-        id: `bash-${Date.now()}`,
-        cmd: rawCmd,
-        output: res.output,
-        time: new Date().toLocaleTimeString(),
-        success: res.exitCode === 0
-      }
-    ]);
-
-    if (res.updatedProject && onUpdateProject) {
-      onUpdateProject(res.updatedProject);
-    }
-  };
-
-  // =========================================================================
-  // TOOL 2: RUN CODE
-  // =========================================================================
-  const handleRunCodeSnippet = async (codeSnippet, lang = 'javascript', blockId = 'direct') => {
-    setIsRunningCodeId(blockId);
-    const result = await runCodeSandbox(codeSnippet, lang);
-    setCodeRunOutput(prev => ({
-      ...prev,
-      [blockId]: result
-    }));
-    setIsRunningCodeId(null);
-  };
-
-  // =========================================================================
-  // TOOL 3: DEBUG & DETECT CODE BUGS
-  // =========================================================================
-  const handleDebugCodeSnippet = (codeSnippet, lang = 'javascript', blockId = 'direct') => {
-    const bugs = detectCodeErrorsAndBugs(codeSnippet, lang);
-    setDebugReport(prev => ({
-      ...prev,
-      [blockId]: bugs
-    }));
-  };
-
-  // =========================================================================
-  // TOOL 4: SURGICAL LINE PATCH FROM CHAT
-  // =========================================================================
-  const handleApplyChatPatch = () => {
-    if (!currentProject || !currentProject.nodes) {
-      setPatchToast('No active project loaded to patch');
-      setTimeout(() => setPatchToast(''), 3000);
-      return;
-    }
-
-    const targetFile = patchTargetFileId 
-      ? currentProject.nodes.find(n => n.id === patchTargetFileId)
-      : (currentProject.nodes.find(n => n.id === currentProject.activeFileId) || currentProject.nodes.find(n => n.type === 'file'));
-
-    if (!targetFile) {
-      setPatchToast('Target file not found');
-      setTimeout(() => setPatchToast(''), 3000);
-      return;
-    }
-
-    const patchRes = patchFileLines(targetFile.content, {
-      line: patchLineNum,
-      newContent: patchNewCode
-    });
-
-    if (patchRes.patched) {
-      const updated = updateFileContent(currentProject, targetFile.id, patchRes.content);
-      if (onUpdateProject) {
-        onUpdateProject(updated);
-      }
-      setPatchToast(`Patched line ${patchLineNum} in ${targetFile.name}!`);
-      setTimeout(() => setPatchToast(''), 3000);
-      setIsPatchDrawerOpen(false);
-    }
-  };
-
-  // 1-Click patch for detected bug in chat code
-  const handleApplyBugPatchInChat = (bug, originalCode, blockId) => {
-    if (!bug.suggestedPatch) return;
-    const patchRes = patchFileLines(originalCode, {
-      line: bug.line,
-      newContent: bug.suggestedPatch
-    });
-
-    if (patchRes.patched) {
-      // Re-run debug to verify fix
-      const rechecked = detectCodeErrorsAndBugs(patchRes.content, 'javascript');
-      setDebugReport(prev => ({ ...prev, [blockId]: rechecked }));
-      setPatchToast(`Patched bug on line ${bug.line} successfully!`);
-      setTimeout(() => setPatchToast(''), 3000);
-    }
   };
 
   const starterCards = [
@@ -311,256 +155,7 @@ export default function ChatEngineView({
   ];
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-[#1a1b26] relative">
-      {/* Toast Notification */}
-      {patchToast && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 bg-[#1f2335] border border-[#7aa2f7] text-[#7dcfff] px-3.5 py-1.5 rounded-xl text-xs font-mono shadow-2xl flex items-center space-x-2 animate-bounce">
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#9ece6a]" />
-          <span>{patchToast}</span>
-        </div>
-      )}
-
-      {/* ===================================================================== */}
-      {/* CHAT TOOLS ACTION DOCK (Cursor Developer Style)                      */}
-      {/* ===================================================================== */}
-      <div className="px-3 sm:px-6 py-2 bg-[#16161e] border-b border-[#292e42] flex items-center justify-between gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
-        <div className="flex items-center space-x-1.5 flex-nowrap">
-          {/* RUN BASH TOOL */}
-          <button
-            onClick={() => setIsBashOpen(!isBashOpen)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium flex items-center space-x-1.5 transition active:scale-95 border ${
-              isBashOpen
-                ? 'bg-[#7aa2f7] text-[#16161e] border-[#7aa2f7] font-bold'
-                : 'bg-[#1f2335] text-[#9aa5ce] hover:text-[#c0caf5] border-[#292e42] hover:border-[#7aa2f7]'
-            }`}
-            title="Open Interactive Tokyo Night Bash CLI"
-          >
-            <Terminal className="w-3.5 h-3.5 text-[#7dcfff]" />
-            <span>Run Bash</span>
-          </button>
-
-          {/* RUN CODE TOOL */}
-          <button
-            onClick={() => {
-              const codeToRun = currentProject?.nodes?.find(n => n.type === 'file')?.content || 'console.log("Godfy Mind code sandbox active!");';
-              handleRunCodeSnippet(codeToRun, 'javascript', 'global-chat');
-            }}
-            className="px-2.5 py-1 rounded-lg bg-[#1f2335] hover:bg-[#24283b] text-[#9ece6a] hover:text-[#a6e3a1] text-xs font-mono font-medium flex items-center space-x-1.5 transition active:scale-95 border border-[#292e42]"
-            title="Execute Code in Safe Sandbox"
-          >
-            <Play className="w-3.5 h-3.5" />
-            <span>Run Code</span>
-          </button>
-
-          {/* RUN PREVIEW TOOL */}
-          <button
-            onClick={() => {
-              if (currentProject) {
-                onOpenProjectInEditor(currentProject);
-              } else {
-                setPreviewModalArtifact(`<!DOCTYPE html><html><body style="background:#1a1b26;color:#7dcfff;font-family:sans-serif;display:flex;align-items:center;justify-center;height:100vh;margin:0;"><h1>Godfy Sandbox Preview Ready</h1></body></html>`);
-              }
-            }}
-            className="px-2.5 py-1 rounded-lg bg-[#1f2335] hover:bg-[#24283b] text-[#7dcfff] text-xs font-mono font-medium flex items-center space-x-1.5 transition active:scale-95 border border-[#292e42]"
-            title="Run Live Sandboxed Preview"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Run Preview</span>
-          </button>
-
-          {/* DEBUG TOOL */}
-          <button
-            onClick={() => {
-              const file = currentProject?.nodes?.find(n => n.type === 'file');
-              if (file) {
-                handleDebugCodeSnippet(file.content, file.language, 'global-debug');
-              } else {
-                setPatchToast('No file loaded to debug');
-                setTimeout(() => setPatchToast(''), 2500);
-              }
-            }}
-            className="px-2.5 py-1 rounded-lg bg-[#1f2335] hover:bg-[#24283b] text-[#e0af68] text-xs font-mono font-medium flex items-center space-x-1.5 transition active:scale-95 border border-[#292e42]"
-            title="Detect Code Errors & AST Bugs"
-          >
-            <Bug className="w-3.5 h-3.5" />
-            <span>Debug</span>
-          </button>
-
-          {/* PATCH CODE TOOL */}
-          <button
-            onClick={() => setIsPatchDrawerOpen(!isPatchDrawerOpen)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium flex items-center space-x-1.5 transition active:scale-95 border ${
-              isPatchDrawerOpen
-                ? 'bg-[#7aa2f7] text-[#16161e] border-[#7aa2f7] font-bold'
-                : 'bg-[#1f2335] text-[#bb9af7] hover:text-[#c0caf5] border-[#292e42]'
-            }`}
-            title="Surgically Patch Specific Lines"
-          >
-            <Wrench className="w-3.5 h-3.5 text-[#bb9af7]" />
-            <span>Patch Code</span>
-          </button>
-        </div>
-
-        {/* VIEW STUDIO TOOL (⌘I) */}
-        <button
-          onClick={() => onOpenProjectInEditor(currentProject)}
-          className="px-2.5 py-1 rounded-lg bg-[#7aa2f7] hover:bg-[#89b4fa] text-[#16161e] text-xs font-mono font-bold flex items-center space-x-1.5 transition active:scale-95 flex-shrink-0"
-          title="Open Project Editor Studio (⌘I)"
-        >
-          <FolderTree className="w-3.5 h-3.5" />
-          <span>View Studio</span>
-        </button>
-      </div>
-
-      {/* ===================================================================== */}
-      {/* TOOL DRAWER 1: TOKYO NIGHT BASH TERMINAL (RUN BASH)                  */}
-      {/* ===================================================================== */}
-      {isBashOpen && (
-        <div className="bg-[#101014] border-b border-[#292e42] p-3 text-xs font-mono max-h-64 overflow-y-auto flex flex-col space-y-2 animate-node-enter flex-shrink-0">
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#292e42]/60 text-[#565f89]">
-            <div className="flex items-center space-x-2">
-              <Terminal className="w-3.5 h-3.5 text-[#7dcfff]" />
-              <span className="text-[#c0caf5] font-bold">godfy@studio:~$ (Tokyo Night Terminal)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setBashHistory([])}
-                className="text-[10px] text-[#565f89] hover:text-[#c0caf5] underline"
-              >
-                clear
-              </button>
-              <button
-                onClick={() => setIsBashOpen(false)}
-                className="p-1 hover:bg-[#1f2335] rounded text-[#565f89] hover:text-[#c0caf5]"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* Bash History Logs */}
-          <div className="space-y-1.5 font-mono text-[11px]">
-            {bashHistory.map((item) => (
-              <div key={item.id} className="space-y-0.5">
-                <div className="flex items-center space-x-1 text-[#7dcfff]">
-                  <span className="text-[#9ece6a]">godfy@studio:~$</span>
-                  <span className="text-[#c0caf5] font-semibold">{item.cmd}</span>
-                </div>
-                <div className={`whitespace-pre-wrap leading-relaxed pl-3 ${
-                  item.success ? 'text-[#a9b1d6]' : 'text-[#f7768e]'
-                }`}>
-                  {item.output}
-                </div>
-              </div>
-            ))}
-            <div ref={terminalEndRef} />
-          </div>
-
-          {/* Quick preset chips */}
-          <div className="flex flex-wrap gap-1 pt-1 text-[10px]">
-            <span className="text-[#565f89] self-center mr-1">Presets:</span>
-            {['ls -la', 'cat index.html', 'node main.js', 'npm test', 'git status', 'patch index.html 1 // header'].map(chip => (
-              <button
-                key={chip}
-                onClick={() => handleExecuteBash(chip)}
-                className="px-2 py-0.5 rounded bg-[#1f2335] text-[#7dcfff] hover:bg-[#292e42] transition border border-[#292e42]"
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
-
-          {/* Command Prompt Input */}
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleExecuteBash(); }}
-            className="flex items-center space-x-2 pt-1 border-t border-[#292e42]/60"
-          >
-            <span className="text-[#9ece6a] text-xs">godfy@studio:~$</span>
-            <input
-              type="text"
-              value={bashCommand}
-              onChange={(e) => setBashCommand(e.target.value)}
-              placeholder="Type bash command (ls, cat, node, touch, mkdir, rm, patch)..."
-              className="flex-1 bg-transparent text-[#c0caf5] focus:outline-none text-xs font-mono"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="p-1 rounded bg-[#7aa2f7] text-[#16161e] hover:bg-[#89b4fa]"
-            >
-              <CornerDownLeft className="w-3 h-3" />
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ===================================================================== */}
-      {/* TOOL DRAWER 2: SURGICAL LINE PATCHER (PATCH CODE)                     */}
-      {/* ===================================================================== */}
-      {isPatchDrawerOpen && (
-        <div className="bg-[#16161e] border-b border-[#292e42] p-3 text-xs font-mono space-y-2 animate-node-enter flex-shrink-0">
-          <div className="flex items-center justify-between pb-1 border-b border-[#292e42]/60">
-            <div className="flex items-center space-x-2 text-[#c0caf5]">
-              <Wrench className="w-3.5 h-3.5 text-[#7dcfff]" />
-              <span className="font-bold">Surgical Code Line Patcher</span>
-            </div>
-            <button
-              onClick={() => setIsPatchDrawerOpen(false)}
-              className="p-1 hover:bg-[#1f2335] rounded text-[#565f89] hover:text-[#c0caf5]"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div>
-              <label className="text-[10px] text-[#565f89] block mb-0.5">Target File:</label>
-              <select
-                value={patchTargetFileId || ''}
-                onChange={(e) => setPatchTargetFileId(e.target.value)}
-                className="w-full bg-[#1f2335] border border-[#292e42] rounded px-2 py-1 text-xs text-[#c0caf5] focus:outline-none"
-              >
-                {currentProject?.nodes?.filter(n => n.type === 'file').map(f => (
-                  <option key={f.id} value={f.id}>{f.path || f.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[10px] text-[#565f89] block mb-0.5">Line Number:</label>
-              <input
-                type="number"
-                min="1"
-                value={patchLineNum}
-                onChange={(e) => setPatchLineNum(parseInt(e.target.value, 10) || 1)}
-                className="w-full bg-[#1f2335] border border-[#292e42] rounded px-2 py-1 text-xs text-[#c0caf5] focus:outline-none"
-              />
-            </div>
-
-            <div className="flex items-end">
-              <button
-                onClick={handleApplyChatPatch}
-                className="w-full py-1.5 px-3 rounded-lg bg-[#7aa2f7] hover:bg-[#89b4fa] text-[#16161e] font-bold text-xs flex items-center justify-center space-x-1 transition active:scale-95"
-              >
-                <Wrench className="w-3 h-3" />
-                <span>Apply Line Patch</span>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[10px] text-[#7dcfff] block mb-0.5">New Line Replacement:</label>
-            <input
-              type="text"
-              value={patchNewCode}
-              onChange={(e) => setPatchNewCode(e.target.value)}
-              placeholder="Enter exact patched line content..."
-              className="w-full bg-[#1f2335] border border-[#7aa2f7] rounded px-2 py-1 text-xs text-[#c0caf5] focus:outline-none"
-            />
-          </div>
-        </div>
-      )}
-
+    <div className="flex-1 min-h-0 flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-[#1a1b26]">
       {/* Messages Scroll Area */}
       <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-2.5 sm:py-3 space-y-2.5">
         
@@ -749,12 +344,10 @@ export default function ChatEngineView({
                   </div>
                 )}
 
-                {/* ========================================================= */}
-                {/* CODE ARTIFACT CARD WITH INTERACTIVE RUN & DEBUG TOOLS     */}
-                {/* ========================================================= */}
+                {/* Code Artifact Card */}
                 {!isUser && msg.codeArtifact && !msg.projectData && (
                   <div className="mt-3 rounded-xl bg-[#16161e] border border-[#292e42] overflow-hidden">
-                    <div className="px-3 py-2 bg-[#1f2335] border-b border-[#292e42] flex flex-wrap items-center justify-between gap-1.5">
+                    <div className="px-3 py-2 bg-[#1f2335] border-b border-[#292e42] flex items-center justify-between">
                       <div className="flex items-center space-x-2 text-xs font-mono text-[#c0caf5]">
                         <Code className="w-3.5 h-3.5 text-[#7dcfff]" />
                         <span className="font-semibold truncate max-w-[140px] sm:max-w-none">
@@ -762,30 +355,7 @@ export default function ChatEngineView({
                         </span>
                       </div>
 
-                      {/* CODE BLOCK TOOLS: RUN, DEBUG, PATCH, PREVIEW, COPY */}
-                      <div className="flex items-center space-x-1 flex-wrap">
-                        {/* ⚡ RUN CODE BUTTON */}
-                        <button
-                          onClick={() => handleRunCodeSnippet(msg.codeArtifact, msg.codeLanguage || 'javascript', msgId)}
-                          disabled={isRunningCodeId === msgId}
-                          className="px-2 py-1 rounded-lg bg-[#16161e] hover:bg-[#24283b] text-[#9ece6a] text-[11px] font-semibold flex items-center space-x-1 transition active:scale-95 border border-[#292e42]"
-                          title="Run code snippet"
-                        >
-                          <Play className="w-3 h-3" />
-                          <span>Run</span>
-                        </button>
-
-                        {/* 🐞 DEBUG CODE BUTTON */}
-                        <button
-                          onClick={() => handleDebugCodeSnippet(msg.codeArtifact, msg.codeLanguage || 'javascript', msgId)}
-                          className="px-2 py-1 rounded-lg bg-[#16161e] hover:bg-[#24283b] text-[#e0af68] text-[11px] font-semibold flex items-center space-x-1 transition active:scale-95 border border-[#292e42]"
-                          title="Debug code: scan for AST errors and logic bugs"
-                        >
-                          <Bug className="w-3 h-3" />
-                          <span>Debug</span>
-                        </button>
-
-                        {/* 👁️ PREVIEW (for HTML) */}
+                      <div className="flex items-center space-x-1.5">
                         {msg.codeLanguage === 'html' && (
                           <button
                             onClick={() => setPreviewModalArtifact(msg.codeArtifact)}
@@ -796,7 +366,6 @@ export default function ChatEngineView({
                           </button>
                         )}
 
-                        {/* COPY */}
                         <button
                           onClick={() => handleCopy(msg.codeArtifact, msgId)}
                           className="px-2 py-1 rounded-lg bg-[#16161e] hover:bg-[#24283b] text-[#9aa5ce] hover:text-[#c0caf5] text-[11px] font-medium flex items-center space-x-1 transition active:scale-95 border border-[#292e42]"
@@ -807,69 +376,9 @@ export default function ChatEngineView({
                       </div>
                     </div>
 
-                    {/* Code Content */}
                     <pre className="p-3 text-xs text-[#c0caf5] font-mono overflow-x-auto leading-relaxed bg-[#16161e]">
                       <code>{msg.codeArtifact}</code>
                     </pre>
-
-                    {/* LIVE RUN CONSOLE OUTPUT */}
-                    {codeRunOutput && codeRunOutput[msgId] && (
-                      <div className="border-t border-[#292e42] bg-[#101014] p-2.5 text-xs font-mono">
-                        <div className="flex items-center justify-between text-[10px] text-[#565f89] mb-1">
-                          <span className="text-[#9ece6a] font-bold">Console Output:</span>
-                          <span>{codeRunOutput[msgId].durationMs}ms</span>
-                        </div>
-                        <pre className="text-xs text-[#c0caf5] whitespace-pre-wrap font-mono">
-                          {codeRunOutput[msgId].output || '(Execution returned no output)'}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* AST DEBUG RESULTS DRAWER */}
-                    {debugReport && debugReport[msgId] && (
-                      <div className="border-t border-[#292e42] bg-[#101014] p-2.5 text-xs font-mono space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-[#e0af68]">
-                          <div className="flex items-center space-x-1.5">
-                            <Bug className="w-3.5 h-3.5" />
-                            <span>AST Doctor: {debugReport[msgId].bugCount} issue(s) detected</span>
-                          </div>
-                          <button
-                            onClick={() => setDebugReport(prev => ({ ...prev, [msgId]: null }))}
-                            className="text-[#565f89] hover:text-[#c0caf5]"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-
-                        {debugReport[msgId].bugs.length === 0 ? (
-                          <div className="text-[#9ece6a] text-[11px] flex items-center space-x-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Zero bugs found! Code structure is clean.</span>
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            {debugReport[msgId].bugs.map((bug, bIndex) => (
-                              <div key={bIndex} className="p-1.5 rounded bg-[#1f2335] border border-[#f7768e]/40 flex items-center justify-between gap-2">
-                                <div className="min-w-0">
-                                  <span className="text-[#f7768e] font-bold text-[10px] mr-1.5">
-                                    Line {bug.line}:
-                                  </span>
-                                  <span className="text-[#c0caf5] text-[11px]">{bug.message}</span>
-                                </div>
-                                {bug.suggestedPatch && (
-                                  <button
-                                    onClick={() => handleApplyBugPatchInChat(bug, msg.codeArtifact, msgId)}
-                                    className="px-2 py-0.5 rounded bg-[#7aa2f7] text-[#16161e] font-bold text-[10px] flex-shrink-0 transition active:scale-95"
-                                  >
-                                    Patch Line {bug.line}
-                                  </button>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )}
 
