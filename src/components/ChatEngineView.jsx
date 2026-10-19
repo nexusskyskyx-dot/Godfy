@@ -157,7 +157,7 @@ export default function ChatEngineView({
   return (
     <div className="flex-1 min-h-0 flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-[#1a1b26]">
       {/* Messages Scroll Area */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-2.5 sm:py-3 space-y-2.5">
         
         {/* Cursor Minimalist Welcome State */}
         {messages.length === 0 && (
@@ -210,26 +210,24 @@ export default function ChatEngineView({
               key={msgId}
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} w-full animate-node-enter`}
             >
-              {/* Header: Sender & Timestamp */}
-              <div className="flex items-center space-x-1.5 mb-1 px-1 text-[11px] font-mono text-[#565f89]">
-                {!isUser && (
+              {/* Header: Sender & Timestamp for Godfy */}
+              {!isUser && (
+                <div className="flex items-center space-x-1.5 mb-1 px-1 text-[11px] font-mono text-[#565f89]">
                   <div className="w-4 h-4 rounded overflow-hidden border border-[#292e42] bg-black flex-shrink-0">
                     <img src="/logo.png" alt="G" className="w-full h-full object-cover" />
                   </div>
-                )}
-                <span className="font-medium text-[#c0caf5]">
-                  {isUser ? 'You' : 'Godfy'}
-                </span>
-                <span>•</span>
-                <span className="text-[10px]">{msg.timestamp}</span>
-              </div>
+                  <span className="font-medium text-[#c0caf5]">Godfy</span>
+                  <span>•</span>
+                  <span className="text-[10px]">{msg.timestamp}</span>
+                </div>
+              )}
 
               {/* Message Content */}
               <div
-                className={`w-full transition-all ${
+                className={`transition-all ${
                   isUser
-                    ? 'bg-[#1f2335] border border-[#292e42] text-[#c0caf5] rounded-2xl px-4 py-2.5 max-w-[85%] sm:max-w-[80%] ml-auto shadow-xs'
-                    : 'bg-transparent border-0 shadow-none px-1 py-0.5 text-[#c0caf5]'
+                    ? 'w-fit max-w-[85%] sm:max-w-[75%] bg-[#1f2335] border border-[#292e42] text-[#c0caf5] rounded-2xl px-3.5 py-2 ml-auto shadow-xs break-words'
+                    : 'w-full bg-transparent border-0 shadow-none px-1 py-0.5 text-[#c0caf5]'
                 }`}
               >
                 {/* Clean Thought Indicator (Unboxed, Cursor-style line) */}
@@ -295,8 +293,8 @@ export default function ChatEngineView({
 
                 {/* Main Message Text */}
                 {isUser ? (
-                  <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-normal">
-                    {msg.text}
+                  <div className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed font-normal">
+                    {msg.text.trim()}
                   </div>
                 ) : (
                   <div 
