@@ -74,44 +74,44 @@ export default function GodfyMindInspector({ reasoningLog, mindPreset, consensus
       </div>
 
       {/* Godfy Engine Color & Version Specification Matrix */}
-      <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-card-subtle">
-        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center space-x-2">
-          <Sparkles className="w-4 h-4 text-cyan-600" />
+      <div className="bg-[#16161e] rounded-2xl border border-[#292e42] p-6 shadow-card-subtle">
+        <h4 className="text-sm font-bold text-[#c0caf5] uppercase tracking-wider mb-4 flex items-center space-x-2">
+          <Sparkles className="w-4 h-4 text-[#7aa2f7]" />
           <span>Godfy System Specifications</span>
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-xl border border-cream-200 bg-cream-100/70">
+          <div className="p-3.5 rounded-xl border border-[#292e42] bg-[#1a1b26]">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="w-4 h-4 rounded-full bg-[#FAF7EE] border border-cream-400"></span>
-              <span className="font-bold text-xs text-slate-900">Main Color</span>
+              <span className="w-4 h-4 rounded-full bg-[#1a1b26] border border-[#7aa2f7]"></span>
+              <span className="font-bold text-xs text-[#c0caf5]">Tokyo Night Foundation</span>
             </div>
-            <div className="text-xs text-slate-600 font-mono">White Cream (#FAF7EE)</div>
-            <p className="text-[11px] text-slate-500 mt-1">Foundation background and subtle surface cards</p>
+            <div className="text-xs text-[#7aa2f7] font-mono">Night (#1a1b26)</div>
+            <p className="text-[11px] text-[#565f89] mt-1">Foundation background and subtle surface cards</p>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-cream-200 bg-white">
+          <div className="p-3.5 rounded-xl border border-[#292e42] bg-[#1f2335]">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="w-4 h-4 rounded-full bg-white border border-slate-300"></span>
-              <span className="font-bold text-xs text-slate-900">Secondary Color</span>
+              <span className="w-4 h-4 rounded-full bg-[#16161e] border border-[#292e42]"></span>
+              <span className="font-bold text-xs text-[#c0caf5]">Surface & Panes</span>
             </div>
-            <div className="text-xs text-slate-600 font-mono">White (#FFFFFF)</div>
-            <p className="text-[11px] text-slate-500 mt-1">Elevated cards, preview containers, and inputs</p>
+            <div className="text-xs text-[#7dcfff] font-mono">Darker (#16161e)</div>
+            <p className="text-[11px] text-[#565f89] mt-1">Elevated cards, preview containers, and inputs</p>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-cyanlight-200 bg-cyanlight-50">
+          <div className="p-3.5 rounded-xl border border-[#292e42] bg-[#1a1b26]">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="w-4 h-4 rounded-full bg-cyanlight-200 border border-cyan-400"></span>
-              <span className="font-bold text-xs text-slate-900">2nd Secondary</span>
+              <span className="w-4 h-4 rounded-full bg-[#7aa2f7] border border-[#7dcfff]"></span>
+              <span className="font-bold text-xs text-[#c0caf5]">Tokyo Accents</span>
             </div>
-            <div className="text-xs text-cyan-900 font-mono">Cyan Light (#E0F7FA)</div>
-            <p className="text-[11px] text-cyan-800 mt-1">Interactive glows, badges, and focus rings</p>
+            <div className="text-xs text-[#7aa2f7] font-mono">Blue & Cyan (#7aa2f7)</div>
+            <p className="text-[11px] text-[#565f89] mt-1">Interactive glows, badges, and focus rings</p>
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-cream-200 text-xs font-mono text-slate-500 flex items-center justify-between">
-          <span>Updates release cycle format: <strong>v1</strong></span>
-          <span>Engine status: <strong>Autonomous Mind active</strong></span>
+        <div className="mt-4 pt-3 border-t border-[#292e42] text-xs font-mono text-[#565f89] flex items-center justify-between">
+          <span>Updates release cycle format: <strong className="text-[#c0caf5]">v1</strong></span>
+          <span>Engine status: <strong className="text-[#9ece6a]">Autonomous Mind active</strong></span>
         </div>
       </div>
     </div>

@@ -29,8 +29,8 @@ import {
  * Concise, punchy, direct. Zero bloated walls of text. Fully functional.
  */
 
-export async function processChatWithGodfy({ prompt, history = [], mindPreset = 'balanced', forceSearch = false, searchMode = 'auto', activeProject = null, onStreamStep }) {
-  const query = (prompt || '').trim();
+export async function processChatWithGodfy({ prompt, query: qArg, history = [], mindPreset = 'balanced', forceSearch = false, searchMode = 'auto', activeProject = null, onStreamStep }) {
+  const query = (prompt || qArg || '').trim();
   const cognitiveStartTime = performance.now();
 
   // Cognitive Step -1: Working & Long-Term Memory Extraction
@@ -385,7 +385,7 @@ export function synthesizeBrainResponse(query, modelProposals, mindPreset, searc
   } else if (isGreeting) {
     whatImGoingToDo = 'Acknowledge the user conversationally, confirm 16-neuron cortex synchronization, and ask what they want to tackle today without robotic templates.';
   } else if (isLandingPage) {
-    whatImGoingToDo = `Synthesize a responsive HTML/Tailwind landing page in signature White Cream (#FAF7EE) and Cyan Light (#E0F7FA) with interactive preview.`;
+    whatImGoingToDo = `Synthesize a responsive HTML/Tailwind landing page in signature Tokyo Night (#1a1b26) and Cyan (#7dcfff) with interactive preview.`;
   } else if (isCode) {
     whatImGoingToDo = 'Synthesize the cleanest production-ready implementation, document formal Big-O bounds, and enforce boundary guards with zero placeholders.';
   } else if (searchData && searchData.count > 0) {
@@ -827,28 +827,28 @@ The workspace is now clean and empty. You can ask me to create new files, create
       .trim();
     const topic = rawTopic && rawTopic.length > 2 ? rawTopic : 'Interactive Web Application';
     const topicClean = topic.replace(/^(an?\s+|the\s+)/i, '');
-    const formattedTitle = topicClean.replace(/\b\w/g, c => c.toUpperCase());
-
-    const project = generateDynamicMultiFileProject(formattedTitle);
+    const project = generateDynamicMultiFileProject(q);
     const mainFile = project.nodes.find(n => n.id === project.activeFileId) || project.nodes.find(n => n.type === 'file');
     const fileCount = project.nodes.filter(n => n.type === 'file').length;
     const folderCount = project.nodes.filter(n => n.type === 'folder' && n.id !== 'root').length;
+    const styleFile = project.nodes.find(n => n.path?.includes('styles/'))?.name || 'main.css';
+    const scriptFile = project.nodes.find(n => n.path?.includes('js/') && !n.path?.includes('components/'))?.name || 'app.js';
 
     const think = `Godfy Brain Deliberation:${memoryNote}
-- Input: User requested a complete multi-file project for "${formattedTitle}".
+- Input: User requested a complete multi-file project for "${project.name}".
 - Cortex Lobe Dispatch:
   * Architecture Lobe: Synthesized full modular folder ("carpet") hierarchy with /src, /src/styles, /src/js, /src/js/components.
-  * Code AST Lobe: Generated zero-template responsive UI, interactive JavaScript engine, and design system.
+  * Code AST Lobe: Generated zero-template responsive UI, interactive JavaScript engine, and Tokyo Night design system.
   * Integration Engine: Linked HTML templates, stylesheets, and modular scripts into an interactive runtime.
 - What I'm going to do: Deliver a multi-file project with ${fileCount} files across ${folderCount} folders ("carpets") ready to run and edit in the Studio.`;
 
-    const masterText = `I have generated a complete multi-file project for **${formattedTitle}** with **zero templates**!
+    const masterText = `I have generated a complete multi-file project for **${project.name}** with **zero templates**!
 
 ### Project Structure (${fileCount} files in ${folderCount} folders/carpets):
 - 📁 **src/** (source root)
-  - 📁 **styles/** (\`main.css\` design system with Cream & Cyan Light palette)
-  - 📁 **js/** (\`app.js\` core runtime state)
-    - 📁 **components/** (\`data.js\` dynamic reactive logic)
+  - 📁 **styles/** (\`${styleFile}\` design system in Tokyo Night palette)
+  - 📁 **js/** (\`${scriptFile}\` core runtime state)
+    - 📁 **components/** dynamic reactive logic
   - 📄 \`index.html\` (semantic HTML structure)
   - 📄 \`README.md\` (project documentation & architecture)
 

@@ -518,8 +518,16 @@ export function generateLandingPageCode({
       theme: {
         extend: {
           colors: {
-            cream: { 50: '#FDFBF7', 100: '#FAF7EE', 200: '#F4ECE1', 300: '#E8DCC9' },
-            cyanlight: { 50: '#F0FDFA', 100: '#E0F7FA', 200: '#A5F3FC', 400: '#22D3EE', 500: '#06B6D4', 600: '#0891B2' },
+            tokyo: {
+              bg: '#1a1b26',
+              surface: '#16161e',
+              card: '#1f2335',
+              border: '#292e42',
+              blue: '#7aa2f7',
+              cyan: '#7dcfff',
+              text: '#c0caf5',
+              muted: '#565f89'
+            }
           },
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
@@ -530,34 +538,34 @@ export function generateLandingPageCode({
     }
   </script>
   <style>
-    body { background-color: #FAF7EE; color: #1E293B; font-family: 'Inter', sans-serif; }
-    .glow-cyan { box-shadow: 0 0 35px -5px rgba(34, 211, 238, 0.35); }
+    body { background-color: #1a1b26; color: #c0caf5; font-family: 'Inter', sans-serif; }
+    .glow-cyan { box-shadow: 0 0 35px -5px rgba(125, 207, 255, 0.25); }
     .badge-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
   </style>
 </head>
-<body class="min-h-screen bg-cream-100 text-slate-800 antialiased selection:bg-cyanlight-200 selection:text-cyan-900">
+<body class="min-h-screen bg-[#1a1b26] text-[#c0caf5] antialiased selection:bg-[#7aa2f7]/30 selection:text-[#7dcfff]">
 
   <!-- Header / Navigation -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-white/85 border-b border-cream-200/90 shadow-2xs">
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-[#16161e]/85 border-b border-[#292e42] shadow-2xs">
     <div class="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyanlight-200 to-cyanlight-400 p-0.5 shadow-sm">
-          <div class="w-full h-full bg-white rounded-[10px] flex items-center justify-center font-bold text-slate-900 text-lg">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7aa2f7] to-[#7dcfff] p-0.5 shadow-sm">
+          <div class="w-full h-full bg-[#16161e] rounded-[10px] flex items-center justify-center font-bold text-[#7dcfff] text-lg font-mono">
             ${cleanTitle.charAt(0)}
           </div>
         </div>
         <div class="flex items-baseline space-x-1.5">
-          <span class="text-xl font-extrabold tracking-tight text-slate-900">${cleanTitle}</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyanlight-100 text-cyan-900 font-mono font-bold border border-cyanlight-200">Official</span>
+          <span class="text-xl font-extrabold tracking-tight text-white">${cleanTitle}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#7aa2f7]/15 text-[#7dcfff] font-mono font-bold border border-[#7aa2f7]/30">Official</span>
         </div>
       </div>
 
-      <nav class="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-600">
-        ${config.navLinks.map(l => `<a href="${l.href}" class="hover:text-cyan-700 transition">${l.label}</a>`).join('\n        ')}
+      <nav class="hidden md:flex items-center space-x-7 text-sm font-medium text-[#c0caf5]/70">
+        ${config.navLinks.map(l => `<a href="${l.href}" class="hover:text-[#7dcfff] transition">${l.label}</a>`).join('\n        ')}
       </nav>
 
       <div class="flex items-center space-x-3">
-        <a href="#pricing" class="px-4 py-2 text-sm font-bold text-slate-900 bg-white border border-cream-300 rounded-xl hover:border-cyan-400 hover:shadow-xs transition">
+        <a href="#pricing" class="px-4 py-2 text-sm font-bold text-[#c0caf5] bg-[#1f2335] border border-[#292e42] rounded-xl hover:border-[#7aa2f7] hover:text-white transition">
           ${displayCta}
         </a>
       </div>
@@ -566,51 +574,51 @@ export function generateLandingPageCode({
 
   <!-- Hero Section -->
   <section class="relative pt-16 sm:pt-20 pb-20 sm:pb-24 overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(#22D3EE_1px,transparent_1px)] [background-size:24px_24px] opacity-15"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(#7aa2f7_1px,transparent_1px)] [background-size:24px_24px] opacity-10"></div>
     
     <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
-      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white border border-cream-300 shadow-sm mb-6">
-        <span class="w-2 h-2 rounded-full bg-cyan-400 badge-pulse"></span>
-        <span class="text-xs font-semibold text-slate-700 tracking-wide uppercase font-mono">${config.heroBadge}</span>
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#16161e] border border-[#292e42] shadow-sm mb-6">
+        <span class="w-2 h-2 rounded-full bg-[#7dcfff] badge-pulse"></span>
+        <span class="text-xs font-semibold text-[#7dcfff] tracking-wide uppercase font-mono">${config.heroBadge}</span>
       </div>
 
-      <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-950 leading-[1.12] mb-6">
+      <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.12] mb-6">
         ${cleanTitle} <br class="hidden sm:inline" />
-        <span class="bg-gradient-to-r from-slate-900 via-cyan-800 to-cyan-500 bg-clip-text text-transparent">
+        <span class="bg-gradient-to-r from-[#7aa2f7] via-[#7dcfff] to-[#bb9af7] bg-clip-text text-transparent">
           ${config.heroSub}
         </span>
       </h1>
 
-      <p class="max-w-2xl mx-auto text-base sm:text-xl text-slate-600 mb-10 leading-relaxed font-normal">
+      <p class="max-w-2xl mx-auto text-base sm:text-xl text-[#c0caf5]/80 mb-10 leading-relaxed font-normal">
         ${displayTagline}
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-12">
-        <a href="#pricing" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-900 text-white font-semibold text-base shadow-lg hover:bg-slate-800 hover:shadow-cyanlight-200/50 hover:shadow-xl transition transform active:scale-[0.98] text-center">
+        <a href="#pricing" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#7aa2f7] text-[#16161e] font-bold text-base shadow-lg hover:bg-[#7dcfff] hover:shadow-[#7aa2f7]/20 hover:shadow-xl transition transform active:scale-[0.98] text-center">
           ${displayCta}
         </a>
-        <a href="#features" class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white text-slate-800 font-semibold text-base border border-cream-300 hover:bg-cream-50 hover:border-cyan-400 transition text-center">
+        <a href="#features" class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#16161e] text-[#c0caf5] font-semibold text-base border border-[#292e42] hover:bg-[#1f2335] hover:border-[#7aa2f7] transition text-center">
           ${config.ctaSecondary}
         </a>
       </div>
 
       <!-- Live Interactive Showcase Card -->
-      <div class="bg-white rounded-2xl border border-cream-300 shadow-xl p-5 sm:p-6 max-w-3xl mx-auto text-left glow-cyan">
-        <div class="flex items-center justify-between pb-3 border-b border-cream-200 mb-4">
+      <div class="bg-[#16161e] rounded-2xl border border-[#292e42] shadow-xl p-5 sm:p-6 max-w-3xl mx-auto text-left glow-cyan">
+        <div class="flex items-center justify-between pb-3 border-b border-[#292e42] mb-4">
           <div class="flex items-center space-x-2">
-            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-            <span class="text-xs font-mono font-bold text-slate-900">${config.showcaseTitle}</span>
+            <div class="w-3 h-3 rounded-full bg-[#9ece6a]"></div>
+            <span class="text-xs font-mono font-bold text-white">${config.showcaseTitle}</span>
           </div>
-          <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-cyanlight-100 text-cyan-900 border border-cyanlight-200">
+          <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-[#7aa2f7]/15 text-[#7dcfff] border border-[#7aa2f7]/30">
             ${config.showcaseBadge}
           </span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
           ${config.showcaseLogs.map(log => `
-          <div class="p-3 rounded-xl bg-cream-50/80 border border-cream-200">
-            <span class="font-mono text-[10px] text-cyan-800 font-bold uppercase tracking-wider block mb-0.5">${log.label}</span>
-            <span class="text-slate-800 font-medium">${log.val}</span>
+          <div class="p-3 rounded-xl bg-[#1f2335] border border-[#292e42]">
+            <span class="font-mono text-[10px] text-[#7dcfff] font-bold uppercase tracking-wider block mb-0.5">${log.label}</span>
+            <span class="text-[#c0caf5] font-medium">${log.val}</span>
           </div>`).join('')}
         </div>
       </div>
@@ -618,23 +626,23 @@ export function generateLandingPageCode({
   </section>
 
   <!-- Feature Grid Section -->
-  <section id="features" class="py-16 sm:py-20 bg-white border-y border-cream-200">
+  <section id="features" class="py-16 sm:py-20 bg-[#16161e] border-y border-[#292e42]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-xs uppercase tracking-widest font-bold text-cyan-700 mb-2 font-mono">${config.featuresHeader}</h2>
-        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h2 class="text-xs uppercase tracking-widest font-bold text-[#7dcfff] mb-2 font-mono">${config.featuresHeader}</h2>
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
           ${config.featuresSub}
         </h3>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         ${config.features.map(f => `
-        <div class="p-8 rounded-2xl bg-cream-100/50 border border-cream-200 hover:border-cyan-400 hover:shadow-card-subtle transition duration-200">
-          <div class="w-12 h-12 rounded-xl bg-white border border-cream-200 flex items-center justify-center mb-6 text-cyan-600 shadow-sm">
+        <div class="p-8 rounded-2xl bg-[#1f2335] border border-[#292e42] hover:border-[#7aa2f7] transition duration-200">
+          <div class="w-12 h-12 rounded-xl bg-[#16161e] border border-[#292e42] flex items-center justify-center mb-6 text-[#7dcfff] shadow-sm">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"/></svg>
           </div>
-          <h4 class="text-xl font-bold text-slate-900 mb-3">${f.title}</h4>
-          <p class="text-slate-600 text-sm leading-relaxed">${f.desc}</p>
+          <h4 class="text-xl font-bold text-white mb-3">${f.title}</h4>
+          <p class="text-[#565f89] text-sm leading-relaxed">${f.desc}</p>
         </div>`).join('')}
       </div>
     </div>
@@ -642,23 +650,23 @@ export function generateLandingPageCode({
 
   ${includeTestimonials && config.testimonials ? `
   <!-- Testimonials Section -->
-  <section id="testimonials" class="py-16 sm:py-20 bg-cream-50 border-b border-cream-200">
+  <section id="testimonials" class="py-16 sm:py-20 bg-[#1a1b26] border-b border-[#292e42]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center max-w-2xl mx-auto mb-12">
-        <span class="text-xs font-bold uppercase tracking-widest text-cyan-700 font-mono">Verified Proof</span>
-        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-2">${config.testimonialsHeader}</h3>
+        <span class="text-xs font-bold uppercase tracking-widest text-[#7dcfff] font-mono">Verified Proof</span>
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-white mt-2">${config.testimonialsHeader}</h3>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         ${config.testimonials.map(t => `
-        <div class="p-6 rounded-2xl bg-white border border-cream-200 shadow-sm">
-          <p class="text-slate-700 text-sm mb-5 leading-relaxed">"${t.quote}"</p>
-          <div class="flex items-center space-x-3 border-t border-cream-200 pt-3">
-            <div class="w-9 h-9 rounded-full bg-cyanlight-100 border border-cyanlight-200 flex items-center justify-center font-bold text-cyan-900 text-xs">
+        <div class="p-6 rounded-2xl bg-[#16161e] border border-[#292e42] shadow-sm">
+          <p class="text-[#c0caf5] text-sm mb-5 leading-relaxed">"${t.quote}"</p>
+          <div class="flex items-center space-x-3 border-t border-[#292e42] pt-3">
+            <div class="w-9 h-9 rounded-full bg-[#7aa2f7]/20 border border-[#7aa2f7]/40 flex items-center justify-center font-bold text-[#7dcfff] text-xs">
               ${t.name.split(' ').map(n => n[0]).join('')}
             </div>
             <div>
-              <div class="text-sm font-bold text-slate-900">${t.name}</div>
-              <div class="text-xs text-slate-500">${t.role}</div>
+              <div class="text-sm font-bold text-white">${t.name}</div>
+              <div class="text-xs text-[#565f89]">${t.role}</div>
             </div>
           </div>
         </div>`).join('')}
@@ -668,26 +676,26 @@ export function generateLandingPageCode({
 
   ${includePricing && config.pricingPlans ? `
   <!-- Pricing / Options Section -->
-  <section id="pricing" class="py-16 sm:py-20 bg-white">
+  <section id="pricing" class="py-16 sm:py-20 bg-[#16161e]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="text-center max-w-2xl mx-auto mb-12">
-        <span class="text-xs font-bold uppercase tracking-widest text-cyan-700 font-mono">Simple & Transparent</span>
-        <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 mt-2">${config.pricingHeader}</h3>
-        <p class="text-slate-600 text-sm mt-2">${config.pricingSub}</p>
+        <span class="text-xs font-bold uppercase tracking-widest text-[#7dcfff] font-mono">Simple & Transparent</span>
+        <h3 class="text-2xl sm:text-4xl font-extrabold text-white mt-2">${config.pricingHeader}</h3>
+        <p class="text-[#565f89] text-sm mt-2">${config.pricingSub}</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         ${config.pricingPlans.map(p => `
-        <div class="p-6 rounded-2xl ${p.highlighted ? 'bg-slate-900 text-white border-2 border-cyan-400 shadow-xl relative' : 'bg-cream-50 border border-cream-200 text-left'}">
-          ${p.highlighted ? `<span class="absolute -top-3 right-4 bg-cyan-400 text-slate-950 font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-mono">Featured</span>` : ''}
-          <h4 class="font-bold text-lg ${p.highlighted ? 'text-white' : 'text-slate-900'} mb-1">${p.name}</h4>
-          <p class="text-xs ${p.highlighted ? 'text-slate-400' : 'text-slate-500'} mb-4">${p.desc}</p>
-          <div class="text-3xl font-extrabold ${p.highlighted ? 'text-white' : 'text-slate-900'} mb-4">
-            ${p.price} <span class="text-xs font-normal ${p.highlighted ? 'text-slate-400' : 'text-slate-500'}">${p.period}</span>
+        <div class="p-6 rounded-2xl ${p.highlighted ? 'bg-[#1f2335] text-white border-2 border-[#7aa2f7] shadow-xl relative' : 'bg-[#1a1b26] border border-[#292e42] text-left'}">
+          ${p.highlighted ? `<span class="absolute -top-3 right-4 bg-[#7aa2f7] text-[#16161e] font-bold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider font-mono">Featured</span>` : ''}
+          <h4 class="font-bold text-lg ${p.highlighted ? 'text-white' : 'text-[#c0caf5]'} mb-1">${p.name}</h4>
+          <p class="text-xs text-[#565f89] mb-4">${p.desc}</p>
+          <div class="text-3xl font-extrabold text-white mb-4">
+            ${p.price} <span class="text-xs font-normal text-[#565f89]">${p.period}</span>
           </div>
-          <ul class="text-xs ${p.highlighted ? 'text-slate-300' : 'text-slate-600'} space-y-2 mb-6">
+          <ul class="text-xs text-[#c0caf5]/80 space-y-2 mb-6">
             ${p.features.map(feat => `<li>✓ ${feat}</li>`).join('')}
           </ul>
-          <button class="w-full py-2.5 rounded-xl ${p.highlighted ? 'bg-cyan-400 text-slate-950 hover:bg-cyan-300 font-bold' : 'bg-white border border-slate-300 text-slate-900 font-semibold hover:border-cyan-400'} text-xs transition">
+          <button class="w-full py-2.5 rounded-xl ${p.highlighted ? 'bg-[#7aa2f7] text-[#16161e] hover:bg-[#7dcfff] font-bold' : 'bg-[#1f2335] border border-[#292e42] text-[#c0caf5] font-semibold hover:border-[#7aa2f7]'} text-xs transition">
             ${p.ctaText}
           </button>
         </div>`).join('')}
@@ -696,17 +704,17 @@ export function generateLandingPageCode({
   </section>` : ''}
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-cream-200 py-12 text-center text-sm text-slate-500">
+  <footer class="bg-[#16161e] border-t border-[#292e42] py-12 text-center text-sm text-[#565f89]">
     <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center space-x-2">
-        <span class="font-extrabold text-slate-900">${cleanTitle}</span>
+        <span class="font-extrabold text-white">${cleanTitle}</span>
         <span>• All Rights Reserved</span>
       </div>
       <div>
-        Design System: White Cream (#FAF7EE) • White (#FFFFFF) • Cyan Light (#E0F7FA)
+        Design System: Tokyo Night (#1a1b26) • Tokyo Cyan (#7dcfff) • Tokyo Blue (#7aa2f7)
       </div>
       <div>
-        &copy; 2026 ${cleanTitle}. Crafted for Excellence.
+        &copy; 2026 ${cleanTitle}. Crafted with Godfy Mind.
       </div>
     </div>
   </footer>

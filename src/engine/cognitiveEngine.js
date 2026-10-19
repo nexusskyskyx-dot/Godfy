@@ -53,7 +53,7 @@ export function evaluateCognitiveIntent(query, chatHistory = [], memories = []) 
       complexity: 4,
       confidence: 0.98,
       description: 'Full-stack UI architecture, component hierarchy, design token mapping & interactive sandbox preview.',
-      temporalAnchor: 'Godfy Design System (Cream #FAF7EE / Cyan #E0F7FA)'
+      temporalAnchor: 'Godfy Design System (Tokyo Night #1a1b26 / #7aa2f7)'
     };
   }
 

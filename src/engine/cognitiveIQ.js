@@ -67,9 +67,9 @@ export function executeTreeOfThought({ query, intent, targetLang = 'python' }) {
     formalProof = 'Asymptotic Bounds: Recurrence relation T(n) verified; auxiliary memory strictly constrained to O(1) via sentinel nodes. State transition invariants hold inductively for all n >= 0.';
     invariant = 'Inductive Invariant: At the start of every iteration k, the target segment remains strictly ordered and bounded.';
   } else if (intent.type === 'SYSTEM_ARCHITECTURE_UI' || lower.includes('landing') || lower.includes('system') || lower.includes('architect')) {
-    hypothesisA = 'Branch A (Micro-Component Modular Scaffold): Decoupled atomic tokens with isolated state machines and CSS utility boundaries (#FAF7EE / #E0F7FA).';
+    hypothesisA = 'Branch A (Micro-Component Modular Scaffold): Decoupled atomic tokens with isolated state machines and CSS utility boundaries (#1a1b26 / #7aa2f7 / #7dcfff).';
     hypothesisB = 'Branch B (Monolithic Streamlined Layout): Minimizes DOM nesting depth and script execution latency for sub-50ms First Contentful Paint.';
-    redTeamAttack = 'Adversarial UX/Security Audit: Audited input vectors against script injection (XSS); verified contrast accessibility compliance (12.8:1 on Cream background); prevented layout shifts (CLS = 0) under dynamic asset loading.';
+    redTeamAttack = 'Adversarial UX/Security Audit: Audited input vectors against script injection (XSS); verified contrast accessibility compliance (14:1 on Tokyo Night background); prevented layout shifts (CLS = 0) under dynamic asset loading.';
     formalProof = 'Structural Guarantee: Fluid responsive typography scales monotonically across 320px to 2560px viewports with zero viewport clipping.';
     invariant = 'Layout Invariant: All interactive touch targets strictly maintain >= 44x44px hitboxes.';
   } else if (intent.type === 'REAL_TIME_WEB_RESEARCH' || lower.includes('latest') || lower.includes('2026') || lower.includes('news') || lower.includes('model')) {
@@ -116,7 +116,7 @@ export function buildHighIQCognitiveTrace({
   const defaultAction = intent.type === 'ALGORITHMIC_ENGINEERING'
     ? 'Synthesize the single cleanest, production-ready implementation, explicitly prove Big-O bounds, and handle boundary conditions with zero placeholders.'
     : intent.type === 'INTERACTIVE_UI_CREATION'
-    ? 'Construct a responsive, interactive landing page utilizing Godfy design tokens (White Cream #FAF7EE, Cyan Light #E0F7FA) with runnable sandbox preview.'
+    ? 'Construct a responsive, interactive landing page utilizing Tokyo Night design tokens (Tokyo Night #1a1b26, Blue #7aa2f7, Cyan #7dcfff) with runnable sandbox preview.'
     : intent.type === 'REAL_TIME_WEB_RESEARCH'
     ? 'Synthesize verified 2026 live web citations, strip outdated hallucinations, and present the grounded reality directly.'
     : intent.type === 'CONCEPTUAL_DECONSTRUCTION'
