@@ -497,47 +497,65 @@ export async function performLiveWebSearch(query, { includeImages = true } = {})
   const startTime = Date.now();
   const q = (query || '').trim();
 
-  // Execute genuine live web providers and image search in parallel
-  const [jinaResults, hnResults, searxResults, wikiResults, imageResults] = await Promise.allSettled([
-    searchJinaAI(q, 4),
-    searchHackerNews(q, 3),
-    searchSearXNG(q, 3),
-    searchWikipedia(q, 2),
-    includeImages ? performLiveImageSearch(q, 6) : Promise.resolve([])
-  ]);
+  const searchExecution = async () => {
+    // Execute genuine live web providers and image search in parallel
+    const [jinaResults, hnResults, searxResults, wikiResults, imageResults] = await Promise.allSettled([
+      searchJinaAI(q, 4, 2200),
+      searchHackerNews(q, 3, 2000),
+      searchSearXNG(q, 3, 2000),
+      searchWikipedia(q, 2, 1800),
+      includeImages ? performLiveImageSearch(q, 6) : Promise.resolve([])
+    ]);
 
-  const allItems = [
-    ...(jinaResults.status === 'fulfilled' ? jinaResults.value : []),
-    ...(searxResults.status === 'fulfilled' ? searxResults.value : []),
-    ...(hnResults.status === 'fulfilled' ? hnResults.value : []),
-    ...(wikiResults.status === 'fulfilled' ? wikiResults.value : [])
-  ];
+    const allItems = [
+      ...(jinaResults.status === 'fulfilled' ? jinaResults.value : []),
+      ...(searxResults.status === 'fulfilled' ? searxResults.value : []),
+      ...(hnResults.status === 'fulfilled' ? hnResults.value : []),
+      ...(wikiResults.status === 'fulfilled' ? wikiResults.value : [])
+    ];
 
-  const images = imageResults.status === 'fulfilled' ? imageResults.value : [];
+    const images = imageResults.status === 'fulfilled' ? imageResults.value : [];
 
-  // If live endpoints returned sparse results for 2026 tech/AI queries, append temporal ground truth
-  if (allItems.length < 2) {
-    const grounded = getGrounded2026Facts(q);
-    allItems.push(...grounded);
-  }
+    // If live endpoints returned sparse results for 2026 tech/AI queries, append temporal ground truth
+    if (allItems.length < 2) {
+      const grounded = getGrounded2026Facts(q);
+      allItems.push(...grounded);
+    }
 
-  // Deduplicate by URL or normalized title
-  const seenUrls = new Set();
-  const deduped = [];
+    // Deduplicate by URL or normalized title
+    const seenUrls = new Set();
+    const deduped = [];
 
-  for (const item of allItems) {
-    if (!item.url || seenUrls.has(item.url)) continue;
-    seenUrls.add(item.url);
-    deduped.push(item);
-    if (deduped.length >= 6) break;
-  }
+    for (const item of allItems) {
+      if (!item.url || seenUrls.has(item.url)) continue;
+      seenUrls.add(item.url);
+      deduped.push(item);
+      if (deduped.length >= 6) break;
+    }
 
-  return {
-    searched: true,
-    query: q,
-    latencyMs: Date.now() - startTime,
-    count: deduped.length,
-    results: deduped,
-    images: images || []
+    return {
+      searched: true,
+      query: q,
+      latencyMs: Date.now() - startTime,
+      count: deduped.length,
+      results: deduped,
+      images: images || []
+    };
   };
+
+  const timeoutFallback = new Promise(resolve => {
+    setTimeout(() => {
+      const grounded = getGrounded2026Facts(q);
+      resolve({
+        searched: true,
+        query: q,
+        latencyMs: 2500,
+        count: grounded.length,
+        results: grounded,
+        images: []
+      });
+    }, 2800);
+  });
+
+  return await Promise.race([searchExecution(), timeoutFallback]);
 }

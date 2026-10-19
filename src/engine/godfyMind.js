@@ -226,6 +226,12 @@ export async function processChatWithGodfy({ prompt, query: qArg, history = [], 
   let completedCount = 0;
   const modelProposals = await broadcastToAllFreeAIs(queryForFriends, chatHistory, memories, () => {
     completedCount++;
+    if (onStreamStep && completedCount % 5 === 0) {
+      onStreamStep({ 
+        step: 'thinking', 
+        message: `Thinking... (${completedCount}/${totalFriends} models)` 
+      });
+    }
   });
 
   // Cognitive Step 4: Multi-Model Consensus & Synthesis
@@ -863,7 +869,7 @@ You can preview it live, or open the **Project Editor** to add new files, create
       codeFileName: mainFile ? mainFile.name : 'index.html',
       projectData: project,
       extractions: [
-        `Architecture: Multi-file project for ${formattedTitle}`,
+        `Architecture: Multi-file project for ${project.name}`,
         `Folders: ${folderCount} modular carpets (/src, /styles, /js, /components)`,
         `Files: ${fileCount} source files generated without templates`,
         'Preview: Live interactive bundle compiled'

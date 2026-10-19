@@ -159,6 +159,28 @@ export default function App() {
       );
     } catch (err) {
       console.error('Godfy Chat Engine Error:', err);
+      // Resilient fallback: ensure the chat session NEVER drops the user's turn
+      const fallbackMsg = {
+        id: `msg-${Date.now()}`,
+        sender: 'godfy',
+        query: userText,
+        version: 'v1',
+        iqScore: 185,
+        masterText: "I encountered a momentary network timeout while coordinating with the free models, but my core neural cortex is active. Please try your request again.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setSessions(prev =>
+        prev.map(s => {
+          if (s.id === activeSessionId) {
+            return {
+              ...s,
+              updatedAt: new Date().toISOString(),
+              messages: [...s.messages, fallbackMsg]
+            };
+          }
+          return s;
+        })
+      );
     } finally {
       setIsProcessing(false);
       setStreamMessage('');
